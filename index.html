@@ -12,14 +12,7 @@
 <style>
 	body { 			font-family:Verdana,Geneva,sans-serif; font-size:10px;padding:0px;margin:0px; box-sizing:content-box; }
 
-	.co-venue {
-		display: grid; 	grid-template-columns: 25% 50% 25%; grid-template-rows: 33.3vh 33.3vh 33.3vh; 
-		
-
-
-}
-
-
+	.co-venue {		display: grid; 	grid-template-columns: 25% 50% 25%; grid-template-rows: 33.3vh 33.3vh 33.3vh; }
 	.co-room {		background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000;
  					padding-top:20px; font-size: 30px; text-align:center; }
 	.co-hall {		background-image:url("img/carpet.jpg"); background-repeat:repeat; border: 3px solid #000;
@@ -27,13 +20,14 @@
 	 				grid-column-start:2; grid-column-end:3; grid-row-start:1; grid-row-end:4; }
  	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(16.67vh - 4vh - 20px); }
 	.co-lDoor {		float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(16.67vh - 4vh - 20px); }
+	.co-avatar {	position:absolute; cursor:pointer; left:50%; top:50%;}
 	 
 	@font-face { font-family: 'iconfont'; src: url('iconfont.ttf?ueun15') format('truetype'); font-weight: normal; font-style: normal; }
 
 </style>
 <body>
 
-	<div class="co-venue">
+	<div class="co-venue" id="co-grid">
 		<div class="co-room">Room 1<div class="co-rDoor"></div></div>
 
 		<div class="co-hall">Main Hall</div>
@@ -42,6 +36,17 @@
 		<div class="co-room">Room 5<div class="co-lDoor"></div></div>
 		<div class="co-room">Room 3<div class="co-rDoor"></div></div>
 		<div class="co-room">Room 6<div class="co-lDoor"></div></div>
+		<img class="co-avatar" id="co-AvMe" src="avme.png">
+
+		<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:80%;left:40%">
+		<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:80%;left:45%">
+		<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:80%;left:50%">
+		<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:80%;left:55%">
+		<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:80%;left:60%">
+		<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:90%;left:45%">
+		<img class="co-avatar" id="co-Av-7" src="av7.png" style="top:90%;left:50%">
+		<img class="co-avatar" id="co-Av-8" src="av8.png" style="top:90%;left:55%">
+
 	</div>
 
 <script>
@@ -56,6 +61,8 @@ var app=null;																						// Holds app
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
 				}
+
+
 			});
 	});	
  
@@ -69,6 +76,22 @@ class App  {
 	constructor(id)   																			// CONSTRUCTOR
 	{
 		app=this;
+		$("#co-grid").on("click", (e)=>{ 
+			let x=e.pageX-40;
+			let y=e.pageY-40;
+			if (e.target.id.match(/co-Av-/)) {
+				x=$("#"+e.target.id).css("left").replace("px","")-10;
+				y=$("#"+e.target.id).css("top").replace("px","")-10;
+				}
+			$("#co-AvMe").animate({ left:x, top:y}); });
+		$("[id^=co-Av-]").on("mouseover", (e)=>{ 
+			let x=$("#"+e.target.id).css("left").replace("px","")-30;
+			let y=$("#"+e.target.id).css("top").replace("px","")-30;
+			
+			trace(x)
+			});
+	
+	
 	}
 
 	LoadProject(id)																				// LOAD PROJECT DATA
