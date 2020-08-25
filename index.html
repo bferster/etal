@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
+	<title>Connect</title>
+</head>
+<style>
+	body { 			font-family:Verdana,Geneva,sans-serif; font-size:10px;padding:0px;margin:0px; box-sizing:content-box; }
+
+	.co-venue {
+		display: grid; 	grid-template-columns: 25% 50% 25%; grid-template-rows: 33.3vh 33.3vh 33.3vh; 
+		
+
+
+}
+
+
+	.co-room {		background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000;
+ 					padding-top:20px; font-size: 30px; text-align:center; }
+	.co-hall {		background-image:url("img/carpet.jpg"); background-repeat:repeat; border: 3px solid #000;
+				    padding-top:20px; font-size: 30px; text-align:center; 
+	 				grid-column-start:2; grid-column-end:3; grid-row-start:1; grid-row-end:4; }
+ 	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(16.67vh - 4vh - 20px); }
+	.co-lDoor {		float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(16.67vh - 4vh - 20px); }
+	 
+	@font-face { font-family: 'iconfont'; src: url('iconfont.ttf?ueun15') format('truetype'); font-weight: normal; font-style: normal; }
+
+</style>
+<body>
+
+	<div class="co-venue">
+		<div class="co-room">Room 1<div class="co-rDoor"></div></div>
+
+		<div class="co-hall">Main Hall</div>
+		<div class="co-room">Room 4<div class="co-lDoor"></div></div>
+		<div class="co-room">Room 2<div class="co-rDoor"></div></div>
+		<div class="co-room">Room 5<div class="co-lDoor"></div></div>
+		<div class="co-room">Room 3<div class="co-rDoor"></div></div>
+		<div class="co-room">Room 6<div class="co-lDoor"></div></div>
+	</div>
+
+<script>
+
+if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
+var app=null;																						// Holds app
+
+	$(document).ready(function() {								           						// ON PAGE LOADED
+		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
+		var url=window.location.search.substring(1);						   						// Get query string
+		app=new App(url);                                                    						// Alloc app
+		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
+			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
+				}
+			});
+	});	
+ 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// APP
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class App  {																					
+
+	constructor(id)   																			// CONSTRUCTOR
+	{
+		app=this;
+	}
+
+	LoadProject(id)																				// LOAD PROJECT DATA
+	{
+	}
+
+	Draw() 																						// REDRAW
+	{
+	}
+
+	ShowHelp() 																					// SHOW HELP
+	{
+		if ($("#helpDiv").length) {																// If already up, bring it down
+			$("#helpDiv").hide("slide",{ direction:"down", complete: ()=>{ $("#helpDiv").remove(); } }); // Slide down
+			return;																				// Quit																					
+			}
+		var h=window.innerHeight;
+		var str="<div id='helpDiv' class='lz-dialog'style='height:"+(h-106)+"px;overflow:hidden;display:none;;left:calc(100vw - 646px)'>";
+		str+="<img src='img/lizalogo.png' style='vertical-align:-6px' width='64'><span style='font-size:18px;margin-left:8px'>"
+		str+="help</span><img src='img/closedot.gif' style='float:right' onclick='$(\"#helpDiv\").remove()'><br><br>";	
+		str+="<iframe src='https://docs.google.com/document/d/e/2PACX-1vTXAsMJ-YlQaNtT49RtKvEnT5v5Xzz-TKPyVlo2px-23vDt-4lZFB7JujSKyDXs38hiSMISQoulYXB5/pub?embedded=true' ";
+		str+="style='border: 1px solid #999;width:100%;height:"+(h-154)+"px' scrolling='yes'></iframe></div>";
+		$("body").append(str);																	// Add to body
+		$("#helpDiv").show("slide",{ direction:"down" });										// Slide up
+		if (!isMobile)	$("#helpDiv").draggable();												// Make it draggable on desktop
+		$("#helpDiv").on("mousedown touchdown touchmove", (e)=> { e.stopPropagation() } );		// Don't move orbiter
+	}
+
+} // APP CLASS CLOSURE
+
+// HELPERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+
+	function trace(msg, p1, p2, p3, p4)										// CONSOLE 
+	{
+		if (p4 != undefined)
+			console.log(msg,p1,p2,p3,p4);
+		else if (p3 != undefined)
+			console.log(msg,p1,p2,p3);
+		else if (p2 != undefined)
+			console.log(msg,p1,p2);
+		else if (p1 != undefined)
+			console.log(msg,p1);
+		else
+			console.log(msg);
+	}
+</script>
+</body>
+</html>
