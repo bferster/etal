@@ -20,7 +20,7 @@
 	 				grid-column-start:2; grid-column-end:3; grid-row-start:1; grid-row-end:4; }
  	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(16.67vh - 4vh - 20px); }
 	.co-lDoor {		float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(16.67vh - 4vh - 20px); }
-	.co-avatar {	position:absolute; cursor:pointer; left:50%; top:50%;}
+	.co-avatar {	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px}
 	 
 	@font-face { font-family: 'iconfont'; src: url('iconfont.ttf?ueun15') format('truetype'); font-weight: normal; font-style: normal; }
 
@@ -28,15 +28,14 @@
 <body>
 
 	<div class="co-venue" id="co-grid">
-		<div class="co-room">Room 1<div class="co-rDoor"></div></div>
-
+		<div class="co-room"id="co-Rm-1">Room 1<div class="co-rDoor"></div></div>
 		<div class="co-hall">Main Hall</div>
-		<div class="co-room">Room 4<div class="co-lDoor"></div></div>
-		<div class="co-room">Room 2<div class="co-rDoor"></div></div>
-		<div class="co-room">Room 5<div class="co-lDoor"></div></div>
-		<div class="co-room">Room 3<div class="co-rDoor"></div></div>
-		<div class="co-room">Room 6<div class="co-lDoor"></div></div>
-		<img class="co-avatar" id="co-AvMe" src="avme.png">
+		<div class="co-room" id="co-Rm-4">Room 4<div class="co-lDoor"></div></div>
+		<div class="co-room" id="co-Rm-2">Room 2<div class="co-rDoor"></div></div>
+		<div class="co-room" id="co-Rm-5">Room 5<div class="co-lDoor"></div></div>
+		<div class="co-room" id="co-Rm-3">Room 3<div class="co-rDoor"></div></div>
+		<div class="co-room" id="co-Rm-6">Room 6<div class="co-lDoor"></div></div>
+		<img class="co-avatar" id="co-AvMe" style="background:none" src="avme.png">
 
 		<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:80%;left:40%">
 		<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:80%;left:45%">
@@ -76,23 +75,25 @@ class App  {
 	constructor(id)   																			// CONSTRUCTOR
 	{
 		app=this;
-		$("#co-grid").on("click", (e)=>{ 
-			let x=e.pageX-40;
-			let y=e.pageY-40;
-			if (e.target.id.match(/co-Av-/)) {
-				x=$("#"+e.target.id).css("left").replace("px","")-10;
-				y=$("#"+e.target.id).css("top").replace("px","")-10;
-				}
-			$("#co-AvMe").animate({ left:x, top:y}); });
-		$("[id^=co-Av-]").on("mouseover", (e)=>{ 
-			let x=$("#"+e.target.id).css("left").replace("px","")-30;
-			let y=$("#"+e.target.id).css("top").replace("px","")-30;
+		$("#co-AvMe").draggable()
+		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) });
+		}	
 			
-			trace(x)
-			});
-	
-	
-	}
+
+	OnMeMove(x, y, targetId)
+	{
+		if (targetId.match(/co-Rm-/)) {
+			let id=targetId.substr(7);
+			let link="https://virginia.zoom.us/j/5405927001";
+			let myWin=window.open(link,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");
+			setTimeout(function(){ myWin.close(); },10000);		
+			}
+		else if (targetId.match(/co-Av-/)) {
+			x=$("#"+targetId).css("left").replace("px","")-4;
+			y=$("#"+targetId).css("top").replace("px","")-4;
+			}
+		$("#co-AvMe").animate({ left:x, top:y});
+		}
 
 	LoadProject(id)																				// LOAD PROJECT DATA
 	{
