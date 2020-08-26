@@ -6,6 +6,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<script src="lib/jquery.ui.touch-punch.min.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
 	<title>Connect</title>
 </head>
@@ -21,15 +22,21 @@
  	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(16.67vh - 4vh - 20px); }
 	.co-lDoor {		float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(16.67vh - 4vh - 20px); }
 	.co-avatar {	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px}
-	 
-	@font-face { font-family: 'iconfont'; src: url('iconfont.ttf?ueun15') format('truetype'); font-weight: normal; font-style: normal; }
+	.co-card {		position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
+					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
+	.co-chat{		position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
+					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
+
+	.co-textS {		background-color:#ddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
+	.co-textR {		background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%; float:right; color:#fff;	}
+	.co-is {		border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
 
 </style>
 <body>
 
 	<div class="co-venue" id="co-grid">
-		<div class="co-room"id="co-Rm-1">Room 1<div class="co-rDoor"></div></div>
-		<div class="co-hall">Main Hall</div>
+		<div class="co-room" id="co-Rm-1">Room 1<div class="co-rDoor"></div></div>
+		<div class="co-hall" id="co-Hall">Main Hall</div>
 		<div class="co-room" id="co-Rm-4">Room 4<div class="co-lDoor"></div></div>
 		<div class="co-room" id="co-Rm-2">Room 2<div class="co-rDoor"></div></div>
 		<div class="co-room" id="co-Rm-5">Room 5<div class="co-lDoor"></div></div>
@@ -60,8 +67,6 @@ var app=null;																						// Holds app
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
 				}
-
-
 			});
 	});	
  
@@ -74,34 +79,98 @@ class App  {
 
 	constructor(id)   																			// CONSTRUCTOR
 	{
-		app=this;
-		$("#co-AvMe").draggable()
-		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) });
+		app=this;																					// App global pointer
+		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) }); 	// On mouse up
+		this.Draw();																				// Draw screen
 		}	
 			
-
-	OnMeMove(x, y, targetId)
+	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
-		if (targetId.match(/co-Rm-/)) {
-			let id=targetId.substr(7);
-			let link="https://virginia.zoom.us/j/5405927001";
-			let myWin=window.open(link,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");
-			setTimeout(function(){ myWin.close(); },10000);		
+		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
+		$("#co-card").remove();																		// Close card if open
+		$("#co-chat").remove();																		// Close chat if open
+		if (targetId.match(/co-Rm-/)) {																// In a room
+		$("#co-AvMe").animate({ left:x, top:y});													// Animate me there
+		let link="https://virginia.zoom.us/j/5405927001";											// Get Zoom link
+			let myWin=window.open(link,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
+			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
-		else if (targetId.match(/co-Av-/)) {
-			x=$("#"+targetId).css("left").replace("px","")-4;
-			y=$("#"+targetId).css("top").replace("px","")-4;
+		else if (targetId.match(/co-Av-/)) {														// Over another avatar
+			x=$("#"+targetId).css("left").replace("px","")-4;										// Posittion directly over X
+			y=$("#"+targetId).css("top").replace("px","")-4;										// Y
+			$("#co-AvMe").animate({ left:x, top:y}, ()=>{ this.ShowCard(x,y,targetId); });			// Animate me there and show card
 			}
-		$("#co-AvMe").animate({ left:x, top:y});
+		else	$("#co-AvMe").animate({ left:x, top:y});											// Animate  me there
+		this.ReportPosition(x/$("body").width(),x/$("body").height(),targetId.substr(3));			// Report my move
 		}
 
 	LoadProject(id)																				// LOAD PROJECT DATA
 	{
 	}
 
+	ReportPosition(x, y, id)
+	{
+//		trace(x, y,id)
+	}
+	
+	
 	Draw() 																						// REDRAW
 	{
 	}
+
+	ShowCard(x, y, id)
+	{
+		$("#co-card").remove();
+		$("#co-chat").remove();																		// Close chat if open
+		let str=`<div id='co-card' class='co-card' style='left:${x-140}px;top:${y-210}px'>
+			<b style='font-size:24px'>James E. Ryan</b><br><br>
+			<b>President<br>
+			University of Virginia</b><br><br>
+			Interests: Long walks, reading, education<br>
+			<p style="position:absolute;left:24px;bottom:0">
+				<a href="https://linkedin.com/in/james-ryan-1b6b6411b" target="_blank">
+				<img style="cursor:pointer"	src="img/LI-Logo.png" height="14px"></a></p>
+				<button id="co-chatBut" style="position:absolute; left:225px; bottom:14px; cursor:pointer;
+				border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">
+				Chat now!</button> &nbsp;&nbsp; 
+			<div style="position:absolute;left:165px; top:195px; width:0;height:0; 
+				border-style:solid; border-width: 14px 8px 0 8px;
+    			border-color: #fff transparent transparent transparent;"></div>
+			</div>`;
+		$("body").append(str.replace(/\t|\n|\r/g,""));
+		$("#co-chatBut").on("click",()=>{ this.Chat(x,y,id)} )
+	}
+
+	Chat(x, y, id)
+	{
+		$("#co-card").remove();
+		$("#co-chat").remove();
+		let str=`<div id='co-chat' class='co-chat' style='left:${x-117}px;top:${y-382}px'>
+			<b>Chat with James E. Ryan</b><br><br>
+			<div style="position:absolute;top:330px;left:24px;">
+			<input  id="revText" placeholder="Type here..." class='co-is' style='width:207px'>			
+			&nbsp;<img id='revTextBut'src='img/sendtext.png' style='vertical-align:-7px;cursor:pointer'>
+			</div>	
+			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:25px"></div>														
+			<button id="co-videoBut" style="position:absolute; left:100px; bottom:293px; cursor:pointer;
+				border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">
+				Video chat</button>
+				<div style="position:absolute;left:144px; top:368px; width:0;height:0; 
+				border-style:solid; border-width: 14px 8px 0 8px;
+    			border-color: #fff transparent transparent transparent;"></div>
+	
+		</div>`;
+		$("body").append(str.replace(/\t|\n|\r/g,""));
+
+		$("#revText").on("change",   function(e) { chatWith();	});									// On text enter
+		$("#revTextBut").on("click", function(e) { chatWith();	});									// On text button click
+
+		function chatWith() {																		// TEXT CHATTING
+			var s=$("#revText").val();																// Get text
+			$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");							// Add to display
+			$("#revText").val("");																	// Clear input
+			}	
+		}
 
 	ShowHelp() 																					// SHOW HELP
 	{
@@ -138,6 +207,13 @@ class App  {
 		else
 			console.log(msg);
 	}
+
+	function trace2(msg, p1, p2, p3, p4)										// CONSOLE 
+	{
+		trace(msg);
+		$("#co-Rm-0").text(">"+msg+"<")
+	}
+
 </script>
 </body>
 </html>
