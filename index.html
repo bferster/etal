@@ -14,9 +14,9 @@
 	body { 			font-family:Verdana,Geneva,sans-serif; font-size:10px;padding:0px;margin:0px; box-sizing:content-box; }
 
 	.co-venue {		display: grid; 	grid-template-columns: 25% 50% 25%; grid-template-rows: 33.3vh 33.3vh 33.3vh; }
-	.co-room {		background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000;
+	.co-room {		background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000;
  					padding-top:20px; font-size: 30px; text-align:center; }
-	.co-hall {		background-image:url("img/carpet.jpg"); background-repeat:repeat; border: 3px solid #000;
+	.co-hall {		background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000;
 				    padding-top:20px; font-size: 30px; text-align:center; 
 	 				grid-column-start:2; grid-column-end:3; grid-row-start:1; grid-row-end:4; }
  	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(16.67vh - 4vh - 20px); }
@@ -24,12 +24,20 @@
 	.co-avatar {	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px}
 	.co-card {		position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
-	.co-chat{		position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
+	.co-chat{		position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px; overflow:hidden;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
 
 	.co-textS {		background-color:#ddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
 	.co-textR {		background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%; float:right; color:#fff;	}
+	.co-video {		position:absolute; width:50%; height:calc(50vh * .5625)px; background-color:#fff; border-radius:4px;
+					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
+
 	.co-is {		border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
+
+	body ::-webkit-scrollbar { width: 9px; height:8px } 
+	body ::-webkit-scrollbar-track { background: transparent; }
+	body ::-webkit-scrollbar-thumb { border-radius:8px ;background:#a4baec }
+	body ::-webkit-scrollbar-thumb:hover { background: #a4baec }
 
 </style>
 <body>
@@ -44,15 +52,14 @@
 		<div class="co-room" id="co-Rm-6">Room 6<div class="co-lDoor"></div></div>
 		<img class="co-avatar" id="co-AvMe" style="background:none" src="avme.png">
 
-		<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:80%;left:40%">
+		<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:20%;left:35%">
 		<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:80%;left:45%">
-		<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:80%;left:50%">
-		<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:80%;left:55%">
-		<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:80%;left:60%">
-		<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:90%;left:45%">
-		<img class="co-avatar" id="co-Av-7" src="av7.png" style="top:90%;left:50%">
-		<img class="co-avatar" id="co-Av-8" src="av8.png" style="top:90%;left:55%">
-
+		<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:22%;left:65%">
+		<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:70%;left:35%">
+		<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:60%;left:60%">
+		<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:55%;left:45%">
+		<img class="co-avatar" id="co-Av-7" src="av7.png" style="top:85%;left:36%">
+		<img class="co-avatar" id="co-Av-8" src="av8.png" style="top:80%;left:66%">
 	</div>
 
 <script>
@@ -82,6 +89,15 @@ class App  {
 		app=this;																					// App global pointer
 		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) }); 	// On mouse up
 		this.Draw();																				// Draw screen
+		this.people=[ 
+			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17"}, 
+			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin"}, 
+			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficul crimes, lemonade", org:"Drew Inc.", li:""}, 
+			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:""}, 
+			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519"}, 
+			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster"}, 
+			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712"},
+			{ name:"You", role:"Guest", email:"8", ints:"", org:"", li:""}] 
 		}	
 			
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
@@ -113,7 +129,6 @@ class App  {
 //		trace(x, y,id)
 	}
 	
-	
 	Draw() 																						// REDRAW
 	{
 	}
@@ -122,18 +137,21 @@ class App  {
 	{
 		$("#co-card").remove();
 		$("#co-chat").remove();																		// Close chat if open
+		let flip=false;
+		if (y < 340) y+=285,flip=true;
+
+		let o=this.people[id.substr(6)-1];
 		let str=`<div id='co-card' class='co-card' style='left:${x-140}px;top:${y-210}px'>
-			<b style='font-size:24px'>James E. Ryan</b><br><br>
-			<b>President<br>
-			University of Virginia</b><br><br>
-			Interests: Long walks, reading, education<br>
-			<p style="position:absolute;left:24px;bottom:0">
-				<a href="https://linkedin.com/in/james-ryan-1b6b6411b" target="_blank">
-				<img style="cursor:pointer"	src="img/LI-Logo.png" height="14px"></a></p>
-				<button id="co-chatBut" style="position:absolute; left:225px; bottom:14px; cursor:pointer;
+			<b style='font-size:24px'>${o.name}</b><br><br>
+			<b>${o.role}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
+			<p style="position:absolute;left:24px;bottom:0">`;
+			if (o.li) str+=`<a href="https://linkedin.com/in/${o.li}" target="_blank">
+				<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
+			str+=`</p><button id="co-chatBut" style="position:absolute; left:225px; bottom:14px; cursor:pointer;
 				border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">
 				Chat now!</button> &nbsp;&nbsp; 
-			<div style="position:absolute;left:165px; top:195px; width:0;height:0; 
+			<div style="position:absolute;left:165px; top:${flip ? "-10" : "195"}px; width:0;height:0; 
+				${flip ? "transform: rotate(180deg)" : ""};
 				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
@@ -146,32 +164,53 @@ class App  {
 		$("#co-card").remove();
 		$("#co-chat").remove();
 		let str=`<div id='co-chat' class='co-chat' style='left:${x-117}px;top:${y-382}px'>
-			<b>Chat with James E. Ryan</b><br><br>
-			<div style="position:absolute;top:330px;left:24px;">
-			<input  id="revText" placeholder="Type here..." class='co-is' style='width:207px'>			
-			&nbsp;<img id='revTextBut'src='img/sendtext.png' style='vertical-align:-7px;cursor:pointer'>
-			</div>	
-			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:25px"></div>														
-			<button id="co-videoBut" style="position:absolute; left:100px; bottom:293px; cursor:pointer;
-				border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">
-				Video chat</button>
-				<div style="position:absolute;left:144px; top:368px; width:0;height:0; 
+			<b>Chat with James E. Ryan</b><hr>
+			<button id="co-videoBut" style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Video chat</button>&nbsp;&nbsp;
+			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Zoom</button>
+			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:0 4px"></div>														
+			<div style="position:absolute;top:330px;left:24px">
+				<input  id="revText" placeholder="Type here..." class='co-is' style='width:202px'>			
+				<img id='revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:5px;cursor:pointer'>
+				</div>	
+			<div style="position:absolute;left:144px; top:368px; width:0;height:0; 
 				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent;"></div>
-	
 		</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-
 		$("#revText").on("change",   function(e) { chatWith();	});									// On text enter
 		$("#revTextBut").on("click", function(e) { chatWith();	});									// On text button click
+		$("#co-videoBut").on("click", (e)=> { this.VideoChat(x,y,id)	});							// On text button click
+		$("#co-zoomBut").on("click", ()=>{															// On Zoom button click
+			let myWin=window.open(this.zoomLink,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
+			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
+			});
 
 		function chatWith() {																		// TEXT CHATTING
 			var s=$("#revText").val();																// Get text
-			$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");							// Add to display
+			if (s)	$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");					// Add to display iif comething there
+			$("#co-textDiv").scrollTop(10000);														// Scroll to bottom
 			$("#revText").val("");																	// Clear input
 			}	
 		}
+	
+	VideoChat(x, y, id)
+	{
+		$("#co-chat").remove();
+		let h=$("body").width()/2*.5625;
+		id="bferster"+Math.floor(Math.random()*10000+45)
+		let src=`https://appr.tc/r/${id}?hd=true`;
+//		let src=`https://tokbox.com/embed/embed/ot-embed.js?embedId=e2aa24d5-e7cc-4f99-8b22-660bd19651eb&room=DEFAULT_ROOM&iframe=true`;
 
+		let str=`<div id='co-chat' class='co-video' style='left:${x-267}px;top:${y-351}px'>
+			<iframe id="co-chat" style="padding:8px;width:calc(100% - 18px);height:${h-16}px;border:none"
+			src="${src}" allow=camera;microphone;fullscreen frameborder="0" ></iframe>
+			<div style="position:absolute;left:293px; top:337px; width:0;height:0; 
+			border-style:solid; border-width: 14px 8px 0 8px;
+    		border-color: #fff transparent transparent transparent;"></div>
+			</div>`;
+		$("body").append(str.replace(/\t|\n|\r/g,""));
+	}
+	
 	ShowHelp() 																					// SHOW HELP
 	{
 		if ($("#helpDiv").length) {																// If already up, bring it down
