@@ -11,16 +11,20 @@
 	<title>Connect</title>
 </head>
 <style>
-	body { 			font-family:Verdana,Geneva,sans-serif; font-size:10px;padding:0px;margin:0px; box-sizing:content-box; }
-
-	.co-venue {		display: grid; 	grid-template-columns: 25% 50% 25%; grid-template-rows: 33.3vh 33.3vh 33.3vh; }
-	.co-room {		background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000;
- 					padding-top:20px; font-size: 30px; text-align:center; }
+	body { 			font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
+	
+	.co-venue {		display:grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 25vh 25vh 25vh 25vh; 
+					font-size: 30px; text-align:center; overflow:hidden;
+					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; }
+	.co-room {		background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000; }
+	.co-plenary {	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000;
+				 	grid-column-start:1; grid-column-end:2; grid-row-start:1; grid-row-end:3; }
 	.co-hall {		background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000;
-				    padding-top:20px; font-size: 30px; text-align:center; 
-	 				grid-column-start:2; grid-column-end:3; grid-row-start:1; grid-row-end:4; }
- 	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(16.67vh - 4vh - 20px); }
-	.co-lDoor {		float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(16.67vh - 4vh - 20px); }
+					text-shadow:2px 2px 3px #aaa; grid-column-start:2; grid-column-end:3; grid-row-start:1; grid-row-end:5; }
+	.co-roomTitle {	font-size:18px; margin:32px; color:#000; }
+
+ 	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(12.5vh - 4vh - 20px); }
+	.co-lDoor {		float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(12.5vh - 4vh - 20px); }
 	.co-avatar {	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px}
 	.co-card {		position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
@@ -43,15 +47,31 @@
 <body>
 
 	<div class="co-venue" id="co-grid">
-		<div class="co-room" id="co-Rm-1">Room 1<div class="co-rDoor"></div></div>
-		<div class="co-hall" id="co-Hall">Main Hall</div>
-		<div class="co-room" id="co-Rm-4">Room 4<div class="co-lDoor"></div></div>
-		<div class="co-room" id="co-Rm-2">Room 2<div class="co-rDoor"></div></div>
-		<div class="co-room" id="co-Rm-5">Room 5<div class="co-lDoor"></div></div>
-		<div class="co-room" id="co-Rm-3">Room 3<div class="co-rDoor"></div></div>
+		<div class="co-plenary" id="co-Rm-0">Main room<div class="co-rDoor" style="margin-top:calc(25vh - 4vh - 20px)"></div>
+		<div style="font-size:18px;background-color:#88abd5;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px">Please join SITE president<br><b>Elizabeth Langren</b><br><br>
+			<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
+			for the keynote speech<br> in <b></b>15</b></15> minutes</div>
+			</div>
+		<div class="co-room" id="co-Rm-2">Room 3<div class="co-lDoor"></div>
+		<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div></div>
+		<div class="co-room" id="co-Rm-3">Room 4<div class="co-lDoor"></div>
+		<div class="co-roomTitle""><b></n>Birds of a Feather</b><b></b><br>Computer animation</div></div>
+		<div class="co-room" id="co-Rm-1">Room 1<div class="co-rDoor"></div>
+		<div  class="co-roomTitle">The Flipped Classroom<br>Glen Bull</div></div>
+		<div class="co-room" id="co-Rm-5">Room 5<div class="co-lDoor"></div>
+		<div class="co-roomTitle">Digital Storytelling<br>Bill Ferster</div></div>
+		<div class="co-room" id="co-Rm-4">Room 2<div class="co-rDoor"></div>
+		<div  class="co-roomTitle"">GIS in the Class<br>Thomas Hammond</div></div>
 		<div class="co-room" id="co-Rm-6">Room 6<div class="co-lDoor"></div></div>
+		<div class="co-hall" id="co-Hall">Social hallway
+			<table style="position:absolute;top:calc(100vh - 105px);width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
+				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
+				<td style="text-align:center;width:33%"><img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">
+				&nbsp;&nbsp;<img src="img/search.png" id="co-search" style="width:12.5%;cursor:pointer"></td>
+				<td style="text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png" style="width:50%"></td>
+			</tr></table>
+		</div>
 		<img class="co-avatar" id="co-AvMe" style="background:none" src="avme.png">
-
 		<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:20%;left:35%">
 		<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:80%;left:45%">
 		<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:22%;left:65%">
@@ -63,7 +83,11 @@
 	</div>
 
 <script>
-
+/*
+				<img src="img/quietarea.png" ">
+				<img src="img/search.png" style="position:absolute;left:calc(50% - 10px);width:3%;top:calc(100vh - 62px)">
+				<img src="img/schedule.png" style="position:absolute;left:calc(50% - 820px);width:3%;top:calc(100vh - 62px)">
+*/
 if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 var app=null;																						// Holds app
 
@@ -87,8 +111,7 @@ class App  {
 	constructor(id)   																			// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
-		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) }); 	// On mouse up
-		this.Draw();																				// Draw screen
+		this.zoomLink="https://virginia.zoom.us/j/5405927001";										// Set Zoom link
 		this.people=[ 
 			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17"}, 
 			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin"}, 
@@ -98,6 +121,10 @@ class App  {
 			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster"}, 
 			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712"},
 			{ name:"You", role:"Guest", email:"8", ints:"", org:"", li:""}] 
+
+		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) }); 	// On mouse up
+		$("[id^=co-Av-]").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) }); // On mouse up
+		this.Draw();																				// Draw screen
 		}	
 			
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
@@ -106,17 +133,31 @@ class App  {
 		$("#co-card").remove();																		// Close card if open
 		$("#co-chat").remove();																		// Close chat if open
 		if (targetId.match(/co-Rm-/)) {																// In a room
-		$("#co-AvMe").animate({ left:x, top:y});													// Animate me there
-		let link="https://virginia.zoom.us/j/5405927001";											// Get Zoom link
+		let link="https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09";		// Get Zoom link
 			let myWin=window.open(link,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
+			}
+		if (targetId == "co-search") {
+			return;	
+			}
+		if (targetId == "co-schedule") {
+			return;	
 			}
 		else if (targetId.match(/co-Av-/)) {														// Over another avatar
 			x=$("#"+targetId).css("left").replace("px","")-4;										// Posittion directly over X
 			y=$("#"+targetId).css("top").replace("px","")-4;										// Y
 			$("#co-AvMe").animate({ left:x, top:y}, ()=>{ this.ShowCard(x,y,targetId); });			// Animate me there and show card
 			}
-		else	$("#co-AvMe").animate({ left:x, top:y});											// Animate  me there
+		else if (targetId.match(/co-quiet/)) {														// Go quiet
+			x=$("#co-quiet").offset().left-34+$("#co-quiet").width()/2;								// Center in area
+			y=$("body").height()-70;																// At bottom
+			}
+		else if (targetId.match(/co-coffee/)) {														// Go quiet
+			x=$("#co-coffee").offset().left-34+$("#co-quiet").width()/2;								// Center in area
+			y=$("body").height()-70;																// At bottom
+			}
+		
+		$("#co-AvMe").animate({ left:x, top:y});													// Animate me there
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),targetId.substr(3));			// Report my move
 		}
 
