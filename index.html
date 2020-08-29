@@ -11,32 +11,29 @@
 	<title>Connect</title>
 </head>
 <style>
-	body { 			font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
+	:root 		{ 	--mobileOff:0px; }
+	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
 	
-	.co-venue {		display:grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 25vh 25vh 25vh 25vh; 
-					font-size: 30px; text-align:center; overflow:hidden;
-					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; }
-	.co-room {		background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000; }
-	.co-plenary {	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000;
-				 	grid-column-start:1; grid-column-end:2; grid-row-start:1; grid-row-end:3; }
-	.co-hall {		background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000;
-					text-shadow:2px 2px 3px #aaa; grid-column-start:2; grid-column-end:3; grid-row-start:1; grid-row-end:5; }
-	.co-roomTitle {	font-size:18px; margin:32px; color:#000; }
+	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 25vh 25vh 25vh 25vh; 
+					font-size: 30px; text-align:center; overflow:hidden; height:calc(100vh - var(--mobileOff));
+					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
+					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+	.co-room 	{	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000; }
+	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa}
 
- 	.co-rDoor {		float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(12.5vh - 4vh - 20px); }
-	.co-lDoor {		float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(12.5vh - 4vh - 20px); }
-	.co-avatar {	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px}
-	.co-card {		position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
+ 	.co-rDoor 	{	float:right; background-color:#000; height:8vh; width:8px; margin-right:-2px; margin-top:calc(12.5vh - 4vh - 20px); }
+	.co-lDoor 	{	float:left;  background-color:#000; height:8vh; width:8px; margin-left:-2px;margin-top:calc(12.5vh - 4vh - 20px); }
+	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px}
+	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
-	.co-chat{		position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
+	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
-
-	.co-textS {		background-color:#ddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
-	.co-textR {		background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%; float:right; color:#fff;	}
-	.co-video {		position:absolute; background-color:#fff; border-radius:4px; width:40%;
+	.co-textS 	{	background-color:#ddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
+	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%; float:right; color:#fff;	}
+	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
 
-	.co-is {		border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
+	.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
 	body ::-webkit-scrollbar-track { background: transparent; }
@@ -46,55 +43,16 @@
 </style>
 <body>
 
-	<div class="co-venue" id="co-grid">
-		<div class="co-plenary" id="co-Rm-0">Main room<div class="co-rDoor" style="margin-top:calc(25vh - 4vh - 20px)"></div>
-		<div style="font-size:18px;background-color:#88abd5;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px">Please join SITE president<br><b>Elizabeth Langren</b><br><br>
-			<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
-			for the keynote speech<br> in <b></b>15</b></15> minutes</div>
-			</div>
-		<div class="co-room" id="co-Rm-2">Room 3<div class="co-lDoor"></div>
-		<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div></div>
-		<div class="co-room" id="co-Rm-3">Room 4<div class="co-lDoor"></div>
-		<div class="co-roomTitle""><b></n>Birds of a Feather</b><b></b><br>Computer animation</div></div>
-		<div class="co-room" id="co-Rm-1">Room 1<div class="co-rDoor"></div>
-		<div  class="co-roomTitle">The Flipped Classroom<br>Glen Bull</div></div>
-		<div class="co-room" id="co-Rm-5">Room 5<div class="co-lDoor"></div>
-		<div class="co-roomTitle">Digital Storytelling<br>Bill Ferster</div></div>
-		<div class="co-room" id="co-Rm-4">Room 2<div class="co-rDoor"></div>
-		<div  class="co-roomTitle"">GIS in the Class<br>Thomas Hammond</div></div>
-		<div class="co-room" id="co-Rm-6">Room 6<div class="co-lDoor"></div></div>
-		<div class="co-hall" id="co-Hall">Social hallway
-			<table style="position:absolute;top:calc(100vh - 105px);width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
-				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
-				<td style="text-align:center;width:33%"><img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">
-				&nbsp;&nbsp;<img src="img/search.png" id="co-search" style="width:12.5%;cursor:pointer"></td>
-				<td style="text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png" style="width:50%"></td>
-			</tr></table>
-		</div>
-		<img class="co-avatar" id="co-AvMe" style="background:none" src="avme.png">
-		<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:20%;left:35%">
-		<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:80%;left:45%">
-		<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:22%;left:65%">
-		<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:70%;left:35%">
-		<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:60%;left:60%">
-		<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:55%;left:45%">
-		<img class="co-avatar" id="co-Av-7" src="av7.png" style="top:85%;left:36%">
-		<img class="co-avatar" id="co-Av-8" src="av8.png" style="top:80%;left:66%">
-	</div>
-
 <script>
-/*
-				<img src="img/quietarea.png" ">
-				<img src="img/search.png" style="position:absolute;left:calc(50% - 10px);width:3%;top:calc(100vh - 62px)">
-				<img src="img/schedule.png" style="position:absolute;left:calc(50% - 820px);width:3%;top:calc(100vh - 62px)">
-*/
+
 if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 var app=null;																						// Holds app
 
 	$(document).ready(function() {								           						// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
+		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","70px");			// Set CSS var
 		var url=window.location.search.substring(1);						   						// Get query string
-		app=new App(url);                                                    						// Alloc app
+		app=new App("demo", url);                                                    				// Alloc app
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
 				}
@@ -108,22 +66,17 @@ var app=null;																						// Holds app
 
 class App  {																					
 
-	constructor(id)   																			// CONSTRUCTOR
+	constructor(projectId, myId)   																// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
-		this.zoomLink="https://virginia.zoom.us/j/5405927001";										// Set Zoom link
-		this.people=[ 
-			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17"}, 
-			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin"}, 
-			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficul crimes, lemonade", org:"Drew Inc.", li:""}, 
-			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:""}, 
-			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519"}, 
-			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster"}, 
-			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712"},
-			{ name:"You", role:"Guest", email:"8", ints:"", org:"", li:""}] 
-
-		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) }); 	// On mouse up
-		$("[id^=co-Av-]").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-40,e.pageY-40,e.target.id) }); // On mouse up
+		this.projectId="";																			// Project id
+		this.myId=myId ? myId : 5;																	// My unique id
+		this.venue="";																				// Venue frame
+		this.people=[];																				// Holds attendees
+		this.rooms=[];																				// Holds rooms
+		this.schedule="{}";
+		this.quiet-false;																			// Not in quiet mode
+		this.LoadProject(projectId);																// Load project																	
 		this.Draw();																				// Draw screen
 		}	
 			
@@ -133,36 +86,109 @@ class App  {
 		$("#co-card").remove();																		// Close card if open
 		$("#co-chat").remove();																		// Close chat if open
 		if (targetId.match(/co-Rm-/)) {																// In a room
-		let link="https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09";		// Get Zoom link
+			let link=this.rooms[targetId.substr(6)].zoom;											// Get zoom link
+			if (!link)	return;																		// Quit if no link set
 			let myWin=window.open(link,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
+			this.quiet=false;																		// Not in quiet mode
 			}
-		if (targetId == "co-search") {
-			return;	
+		if (targetId == "co-search") {																// ON SEARCH BUTTON
+			return;																					// Quit
 			}
-		if (targetId == "co-schedule") {
-			return;	
+		if (targetId == "co-schedule") {															// ON SCEDULE BUTTON
+			return;																					// Quit
 			}
-		else if (targetId.match(/co-Av-/)) {														// Over another avatar
-			x=$("#"+targetId).css("left").replace("px","")-4;										// Posittion directly over X
+		else if (targetId.match(/co-Av-/)) {														// ON A PERSON
+			x=$("#"+targetId).css("left").replace("px","")-4;										// Position directly over X
 			y=$("#"+targetId).css("top").replace("px","")-4;										// Y
-			$("#co-AvMe").animate({ left:x, top:y}, ()=>{ this.ShowCard(x,y,targetId); });			// Animate me there and show card
+			this.ShowCard(x,y,targetId);															// Show card
+			return;																					// Quit
 			}
-		else if (targetId.match(/co-quiet/)) {														// Go quiet
-			x=$("#co-quiet").offset().left-34+$("#co-quiet").width()/2;								// Center in area
-			y=$("body").height()-70;																// At bottom
+		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
+			x=$("#co-quiet").offset().left-30+$("#co-quiet").width()/2;								// Center in area
+			y=$("body").height()-62;																// At bottom
+			this.quiet=true;																		// In quite mode
+			this.ReportPosition(0,0,"quiet");														// Report
 			}
-		else if (targetId.match(/co-coffee/)) {														// Go quiet
-			x=$("#co-coffee").offset().left-34+$("#co-quiet").width()/2;								// Center in area
-			y=$("body").height()-70;																// At bottom
+		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
+			x=$("#co-coffee").offset().left-30+$("#co-quiet").width()/2;							// Center in area
+			y=$("body").height()-62;																// At bottom
+			this.quiet=false;																		// Not in quiet mode
 			}
-		
+		else this.quiet=false;																		// Not in quiet mode
 		$("#co-AvMe").animate({ left:x, top:y});													// Animate me there
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),targetId.substr(3));			// Report my move
 		}
 
-	LoadProject(id)																				// LOAD PROJECT DATA
+	LoadProject(projectId)																			// LOAD PROJECT DATA
 	{
+		let i,o;
+		this.projectId=projectId;																	// Project id
+		this.people=[ 
+			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17",zoom:"https://virginia.zoom.us/j/5405927001"}, 
+			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin",zoom:"https://virginia.zoom.us/j/5405927001"}, 
+			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficult crimes, lemonade", org:"Drew Detective Agency", li:"",zoom:"https://virginia.zoom.us/j/5405927001"}, 
+			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:"",zoom:"https://virginia.zoom.us/j/5405927001"}, 
+			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519",zoom:"https://virginia.zoom.us/j/5405927001"}, 
+			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster",zoom:"https://virginia.zoom.us/j/5405927001"}, 
+			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://virginia.zoom.us/j/5405927001"},
+			{ name:"You", role:"Guest", email:"8", ints:"", org:"", li:""}
+			]; 
+		
+		let hallway=`<table style="position:absolute;top:calc(100vh - 105px - var(--mobileOff));width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
+				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
+				<td style="text-align:center;width:33%">`;
+		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">&nbsp;&nbsp;`
+		hallway+=`<img src="img/search.png" id="co-search" style="width:12.5%;cursor:pointer"></td>
+				<td style="text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png" style="width:50%"></td>
+				</tr></table>`;
+
+		this.rooms=[
+			{ zoom:"", title:"Social hallway", cs:2, ce:2, rs:1, re:5, content:hallway },
+			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Main room", cs:1, ce:1, rs:1, re:3,
+				content:`<div style="font-size:18px;background-color:#88abd5;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
+				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
+				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
+				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
+			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room A", cs:1, ce:1, rs:3, re:3,
+				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
+			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room B", cs:1, ce:1, rs:4, re:4,
+				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
+			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room C", cs:3, ce:3, rs:1, re:1,
+				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
+			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room D", cs:3, ce:3, rs:2, re:2,
+				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
+			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room E", cs:3, ce:3, rs:3, re:3,
+				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
+			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room F", cs:3, ce:3, rs:4, re:4,
+				content:`` }
+			];
+
+		this.venue=`<div class="co-venue" id="co-grid">`;
+		o=this.rooms[0];
+		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
+		${o.title}${o.content}<div class="co-rDoor" style="margin-top:calc(25vh - 4vh - 20px)"></div></div>`;
+
+		for (i=1;i<this.rooms.length;++i) {
+			o=this.rooms[i];
+			this.venue+=`<div class="co-room" id="co-Rm-${i}" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
+			${o.title}${o.content}<div class="co-rDoor" style="margin-top:calc(25vh - 4vh - 20px)"></div></div>`;
+			}
+		this.venue+=`</div>
+			<img class="co-avatar" id="co-AvMe" style="background:none" src="avme.png">
+			<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:20%;left:35%">
+			<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:80%;left:45%">
+			<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:22%;left:65%">
+			<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:70%;left:35%">
+			<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:60%;left:60%">
+			<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:55%;left:45%">
+			<img class="co-avatar" id="co-Av-7" src="av7.png" style="top:85%;left:36%">
+			<img class="co-avatar" id="co-Av-8" src="av8.png" style="top:80%;left:66%">
+		</div>`;
+		$("body").append(this.venue.replace(/\t|\n|\r/g,""));
+		$("#co-grid").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 	// On mouse up
+		$("[id^=co-Av-]").on("mouseup", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); // On mouse up
+		$("#co-AvMe").draggable();
 	}
 
 	ReportPosition(x, y, id)
@@ -178,11 +204,11 @@ class App  {
 	{
 		$("#co-card").remove();
 		$("#co-chat").remove();																		// Close chat if open
-		let flip=false;
-		if (y < 340) y+=285,flip=true;
+		let flip=false, y2=y;
+		if (y < 340) flip=true,y2=y+285;
 
 		let o=this.people[id.substr(6)-1];
-		let str=`<div id='co-card' class='co-card' style='left:${x-140}px;top:${y-210}px'>
+		let str=`<div id='co-card' class='co-card' style='left:${x-140}px;top:${y2-210}px'>
 			<b style='font-size:24px'>${o.name}</b><br><br>
 			<b>${o.role}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
 			<p style="position:absolute;left:24px;bottom:0">`;
@@ -190,21 +216,25 @@ class App  {
 				<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
 			str+=`</p><button id="co-chatBut" style="position:absolute; left:225px; bottom:14px; cursor:pointer;
 				border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">
-				Chat now!</button> &nbsp;&nbsp; 
-			<div style="position:absolute;left:165px; top:${flip ? "-10" : "195"}px; width:0;height:0; 
+				Chat now!</button> &nbsp;&nbsp
+				<div style="position:absolute;left:165px; top:${flip ? "-10" : "195"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};
 				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-		$("#co-chatBut").on("click",()=>{ this.Chat(x,y,id)} )
+		$("#co-chatBut").on("click",()=>{ this.Chat(x,y,id,flip)} )
 	}
 
-	Chat(x, y, id)																				// CHAT CLIENT
+	Chat(x, y, id, flip)																				// CHAT CLIENT
 	{
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
-		let str=`<div id='co-chat' class='co-chat' style='left:${x-117}px;top:${y-382}px'>
+		$("#co-AvMe").animate({ left:x+4, top:y+68});													// Animate me there
+		this.ReportPosition(x/$("body").width(),x/$("body").height(),id.substr(3));					// Report my move
+		let y2=y;
+		if (flip) y2=y+519;
+		let str=`<div id='co-chat' class='co-chat' style='left:${x-118}px;top:${y2-382}px'>
 			<b>Chat with ${this.people[id.substr(6)-1].name}</b><hr>
 			<button id="co-videoBut" style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Video chat</button>&nbsp;&nbsp;
 			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Zoom</button>
@@ -213,17 +243,18 @@ class App  {
 				<input  id="revText" placeholder="Type here..." class='co-is' style='width:202px'>			
 				<img id='revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:5px;cursor:pointer'>
 				</div>	
-			<div style="position:absolute;left:144px; top:368px; width:0;height:0; 
-			border-style:solid; border-width: 14px 8px 0 8px;
-    		border-color: #fff transparent transparent transparent;"></div>
+			<div style="position:absolute;left:144px; top:${flip ? "-10" : "368"}px; width:0;height:0; 
+				${flip ? "transform: rotate(180deg)" : ""};
+				border-style:solid; border-width: 14px 8px 0 8px;
+    			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add chatbox
 
 		$("#revText").on("change",   function(e) { chatWith();	});									// On text enter
 		$("#revTextBut").on("click", function(e) { chatWith();	});									// On text button click
-		$("#co-videoBut").on("click", (e)=> { this.VideoChat(x,y,id)	});							// On text button click
+		$("#co-videoBut").on("click", (e)=> { this.VideoChat(x,y,id,flip)	});						// On text button click
 		$("#co-zoomBut").on("click", ()=>{															// On Zoom button click
-			let myWin=window.open(this.zoomLink,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
+			let myWin=window.open(this.people[this.myId].zoom,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			});
 
@@ -235,20 +266,21 @@ class App  {
 			}	
 		}
 	
-	VideoChat(x, y, id)																			// RUN WEB-RCT CHAT
+	VideoChat(x, y, id, flip)																			// RUN WEB-RCT CHAT
 	{
 		$("#co-chat").remove();																		// Remove old one
 		let w=$("body").width()*.4;																	// Width
 		let h=w*.5625;																				// Hgt by aspect
 		id="bferster"+Math.floor(Math.random()*10000+45);											// Random ID
 		let src=`https://appr.tc/r/${id}?hd=true`;
-		let str=`<div id='co-chat' class='co-video' style='left:${x-w/2+28}px;top:${y-h-46}px'>
+		let str=`<div id='co-chat' class='co-video' style='left:${x-w/2+28}px;top:${flip ? y+140 : y-h-46}px'>
 			<iframe id="co-chat" style="padding:8px;width:${w-16}px;height:${h+16}px;border:none;"
 			src="${src}" allow=camera;microphone;fullscreen frameborder="0" ></iframe>
-		<div style="position:absolute;left:${w/2-2}px; top:${h+32}px; width:0;height:0; 
-		border-style:solid; border-width: 14px 8px 0 8px;
-    	border-color: #fff transparent transparent transparent;"></div>
-		</div>`;
+			<div style="position:absolute;left:${w/2-2}px; top:${flip ? "-12" : h+32}px; width:0;height:0; 
+				${flip ? "transform: rotate(180deg)" : ""};
+				border-style:solid; border-width: 14px 8px 0 8px;
+    			border-color: #fff transparent transparent transparent;"></div>
+			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add video box
 	}
 	
