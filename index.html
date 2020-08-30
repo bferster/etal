@@ -217,24 +217,39 @@ class App  {
 		let i;
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-card").remove();																		// Close card if open
+		if (!this.queue.length)	return;																// Nothing to show
+		
 		let str=`<div id='co-card' class='co-qlist' style='left:${x-145}px;top:${y+49}px'>
 			<b style='font-size:18px'>Messages</b><hr><br>
 			<div style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 50px)">`;
 			for (i=0;i<this.queue.length;++i) {
-				str+=`<div style="vertical-align:top">
+				str+=`<div id="co-qv-${i}" style="vertical-align:top">
 				<div style="float:left;text-align:left;width:100%">
 					<img id="co-qi-${i}" style="float:left;width:40px;margin: -4px 8px 8px 4px" src="av${this.queue[i].id+1}.png">
 					<b>${this.people[this.queue[i].id].name}</b></br>
-					<i>${this.queue[i].msg}</i></div></div>`
+					<i>${this.queue[i].msg}</i>
+					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin-top:-8px"></div></div>`
 				}
 			str+="</div>"
 			str+=`<div style="position:absolute;left:165px; top:-10px; width:0;height:0; 
 				transform:rotate(180deg); border-style:solid; border-width: 14px 8px 0 8px;
-    			border-color: #fff transparent transparent transparent;"></div>
+    			border-color: #fff transparent transparent transparent"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
 	
-		$("[id^=co-qi-]").on("click",(e)=>{
+		$("[id^=co-qd-]").on("click",(e)=>{															// ON DELETE CLICK
+			let i=e.target.id.substr(6)-0;															// Get index
+			let targetId="co-Av-"+(i+1);															// Recreate id
+			$("#co-qv-"+i).remove();																// Kill it
+			this.queue.splice(i,1);																	// Remove it
+			Sound("delete");																		// Delete sound
+			if (this.queue.length) 	$("#co-queue").text(this.queue.length);							// Update count
+			else 		$("#co-queue").hide();														// Remove	
+			this.ShowQueue(x,y);																	// Reshow
+//			ReportChange("queue", id)
+			});
+
+		$("[id^=co-qi-]").on("click",(e)=>{															// ON AVATAR CLICK
 			let targetId="co-Av-"+(e.target.id.substr(6)-0+1);										// Recreate id
 			let x=$("#"+targetId).css("left").replace("px","")+35;									// Position directly over X
 			let y=$("#"+targetId).css("top").replace("px","")-4;									// Y
@@ -255,8 +270,6 @@ class App  {
 
 	ShowCard(x, y, id)
 	{
-		trace(x,y)
-		
 		$("#co-card").remove();
 		$("#co-chat").remove();																		// Close chat if open
 		y=y-0;
@@ -278,7 +291,6 @@ class App  {
 				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
-		trace(str)
 		$("body").append(str.replace(/\t|\n|\r/g,""));
 		$("#co-chatBut").on("click",()=>{ this.Chat(x,y,id,flip)} )
 	}
@@ -376,6 +388,17 @@ class App  {
 		else
 			console.log(msg);
 	}
+
+	function Sound(sound, mute)																		// PLAY SOUND
+	{
+		var snd=new Audio();																			// Init audio object
+		if (sound.match(/\.mp3/i))		snd=new Audio(sound)											// If an MP3 file
+		else							snd=new Audio("img/"+sound+".mp3");								// Use built in mp3
+		if (!mute)	{																					// If not initing or muting	
+			snd.volume=100/100;																			// Set volume
+			snd.play();																					// Play it
+			}
+		}
 
 	function trace2(msg, p1, p2, p3, p4)										// CONSOLE 
 	{
