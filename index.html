@@ -13,12 +13,13 @@
 <style>
 	:root 		{ 	--mobileOff:0px; }
 	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
-	
-	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 25vh 25vh 25vh 25vh; 
-					font-size: 30px; text-align:center; overflow:hidden; height:calc(100vh - var(--mobileOff));
+	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  
+					font-size: 30px; text-align:center; height:100%;
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000; }
+	.co-join	{	position:absolute;left:calc(50% - 30px); width:60px; top:calc(100% - 26px);cursor:pointer; font-size:14px; 
+					border:0px solid #fff; border-radius:12px; background-color:#2d6ab3; padding-bottom:1px; }
 	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa}
  	.co-me 		{	position:absolute;  cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; }
 	.co-queue 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000;
@@ -73,6 +74,7 @@ class App  {
 	constructor(projectId, myId)   																// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
+		this.scale=1;																				// Scale
 		this.projectId="";																			// Project id
 		this.myId=myId ? myId : 5;																	// My unique id
 		this.venue="";																				// Venue frame
@@ -90,12 +92,17 @@ class App  {
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		$("#co-card").remove();																		// Close card if open
 		$("#co-chat").remove();																		// Close chat if open
-		if (targetId.match(/co-Rm-/)) {																// In a room
+		let px=$("#co-main").offset();																// Offset of main div
+	
+		if (targetId.match(/co-Jo-/)) {																// Join a room
 			let link=this.rooms[targetId.substr(6)].zoom;											// Get zoom link
 			if (!link)	return;																		// Quit if no link set
 			let myWin=window.open(link,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			this.quiet=false;																		// Not in quiet mode
+			}
+		if (targetId.match(/co-Rm-/)) {																// In a room
+			return;																					// Quit
 			}
 		if (targetId == "co-search") {																// ON SEARCH BUTTON
 			return;																					// Quit
@@ -104,24 +111,26 @@ class App  {
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-Av-/)) {														// ON A PERSON
-			x=$("#"+targetId).css("left").replace("px","")-4;										// Position directly over X
-			y=$("#"+targetId).css("top").replace("px","")-4;										// Y
+			x=$("#"+targetId).css("left").replace("px","")-4+px.left;								// Position directly over X
+			y=$("#"+targetId).css("top").replace("px","")-4+px.top;									// Y
 			this.ShowCard(x,y,targetId);															// Show card
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
-			x=$("#co-quiet").offset().left-30+$("#co-quiet").width()/2;								// Center in area
-			y=$("body").height()-62;																// At bottom
+			let cp=$("#co-quiet").offset();
+			x=cp.left-30+$("#co-quiet").width()/2;													// Center x
+			y=cp.top-62;																			// On top
 			this.quiet=true;																		// In quite mode
 			this.ReportPosition(0,0,"quiet");														// Report
-				}
+			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
-			x=$("#co-coffee").offset().left-30+$("#co-quiet").width()/2;							// Center in area
-			y=$("body").height()-62;																// At bottom
+			let cp=$("#co-coffee").offset();
+			x=cp.left-30+$("#co-coffee").width()/2;											// Center x
+			y=cp.top-62;																		// On top
 			this.quiet=false;																		// Not in quiet mode
 			}
 		else this.quiet=false;																		// Not in quiet mode
-		$("#co-AvMe").animate({ left:x, top:y});													// Animate me there
+		$("#co-AvMe").animate({ left:x-0+px.left, top:y-0+px.top});									// Animate me there
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),targetId.substr(3));			// Report my move
 	}
 
@@ -133,6 +142,8 @@ class App  {
 	
 	Draw() 																						// REDRAW
 	{
+		$("#co-main").width($("body").width()*this.scale);											// Scale x
+		$("#co-main").height($("body").height()*this.scale);										// y
 	}
 
 
@@ -177,7 +188,7 @@ class App  {
 //			ReportChange("queue", id)
 			});
 
-		$("[id^=co-qi-]").on("click",(e)=>{															// ON AVATAR CLICK
+		$("[id^=co-qv-]").on("click",(e)=>{															// ON AVATAR CLICK
 			let id=e.target.id.substr(6)-0;															// Get id
 			let targetId="co-Av-"+this.queue[id].id;												// Recreate id
 			let x=$("#"+targetId).css("left").replace("px","")+35;									// Position directly over X
@@ -217,12 +228,12 @@ class App  {
 	{
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
-		$("#co-AvMe").animate({ left:x+4, top:y+68});													// Animate me there
-		this.ReportPosition(x/$("body").width(),x/$("body").height(),id.substr(3));					// Report my move
+		$("#co-AvMe").animate({ left:x+4, top:y+68});												// Animate me there
+		this.ReportPosition(x/$("body").width(),x/$("body").height(),id.substr(6));					// Report my move
 		let y2=y;
 		if (flip) y2=y+519;
 		let str=`<div id='co-chat' class='co-chat' style='left:${x-118}px;top:${y2-382}px'>
-			<b>Chat with ${this.people[id.substr(6)-1].name}</b><hr>
+			<b>Chat with ${this.people[id.substr(6)].name}</b><hr>
 			<button id="co-videoBut" style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Video chat</button>&nbsp;&nbsp;
 			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Zoom</button>
 			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:0 4px"></div>														
@@ -309,7 +320,7 @@ class App  {
 			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}
 			]; 
 
-		let hallway=`<table style="position:absolute;top:calc(100vh - 105px - var(--mobileOff));width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
+		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
 				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
 				<td style="text-align:center;width:33%">`;
 		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">&nbsp;&nbsp;`
@@ -338,15 +349,16 @@ class App  {
 				content:`` }
 			];
 
-		this.venue=`<div class="co-venue" id="co-grid">`;
+		this.venue=`<div id="co-top" style="overflow:hidden;height:100vh"><div id="co-main"><div class="co-venue" id="co-grid">`;
 		o=this.rooms[0];
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
 		${o.title}${o.content}</div>`;
 
 		for (i=1;i<this.rooms.length;++i) {														// For each room
 			o=this.rooms[i];																	// Point at it
-			this.venue+=`<div class="co-room" id="co-Rm-${i}" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
-			${o.title}${o.content}</div>`;
+			this.venue+=`<div class="co-room" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
+			<div id="co-Rm-${i}" style="position:relative;height:100%">
+			${o.title}${o.content}<div id="co-Jo-${i}" class="co-join">Join!</div></div></div>`;
 			}
 		this.venue+=`</div>
 			<img class="co-avatar" id="co-Av-0" src="av0.png" style="top:20%;left:35%">
@@ -355,17 +367,25 @@ class App  {
 			<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:70%;left:35%">
 			<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:60%;left:60%">
 			<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:55%;left:45%">
-			<img class="co-avatar" id="co-Av-6" src="av5.png" style="top:85%;left:36%">
+			<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:85%;left:36%">
 			<div class="co-me"     id="co-AvMe"><img src="avme.png"><div id="co-queue" class="co-queue"></div>
-		</div>`;
+		</div></div></div>`;
 	
 		$("body").append(this.venue.replace(/\t|\n|\r/g,""));									// Create venue
 		$("#co-AvMe").draggable();																// Make me draggable
-	
+		$("#co-main").draggable({ revert: true });												// Make screen draggable
+		$("#co-main").on("wheel", (e)=>{														// ON SCROLL WHEEL
+			if (e.originalEvent.deltaY < 0)	this.scale=Math.min(4,this.scale+.5);				// Scale up
+			else 							this.scale=Math.max(1,this.scale-.5);				// Scale down
+			if (this.scale == 1)			$("#co-main").css({ top:0,left:0 }); 				// Align
+			this.Draw();																		// Redraw
+			});
+
 		$("#co-grid").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 				// ON GRID CLICK
 		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 			// ON PERSON CLICK
+		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 			// ON JOIN CLICK
 		$("[id^=co-Av-]").droppable({ drop: (e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
-		$("[id^=co-Rm-]").droppable({ drop: (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }} ); 	// ON DROP ON  ROOM
+		$("[id^=co-Jo-]").droppable({ drop: (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }} ); 	// ON DROP ON  ROOM
 		$("#co-AvMe").on("click", (e)=>{ 																	// ON ME CLICK
 			let x=$("#co-AvMe").css("left").replace("px","")-0+2;											// CX
 			let y=$("#co-AvMe").css("top").replace("px","")-0+10;											// Y
