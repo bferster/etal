@@ -125,85 +125,6 @@ class App  {
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),targetId.substr(3));			// Report my move
 	}
 
-	LoadProject(projectId)																			// LOAD PROJECT DATA
-	{
-		let i,o;
-		this.projectId=projectId;																	// Project id
-		this.people=[ 
-			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficult crimes, lemonade", org:"Drew Detective Agency", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"},
-			{ name:"You", role:"Guest", email:"8", ints:"", org:"", li:""}
-			]; 
-
-		let hallway=`<table style="position:absolute;top:calc(100vh - 105px - var(--mobileOff));width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
-				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
-				<td style="text-align:center;width:33%">`;
-		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">&nbsp;&nbsp;`
-		hallway+=`<img src="img/search.png" id="co-search" style="width:12.5%;cursor:pointer"></td>
-				<td style="text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png" style="width:50%"></td>
-				</tr></table>`;
-
-		this.rooms=[
-			{ zoom:"", title:"<img src='site.png'>", cs:2, ce:2, rs:1, re:5, content:hallway  },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3,
-				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
-				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
-				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
-				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3,
-				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4,
-				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1,
-				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2,
-				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3,
-				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4,
-				content:`` }
-			];
-
-		this.venue=`<div class="co-venue" id="co-grid">`;
-		o=this.rooms[0];
-		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
-		${o.title}${o.content}</div>`;
-
-		for (i=1;i<this.rooms.length;++i) {														// For each room
-			o=this.rooms[i];																	// Point at it
-			this.venue+=`<div class="co-room" id="co-Rm-${i}" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
-			${o.title}${o.content}</div>`;
-			}
-		this.venue+=`</div>
-			<img class="co-avatar" id="co-Av-0" src="av1.png" style="top:20%;left:35%">
-			<img class="co-avatar" id="co-Av-1" src="av2.png" style="top:80%;left:45%">
-			<img class="co-avatar" id="co-Av-2" src="av3.png" style="top:22%;left:65%">
-			<img class="co-avatar" id="co-Av-3" src="av4.png" style="top:70%;left:35%">
-			<img class="co-avatar" id="co-Av-4" src="av5.png" style="top:60%;left:60%">
-			<img class="co-avatar" id="co-Av-5" src="av6.png" style="top:55%;left:45%">
-			<img class="co-avatar" id="co-Av-6" src="av7.png" style="top:85%;left:36%">
-			<img class="co-avatar" id="co-Av-7" src="av8.png" style="top:80%;left:66%">
-			<div class="co-me"     id="co-AvMe"><img src="avme.png"><div id="co-queue" class="co-queue"></div>
-		</div>`;
-	
-		$("body").append(this.venue.replace(/\t|\n|\r/g,""));									// Create venue
-		$("#co-AvMe").draggable();																// Make me draggable
-	
-		$("#co-grid").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 				// ON GRID CLICK
-		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 			// ON PERSON CLICK
-		$("[id^=co-Av-]").droppable({ drop: (e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
-		$("[id^=co-Rm-]").droppable({ drop: (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }} ); 	// ON DROP ON  ROOM
-		$("#co-AvMe").on("click", (e)=>{ 																	// ON ME CLICK
-			let x=$("#co-AvMe").css("left").replace("px","")-0+2;											// CX
-			let y=$("#co-AvMe").css("top").replace("px","")-0+10;											// Y
-			this.ShowQueue(x,y)
-			}); 							
-	}
 
 	ReportPosition(x, y, id)
 	{
@@ -213,6 +134,11 @@ class App  {
 	Draw() 																						// REDRAW
 	{
 	}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CARDS
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	ShowQueue(x, y)																				// SHOW QUEUE DOT
 	{
@@ -230,7 +156,7 @@ class App  {
 					<img id="co-qi-${i}" style="float:left;width:40px;margin: -4px 8px 8px 4px" src="av${this.queue[i].id}.png">
 					<b>${this.people[this.queue[i].id].name}</b></br>
 					<i>${this.queue[i].msg}</i>
-					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin-top:-8px"></div></div>`
+					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
 				}
 			str+="</div>"
 			str+=`<div style="position:absolute;left:139px; top:-10px; width:0;height:0; 
@@ -364,6 +290,89 @@ class App  {
 		if (!isMobile)	$("#helpDiv").draggable();												// Make it draggable on desktop
 		$("#helpDiv").on("mousedown touchdown touchmove", (e)=> { e.stopPropagation() } );		// Don't move orbiter
 	}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DATA
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	LoadProject(projectId)																			// LOAD PROJECT DATA
+	{
+		let i,o;
+		this.projectId=projectId;																	// Project id
+		this.people=[ 
+			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficult crimes, lemonade", org:"Drew Detective Agency", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}
+			]; 
+
+		let hallway=`<table style="position:absolute;top:calc(100vh - 105px - var(--mobileOff));width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
+				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
+				<td style="text-align:center;width:33%">`;
+		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">&nbsp;&nbsp;`
+		hallway+=`<img src="img/search.png" id="co-search" style="width:12.5%;cursor:pointer"></td>
+				<td style="text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png" style="width:50%"></td>
+				</tr></table>`;
+
+		this.rooms=[
+			{ zoom:"", title:"<img src='site.png'>", cs:2, ce:2, rs:1, re:5, content:hallway  },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3,
+				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
+				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
+				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
+				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3,
+				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4,
+				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1,
+				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2,
+				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3,
+				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4,
+				content:`` }
+			];
+
+		this.venue=`<div class="co-venue" id="co-grid">`;
+		o=this.rooms[0];
+		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
+		${o.title}${o.content}</div>`;
+
+		for (i=1;i<this.rooms.length;++i) {														// For each room
+			o=this.rooms[i];																	// Point at it
+			this.venue+=`<div class="co-room" id="co-Rm-${i}" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
+			${o.title}${o.content}</div>`;
+			}
+		this.venue+=`</div>
+			<img class="co-avatar" id="co-Av-0" src="av0.png" style="top:20%;left:35%">
+			<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:80%;left:45%">
+			<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:22%;left:65%">
+			<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:70%;left:35%">
+			<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:60%;left:60%">
+			<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:55%;left:45%">
+			<img class="co-avatar" id="co-Av-6" src="av5.png" style="top:85%;left:36%">
+			<div class="co-me"     id="co-AvMe"><img src="avme.png"><div id="co-queue" class="co-queue"></div>
+		</div>`;
+	
+		$("body").append(this.venue.replace(/\t|\n|\r/g,""));									// Create venue
+		$("#co-AvMe").draggable();																// Make me draggable
+	
+		$("#co-grid").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 				// ON GRID CLICK
+		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 			// ON PERSON CLICK
+		$("[id^=co-Av-]").droppable({ drop: (e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
+		$("[id^=co-Rm-]").droppable({ drop: (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }} ); 	// ON DROP ON  ROOM
+		$("#co-AvMe").on("click", (e)=>{ 																	// ON ME CLICK
+			let x=$("#co-AvMe").css("left").replace("px","")-0+2;											// CX
+			let y=$("#co-AvMe").css("top").replace("px","")-0+10;											// Y
+			this.ShowQueue(x,y)
+			}); 							
+	}
+
 
 } // APP CLASS CLOSURE
 
