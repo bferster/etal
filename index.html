@@ -8,7 +8,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="lib/jquery.ui.touch-punch.min.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
-	<title>Connect</title>
+	<title>tè2té</title>
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px; }
@@ -60,6 +60,9 @@ var app=null;																						// Holds app
 		app=new App("demo", url);                                                    				// Alloc app
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
+				let i=Math.floor(Math.random()*app.people.length);									// Set queue number	
+				app.queue.push({ id:i, msg:"Got a minute to talk?" });
+				$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
 				}
 			});
 	});	
@@ -80,7 +83,7 @@ class App  {
 		this.people=[];																				// Holds attendees
 		this.rooms=[];																				// Holds rooms
 		this.schedule="{}";																			// Holds schedule
-		this.queque=[];																				// Contact queue
+		this.queue=[];																				// Contact queue
 		this.quiet-false;																			// Not in quiet mode
 		this.LoadProject(projectId);																// Load project																	
 		this.Draw();																				// Draw screen
@@ -115,8 +118,7 @@ class App  {
 			y=$("body").height()-62;																// At bottom
 			this.quiet=true;																		// In quite mode
 			this.ReportPosition(0,0,"quiet");														// Report
-			this.SetQueue(Math.floor(Math.random()*4));												// Set queue number	
-			}
+				}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			x=$("#co-coffee").offset().left-30+$("#co-quiet").width()/2;							// Center in area
 			y=$("body").height()-62;																// At bottom
@@ -132,16 +134,16 @@ class App  {
 		let i,o;
 		this.projectId=projectId;																	// Project id
 		this.people=[ 
-			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17",zoom:"https://virginia.zoom.us/j/5405927001"}, 
-			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin",zoom:"https://virginia.zoom.us/j/5405927001"}, 
-			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficult crimes, lemonade", org:"Drew Detective Agency", li:"",zoom:"https://virginia.zoom.us/j/5405927001"}, 
-			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:"",zoom:"https://virginia.zoom.us/j/5405927001"}, 
-			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519",zoom:"https://virginia.zoom.us/j/5405927001"}, 
-			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster",zoom:"https://virginia.zoom.us/j/5405927001"}, 
-			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://virginia.zoom.us/j/5405927001"},
+			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficult crimes, lemonade", org:"Drew Detective Agency", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
+			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"},
 			{ name:"You", role:"Guest", email:"8", ints:"", org:"", li:""}
 			]; 
-		
+
 		let hallway=`<table style="position:absolute;top:calc(100vh - 105px - var(--mobileOff));width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
 				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
 				<td style="text-align:center;width:33%">`;
@@ -152,22 +154,22 @@ class App  {
 
 		this.rooms=[
 			{ zoom:"", title:"<img src='site.png'>", cs:2, ce:2, rs:1, re:5, content:hallway  },
-			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Main room", cs:1, ce:1, rs:1, re:3,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3,
 				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room A", cs:1, ce:1, rs:3, re:3,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3,
 				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room B", cs:1, ce:1, rs:4, re:4,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4,
 				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room C", cs:3, ce:3, rs:1, re:1,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1,
 				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room D", cs:3, ce:3, rs:2, re:2,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2,
 				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
-			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room E", cs:3, ce:3, rs:3, re:3,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3,
 				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
-			{ zoom:"https://virginia.zoom.us/j/93980936476?pwd=SzEvMjdVUDFHbEJ3QlJIVFgvaE4vZz09", title:"Room F", cs:3, ce:3, rs:4, re:4,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4,
 				content:`` }
 			];
 
@@ -200,7 +202,7 @@ class App  {
 		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable({ drop: (e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
 		$("[id^=co-Rm-]").droppable({ drop: (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }} ); 	// ON DROP ON  ROOM
-		$("#co-queue").on("click", (e)=>{ this.ShowQueue(e.pageX-30,e.pageY-30) }); 						// ON QUEUE CLICK
+		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue(e.pageX-30,e.pageY-30) }); 							// ON QUEUE CLICK
 	}
 
 	ReportPosition(x, y, id)
@@ -255,17 +257,6 @@ class App  {
 			let y=$("#"+targetId).css("top").replace("px","")-4;									// Y
 			this.ShowCard(x,y,targetId);															// Show card
 			});
-	}
-
-	SetQueue(num)																				// SHOW QUEUE DOT
-	{
-		this.queue=[];
-		for (let i=0;i<num;++i) this.queue.push({ id:i, msg:"Got a minute to talk?" });
-		if (num) {
-			$("#co-queue").text(num);
-			$("#co-queue").show()	
-			}
-		else $("#co-queue").hide()	
 	}
 
 	ShowCard(x, y, id)
@@ -335,13 +326,14 @@ class App  {
 			}	
 		}
 	
-	VideoChat(x, y, id, flip)																			// RUN WEB-RCT CHAT
+	VideoChat(x, y, id, flip)																	// RUN WEB-RCT CHAT
 	{
 		$("#co-chat").remove();																		// Remove old one
 		let w=$("body").width()*.4;																	// Width
 		let h=w*.5625;																				// Hgt by aspect
 		id="bferster"+Math.floor(Math.random()*10000+45);											// Random ID
 		let src=`https://appr.tc/r/${id}?hd=true`;
+//		src="https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"		
 		let str=`<div id='co-chat' class='co-video' style='left:${x-w/2+28}px;top:${flip ? y+140 : y-h-46}px'>
 			<iframe id="co-chat" style="padding:8px;width:${w-16}px;height:${h+16}px;border:none;"
 			src="${src}" allow=camera;microphone;fullscreen frameborder="0" ></iframe>
@@ -350,6 +342,7 @@ class App  {
 				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
+
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add video box
 	}
 	
