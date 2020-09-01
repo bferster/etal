@@ -60,7 +60,7 @@ var app=null;																						// Holds app
 		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","100px");			// Set CSS var
 		var url=window.location.search.substring(1);						   						// Get query string
 		app=new App("demo", url);                                                    				// Alloc app
-		if (window.location.host != "!localhost")  {													// Not in debug 
+		if (window.location.host != "localhost")  {													// Not in debug 
 			$("#splashDiv").fadeIn().delay(3000).fadeOut();											// Fade out splash
 			$("#co-top").delay(3400).animate({opacity:1},1000);										// Wait, and fade in main
 			}	
@@ -71,6 +71,7 @@ var app=null;																						// Holds app
 				let i=Math.floor(Math.random()*app.people.length);									// Set queue number	
 				app.queue.push({ id:i, msg:"Got a minute to talk?" });
 				$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
+				Sound("ding");																		// Ring the bell
 				}
 			});
 	});	
@@ -96,13 +97,35 @@ class App  {
 		this.quiet-false;																			// Not in quiet mode
 		this.LoadProject(projectId);																// Load project																	
 		this.Draw();																				// Draw screen
+	
+		this.n=1;
+		setInterval(()=>{
+			let i=Math.floor(Math.random()*app.people.length);										// Random person
+			let x=Math.floor(Math.random()*70)+26;													// Random x 
+			let y=Math.floor(Math.random()*80)+10;													// Random y 
+			$("#co-Av-"+i).animate({ left:x+"%", top:y+"%"});										// Animate them there
+			++this.n;
+			if (!(this.n%6)) {
+				$("#co-queue").show();
+				this.queue.push({ id:i, msg:"Got a minute to talk?" });
+				$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
+				if (app.quiet)	return;
+				$("#co-Av-"+i).animate({ left:$("#co-AvMe").css("left"), top:$("#co-AvMe").css("top").replace("px","")-0+62+"px"}
+				,400,()=>{
+					app.queue.push({ id:i, msg:"Got a minute to talk?" });
+						Sound("ding");																	// Ring the bell
+					});
+				}																	// Ring the bell
+			},5000);
 		}	
-			
+
+
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		$("#co-card").remove();																		// Close card if open
 		$("#co-chat").remove();																		// Close chat if open
+		$("#co-sched").remove();																		// Remove old one
 		let px=$("#co-main").offset();																// Offset of main div
 	
 		if (targetId.match(/co-Jo-/)) {																// Join a room
@@ -118,7 +141,8 @@ class App  {
 		if (targetId == "co-search") {																// ON SEARCH BUTTON
 			return;																					// Quit
 			}
-		if (targetId == "co-schedule") {															// ON SCEDULE BUTTON
+		if (targetId == "co-schedule") {															// ON SCHEDULE BUTTON
+			this.ShowSchedule();																	// Show schedule
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-Av-/)) {														// ON A PERSON
@@ -168,6 +192,7 @@ class App  {
 		let i;
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-card").remove();																		// Close card if open
+		$("#co-sched").remove();																		// Remove old one
 		if (!this.queue.length)	return;																// Nothing to show
 		
 		let str=`<div id='co-card' class='co-qlist' style='left:${x-119}px;top:${y+59}px'>
@@ -213,6 +238,7 @@ class App  {
 	{
 		$("#co-card").remove();
 		$("#co-chat").remove();																		// Close chat if open
+		$("#co-sched").remove();																		// Remove old one
 		y=y-0;
 		let flip=false, y2=y;
 		if (y < 340) flip=true,y2=y+283;															// Flip to bottom
@@ -240,6 +266,7 @@ class App  {
 	{
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
+		$("#co-sched").remove();																		// Remove old one
 		$("#co-AvMe").animate({ left:x+4, top:y+68});												// Animate me there
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),id.substr(6));					// Report my move
 		let y2=y;
@@ -292,8 +319,18 @@ class App  {
 		if (!isMobile)	$("#helpDiv").draggable();												// Make it draggable on desktop
 	}
 
-	ShowSchedule()
+	ShowSchedule()																			// SHOW EVENT SCHEDULE
 	{
+		$("#co-sched").remove(); 
+		let b=$("#co-schedule").offset();
+		let str=`<div id="co-sched" class="co-card"' style="top:12px; display:none;
+			left:${$("#co-hall").offset().left+12}px;
+			width:${$("#co-hall").width()-68}px; height:${b.top-80}px">
+			<b style="'font-size:30px">Event schedule</b><hr><br>
+				<br>Events listed here, along with button to add them to attendee's personal schedule.
+			</div>`;
+		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
+		$("#co-sched").show("slide",{ direction:"down" });										// Slide up
 	}
 
 
