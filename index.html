@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,8 +14,8 @@
 <style>
 	:root 		{ 	--mobileOff:0px; }
 	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
-	.co-splash 	{ 	width:100%; color:#999; text-align:center; margin-top:10%;  display:none;	}
-	.co-top		{	display:none; overflow:hidden; height:calc(100vh - var(--mobileOff)); }
+	.co-splash 	{ 	position:absolute;width:100%; color:#999; text-align:center; margin-top:15%;  display:none; }
+	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); }
 	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  
 					font-size: 30px; text-align:center; height:100%;
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
@@ -50,22 +51,22 @@
 <script>
 
 if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
-var app=null;																					// Holds app
+var app=null;																						// Holds app
 
-	$(window).resize(function() { if (app) app.Draw(); })                                      	// ON WINDOW RESIZE
+	$(window).resize(function() { if (app) app.Draw();	  })                                      // ON WINDOW RESIZE
 
 	$(document).ready(function() {								           						// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","100px");			// Set CSS var
 		var url=window.location.search.substring(1);						   						// Get query string
 		app=new App("demo", url);                                                    				// Alloc app
-		if (window.location.host != "loclhost")  {													// Not in debug 
-			$("#splashDiv").fadeIn().delay(2000).fadeOut();											// Fade out splash
-			$("#co-top").delay(3000).fadeIn(2000);													// Wait, and fade in main
+		if (window.location.host != "!localhost")  {													// Not in debug 
+			$("#splashDiv").fadeIn().delay(3000).fadeOut();											// Fade out splash
+			$("#co-top").delay(3400).animate({opacity:1},1000);										// Wait, and fade in main
 			}	
-		else 	$("#co-main").fadeIn(0);															// Load fast
+		else $("#co-top").css("opacity",1);															// Load fast
 
-		$(window).on("keydown",function(e) {													// HANDLE KEYPRESS
+		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
 				let i=Math.floor(Math.random()*app.people.length);									// Set queue number	
 				app.queue.push({ id:i, msg:"Got a minute to talk?" });
@@ -202,7 +203,7 @@ class App  {
 		$("[id^=co-qv-]").on("click",(e)=>{															// ON AVATAR CLICK
 			let id=e.target.id.substr(6)-0;															// Get id
 			let targetId="co-Av-"+this.queue[id].id;												// Recreate id
-			let x=$("#"+targetId).css("left").replace("px","")+35;									// Position directly over X
+			let x=$("#"+targetId).css("left").replace("px","")-4;									// Position directly over X
 			let y=$("#"+targetId).css("top").replace("px","")-4;									// Y
 			this.ShowCard(x,y,targetId);															// Show card
 			});
@@ -245,8 +246,7 @@ class App  {
 		if (flip) y2=y+519;
 		let str=`<div id='co-chat' class='co-chat' style='left:${x-118}px;top:${y2-382}px'>
 			<b>Chat with ${this.people[id.substr(6)].name}</b><hr>
-			<button id="co-videoBut" style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Video chat</button>&nbsp;&nbsp;
-			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">Zoom</button>
+			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Ask to video chat</button>
 			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:0 4px"></div>														
 			<div style="position:absolute;top:330px;left:24px">
 				<input  id="revText" placeholder="Type here..." class='co-is' style='width:202px'>			
@@ -261,10 +261,9 @@ class App  {
 
 		$("#revText").on("change",   function(e) { chatWith();	});									// On text enter
 		$("#revTextBut").on("click", function(e) { chatWith();	});									// On text button click
-		$("#co-videoBut").on("click", (e)=> { this.VideoChat(x,y,id,flip)	});						// On text button click
 		$("#co-zoomBut").on("click", ()=>{															// On Zoom button click
-			let myWin=window.open(this.people[this.myId].zoom,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
-			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
+			$("#co-textDiv").append("<div class='co-textS'>Want to video chat?</div>");				// Ask to video chat
+			$("#co-textDiv").scrollTop(10000);														// Scroll to bottom
 			});
 
 		function chatWith() {																		// TEXT CHATTING
@@ -274,26 +273,6 @@ class App  {
 			$("#revText").val("");																	// Clear input
 			}	
 		}
-	
-	VideoChat(x, y, id, flip)																	// RUN WEB-RCT CHAT
-	{
-		$("#co-chat").remove();																		// Remove old one
-		let w=$("body").width()*.4;																	// Width
-		let h=w*.5625;																				// Hgt by aspect
-		id="bferster"+Math.floor(Math.random()*10000+45);											// Random ID
-		let src=`https://appr.tc/r/${id}?hd=true`;
-//		src="https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"		
-		let str=`<div id='co-chat' class='co-video' style='left:${x-w/2+28}px;top:${flip ? y+140 : y-h-46}px'>
-			<iframe id="co-chat" style="padding:8px;width:${w-16}px;height:${h+16}px;border:none;"
-			src="${src}" allow=camera;microphone;fullscreen frameborder="0" ></iframe>
-			<div style="position:absolute;left:${w/2-2}px; top:${flip ? "-12" : h+32}px; width:0;height:0; 
-				${flip ? "transform: rotate(180deg)" : ""};
-				border-style:solid; border-width: 14px 8px 0 8px;
-    			border-color: #fff transparent transparent transparent;"></div>
-			</div>`;
-
-		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add video box
-	}
 	
 	ShowHelp() 																					// SHOW HELP
 	{
@@ -368,10 +347,10 @@ class App  {
 			];
 
 		this.venue=`<div id="splashDiv" class="co-splash">
-			<img src="img/t2logo.png" alt=""><br><br><br><br>
-			<br><p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
+			<img src="img/t2logo.png" alt="" style="width:33%"><br><br>
+			<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
 			</div>
-		<div class="co-top" id="co-top><div id="co-main"><div class="co-venue" id="co-grid">`;
+		<div id="co-top" class="co-top"><div id="co-main"><div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
 		${o.title}${o.content}</div>`;
