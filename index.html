@@ -111,12 +111,9 @@ class App  {
 				$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
 				if (app.quiet)	return;
 				$("#co-Av-"+i).animate({ left:$("#co-AvMe").css("left"), top:$("#co-AvMe").css("top").replace("px","")-0+62+"px"}
-				,400,()=>{
-					app.queue.push({ id:i, msg:"Got a minute to talk?" });
-						Sound("ding");																	// Ring the bell
-					});
-				}																	// Ring the bell
-			},5000);
+				,400,()=>{Sound("ding"); })															// Ring the bell
+				}																					// Ring the bell
+			},10000);
 		}	
 
 
