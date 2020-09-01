@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -13,6 +13,8 @@
 <style>
 	:root 		{ 	--mobileOff:0px; }
 	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
+	.co-splash 	{ 	width:100%; color:#999; text-align:center; margin-top:10%;  display:none;	}
+	.co-top		{	display:none; overflow:hidden; height:calc(100vh - var(--mobileOff)); }
 	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  
 					font-size: 30px; text-align:center; height:100%;
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
@@ -48,14 +50,22 @@
 <script>
 
 if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
-var app=null;																						// Holds app
+var app=null;																					// Holds app
+
+	$(window).resize(function() { if (app) app.Draw(); })                                      	// ON WINDOW RESIZE
 
 	$(document).ready(function() {								           						// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
-		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","70px");			// Set CSS var
+		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","100px");			// Set CSS var
 		var url=window.location.search.substring(1);						   						// Get query string
 		app=new App("demo", url);                                                    				// Alloc app
-		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
+		if (window.location.host != "loclhost")  {													// Not in debug 
+			$("#splashDiv").fadeIn().delay(2000).fadeOut();											// Fade out splash
+			$("#co-top").delay(3000).fadeIn(2000);													// Wait, and fade in main
+			}	
+		else 	$("#co-main").fadeIn(0);															// Load fast
+
+		$(window).on("keydown",function(e) {													// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
 				let i=Math.floor(Math.random()*app.people.length);									// Set queue number	
 				app.queue.push({ id:i, msg:"Got a minute to talk?" });
@@ -117,23 +127,20 @@ class App  {
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
-			let cp=$("#co-quiet").offset();
-			x=cp.left-30+$("#co-quiet").width()/2;													// Center x
-			y=cp.top-62;																			// On top
+			x=$("#co-hall").position().left-px.left+$("#co-quiet").width()/2-8;						// Center x
+			y=$("#co-hall").height()-100-px.top;													// On top
 			this.quiet=true;																		// In quite mode
 			this.ReportPosition(0,0,"quiet");														// Report
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
-			let cp=$("#co-coffee").offset();
-			x=cp.left-30+$("#co-coffee").width()/2;											// Center x
-			y=cp.top-62;																		// On top
+			x=$("#co-hall").position().left-px.left-$("#co-coffee").width()/2+$("#co-hall").width()-38;// Center x
+			y=$("#co-hall").height()-100-px.top;													// On top
 			this.quiet=false;																		// Not in quiet mode
 			}
 		else this.quiet=false;																		// Not in quiet mode
 		$("#co-AvMe").animate({ left:x-0+px.left, top:y-0+px.top});									// Animate me there
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),targetId.substr(3));			// Report my move
 	}
-
 
 	ReportPosition(x, y, id)
 	{
@@ -142,9 +149,13 @@ class App  {
 	
 	Draw() 																						// REDRAW
 	{
-		$("#co-main").width($("body").width()*this.scale);											// Scale x
-		$("#co-main").height($("body").height()*this.scale);										// y
-	}
+		let bx=$("body").width(), by=$("body").height();											// Body size
+		let x=bx*this.scale, y=by*this.scale;														// Max
+		$("#co-main").width(x);		$("#co-main").height(y);										// Scale div
+		$(("#co-main")).draggable("option", "containment", [ bx-x,by-y,0,0 ]);						// Set containment
+		let p=$("#co-main").offset();																// Get offset
+		$("#co-main").css({ left:Math.max(bx-x,p.left), top:Math.max(by-y,p.top) });				// Cap to max
+		}
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,6 +297,7 @@ class App  {
 	
 	ShowHelp() 																					// SHOW HELP
 	{
+		return;
 		if ($("#helpDiv").length) {																// If already up, bring it down
 			$("#helpDiv").hide("slide",{ direction:"down", complete: ()=>{ $("#helpDiv").remove(); } }); // Slide down
 			return;																				// Quit																					
@@ -299,9 +311,15 @@ class App  {
 		$("body").append(str);																	// Add to body
 		$("#helpDiv").show("slide",{ direction:"down" });										// Slide up
 		if (!isMobile)	$("#helpDiv").draggable();												// Make it draggable on desktop
-		$("#helpDiv").on("mousedown touchdown touchmove", (e)=> { e.stopPropagation() } );		// Don't move orbiter
 	}
 
+	ShowSchedule()
+	{
+	}
+
+
+
+//	http://academicexperts.org/conf/site/2019/sessions/?search_date=2019-03-19
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -349,7 +367,11 @@ class App  {
 				content:`` }
 			];
 
-		this.venue=`<div id="co-top" style="overflow:hidden;height:100vh"><div id="co-main"><div class="co-venue" id="co-grid">`;
+		this.venue=`<div id="splashDiv" class="co-splash">
+			<img src="img/t2logo.png" alt=""><br><br><br><br>
+			<br><p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
+			</div>
+		<div class="co-top" id="co-top><div id="co-main"><div class="co-venue" id="co-grid">`;
 		o=this.rooms[0];
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
 		${o.title}${o.content}</div>`;
@@ -369,26 +391,31 @@ class App  {
 			<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:55%;left:45%">
 			<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:85%;left:36%">
 			<div class="co-me"     id="co-AvMe"><img src="avme.png"><div id="co-queue" class="co-queue"></div>
-		</div></div></div>`;
-	
-		$("body").append(this.venue.replace(/\t|\n|\r/g,""));									// Create venue
+		</div>
+		<img src="img/help.png"    id="co-help"    style="position:fixed;width:22px;top:calc(100vh - 81px - var(--mobileOff));left:16px;cursor:pointer">
+		<img src="img/zoomin.png"  id="co-zoomIn"  style="position:fixed;width:22px;top:calc(100vh - 55px - var(--mobileOff));left:16px;cursor:pointer">
+		<img src="img/zoomout.png" id="co-zoomOut" style="position:fixed;width:22px;top:calc(100vh - 34px - var(--mobileOff));left:16px;cursor:pointer">
+		</div></div>
+		`;
+		$("body").html(this.venue.replace(/\t|\n|\r/g,""));										// Create venue
 		$("#co-AvMe").draggable();																// Make me draggable
-		$("#co-main").draggable({ revert: true });												// Make screen draggable
-		$("#co-main").on("wheel", (e)=>{														// ON SCROLL WHEEL
+		$("#co-main").draggable();																// Make screen draggable
+		$("body").on("wheel", (e)=>{															// ON SCROLL WHEEL
 			if (e.originalEvent.deltaY < 0)	this.scale=Math.min(4,this.scale+.5);				// Scale up
 			else 							this.scale=Math.max(1,this.scale-.5);				// Scale down
-			if (this.scale == 1)			$("#co-main").css({ top:0,left:0 }); 				// Align
 			this.Draw();																		// Redraw
 			});
-
-		$("#co-grid").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 				// ON GRID CLICK
-		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 			// ON PERSON CLICK
-		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 			// ON JOIN CLICK
-		$("[id^=co-Av-]").droppable({ drop: (e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
-		$("[id^=co-Jo-]").droppable({ drop: (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }} ); 	// ON DROP ON  ROOM
-		$("#co-AvMe").on("click", (e)=>{ 																	// ON ME CLICK
-			let x=$("#co-AvMe").css("left").replace("px","")-0+2;											// CX
-			let y=$("#co-AvMe").css("top").replace("px","")-0+10;											// Y
+		$("#co-help").on("click",     (e)=>{ this.ShowHelp(); }); 										// ON HELPN
+		$("#co-zoomIn").on("click",   (e)=>{ this.scale=Math.min(4,this.scale+.5); this.Draw(); }); 	// ON ZOOM IN
+		$("#co-zoomOut").on("click",  (e)=>{ this.scale=Math.max(1,this.scale-.5); this.Draw(); }); 	// ON ZOOM OUT
+		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
+		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON PERSON CLICK
+		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 		// ON JOIN CLICK
+		$("[id^=co-Av-]").droppable({ drop:(e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
+		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }}); // ON DROP ON  ROOM
+		$("#co-AvMe").on("click", (e)=>{ 																// ON ME CLICK
+			let x=$("#co-AvMe").css("left").replace("px","")-0+2;										// CX
+			let y=$("#co-AvMe").css("top").replace("px","")-0+10;										// Y
 			this.ShowQueue(x,y)
 			}); 							
 	}
