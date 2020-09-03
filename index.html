@@ -35,7 +35,7 @@
 	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
 	.co-textS 	{	background-color:#ddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
-	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%; float:right; color:#fff;	}
+	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%;  margin:5px 0; float:right; color:#fff;	}
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
 	.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
@@ -88,13 +88,18 @@ class App  {
 		app=this;																					// App global pointer
 		this.scale=1;																				// Scale
 		this.projectId="";																			// Project id
-		this.myId=myId ? myId : 5;																	// My unique id
+		this.myId=Math.floor(Math.random()*1000);													// My unique id
 		this.venue="";																				// Venue frame
 		this.people=[];																				// Holds attendees
 		this.rooms=[];																				// Holds rooms
 		this.schedule="{}";																			// Holds schedule
 		this.queue=[];																				// Contact queue
 		this.quiet-false;																			// Not in quiet mode
+		this.ws=new WebSocket('ws://localhost:8080');												// Open websocket											
+		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
+		this.ws.onopen=()=>    { console.log('connected'); };										// ON OPEN
+		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
+		this.ws.onerror=(e)=>  { console.log('failed to connect', e); };							// ON ERROR
 		this.LoadProject(projectId);																// Load project																	
 		this.Draw();																				// Draw screen
 	
@@ -116,6 +121,23 @@ class App  {
 			},10000);
 		}	
 
+	SocketIn(event)	
+	{
+		let id=event.data.match(/{(\d*)}/)[1];
+		if (id == this.myId)	return;																// No neeed to echo my message out
+		let msg=event.data.replace(/{\d*}/,"");														// Strip id out
+		if ($("#co-textDiv").length) {																// If chat window is open
+			$("#co-textDiv").append("<div class='co-textR'>"+msg+"</div><br>");						// Add message
+			$("#co-textDiv").scrollTop(10000);														// Scroll to bottom
+			}
+		else{
+			this.queue.push({ id:5, msg:msg });														// Add to queue
+			$("#co-queue").text(app.queue.length); 													// Reset queue dot length
+			$("#co-queue").show();																	// Show dor
+			}
+		Sound("ding");																			// Ring the bell
+		trace(id,msg)
+	}
 
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
@@ -259,11 +281,11 @@ class App  {
 		$("#co-chatBut").on("click",()=>{ this.Chat(x,y,id,flip)} )
 	}
 
-	Chat(x, y, id, flip)																				// CHAT CLIENT
+	Chat(x, y, id, flip)																		// CHAT CLIENT
 	{
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
-		$("#co-sched").remove();																		// Remove old one
+		$("#co-sched").remove();																	// Remove old one
 		$("#co-AvMe").animate({ left:x+4, top:y+68});												// Animate me there
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),id.substr(6));					// Report my move
 		let y2=y;
@@ -292,8 +314,11 @@ class App  {
 
 		function chatWith() {																		// TEXT CHATTING
 			var s=$("#revText").val();																// Get text
-			if (s)	$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");					// Add to display iif comething there
-			$("#co-textDiv").scrollTop(10000);														// Scroll to bottom
+			if (s) {																				// If something there
+				$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");						// Add to display 
+				if (app.ws)	app.ws.send("{"+app.myId+"}"+s);										// Send message
+				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
+				}
 			$("#revText").val("");																	// Clear input
 			}	
 		}
