@@ -94,7 +94,7 @@ class App  {
 		this.schedule="{}";																			// Holds schedule
 		this.queue=[];																				// Contact queue
 		this.quiet-false;																			// Not in quiet mode
-		this.ws=new WebSocket('ws://localhost:8080');												// Open websocket											
+		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onopen=()=>    { console.log('connected'); };										// ON OPEN
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
@@ -354,9 +354,6 @@ class App  {
 		$("#co-sched").show("slide",{ direction:"down" });										// Slide up
 	}
 
-
-
-//	http://academicexperts.org/conf/site/2019/sessions/?search_date=2019-03-19
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -375,9 +372,7 @@ class App  {
 			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}
 			]; 
 			
-		$.ajax( { url: "localhost:8001/"+meetingId+"/people", dataType: 'json' } ).done((res)=> {									// Get children
-			trace(res);																			// Return dats																					
-			}).fail((msg)=> { console.log(msg); });													// Failure message
+		$.ajax({ url:"//"+window.location.host+":8001/"+meetingId+"/people/", dataType:'jsonp', }).fail((msg)=> { console.log(msg); });													// Failure message
 
 		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
 				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
@@ -466,7 +461,9 @@ class App  {
 
 // HELPERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
-	function trace(msg, p1, p2, p3, p4)										// CONSOLE 
+function PEOPLE(d) { trace(d) }
+
+function trace(msg, p1, p2, p3, p4)										// CONSOLE 
 	{
 		if (p4 != undefined)
 			console.log(msg,p1,p2,p3,p4);

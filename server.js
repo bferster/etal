@@ -29,12 +29,13 @@
 		
 	const server=http.createServer((req, res)=>{
 		let v=req.url.split("/")
+		trace(v,req.url)
 		if (v[2] == "people") {
 			let f="./meetings/"+v[1]+"-"+v[2]+".csv";
 				fs.readFile(f, "utf8", (err, data)=>{
 				if (err) {	return console.log(err);  }
 				res.writeHead(200, {'Content-Type': 'text/html'});
-				res.write("people("+JSON.stringify(ParseCSV(data))+")");
+				res.write("PEOPLE("+JSON.stringify(ParseCSV(data))+")");
 				res.end();
 				});
 			}
