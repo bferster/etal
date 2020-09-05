@@ -220,7 +220,7 @@ class App  {
 				str+=`<div id="co-qv-${i}" style="vertical-align:top">
 				<div style="float:left;text-align:left;width:100%">
 					<img id="co-qi-${i}" style="float:left;width:40px;margin: -4px 8px 8px 4px" src="av${this.queue[i].id}.png">
-					<b>${this.people[this.queue[i].id].name}</b></br>
+					<b>${this.people[this.queue[i].id].firstName} ${this.people[this.queue[i].id].lastName}</b></br>
 					<i>${this.queue[i].msg}</i>
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
 				}
@@ -262,9 +262,10 @@ class App  {
 		if (y < 340) flip=true,y2=y+283;															// Flip to bottom
 
 		let o=this.people[id.substr(6)-0];															// Point at person
+		trace(o)
 		let str=`<div id='co-card' class='co-card' style='left:${x-140}px;top:${y2-208}px'>
-			<b style='font-size:24px'>${o.name}</b><br><br>
-			<b>${o.role}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
+			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b><br><br>
+			<b>${o.title}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
 			<p style="position:absolute;left:24px;bottom:0">`;
 			if (o.li) str+=`<a href="https://linkedin.com/in/${o.li}" target="_blank">
 				<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
@@ -360,19 +361,20 @@ class App  {
 	
 	LoadProject(meetingId)																			// LOAD PROJECT DATA
 	{
-		let i,o;
+		let i,j,o,row,n;
 		this.meetingId=meetingId;																	// Project id
-		this.people=[ 
-			{ name:"Kendra Grinnage", role:"Manager", email:"1", ints:"Machine learning, dogs", org:"Kennedy & Company", li:"kendra-grinnage-13062b17",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Mark Schubin", role:"Engineer and explainer", email:"2", ints:"Video, technology", org:"Schubin Cafe", li:"mark-schubin",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Nancy Drew", role:"Detective", email:"3", ints:"Difficult crimes, lemonade", org:"Drew Detective Agency", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Johnny Quest", role:"Adventurer", email:"4", ints:"India, helpful people", org:"Warner Brothers", li:"",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Nathaniel Grove", role:"Research scientist", email:"5", ints:"Tibet, technology", org:"University of Virginia", li:"than-grove-61a29519",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Bill Ferster", role:"Founder", email:"6", ints:"Technology, education, farm-work", org:"StageTools", li:"bferster",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}, 
-			{ name:"Robert Berry", role:"Professor", email:"7", ints:"Mathematics, technology, education", org:"University of Virginia", li:"robert-berry-23511712",zoom:"https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09"}
-			]; 
-			
-		$.ajax({ url:"//"+window.location.host+":8001/"+meetingId+"/people/", dataType:'jsonp', }).fail((msg)=> { console.log(msg); });													// Failure message
+		this.people=[];
+		$.ajax({ url:"meetings/"+meetingId+"-people.csv", dataType:'text', error:(e)=>{ trace("Error",e)} }).done((data)=>{
+			data=ParseCSV(data)
+			n=data[0].length;
+			for (i=1;i<data.length;++i) {
+				row=data[i];
+				o={};
+				for (j=0;j<n;++j)	o[data[0][j]]=data[i][j]
+				this.people[i]=o;
+				}
+				
+			});
 
 		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
 				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
@@ -456,14 +458,31 @@ class App  {
 			}); 							
 	}
 
-
 } // APP CLASS CLOSURE
 
 // HELPERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
-function PEOPLE(d) { trace(d) }
+	function ParseCSV(str) {															// PARSE CSV TO NESTED ARRAYS
+		var arr=[];
+		var quote=false;  																	// True means we're inside a quoted field
+		str=str.replace(/\\r\\n/g,"\n");													// Convert \r\n -> \n
+		str=str.replace(/\\n\\r/g,"\n");													// Convert \n\r -> \n
+		for (var row=col=c=0;c < str.length;c++) {   										// Iterate over each character, keep track of current row and column (of the returned array)
+			var cc=str[c],nc=str[c+1];        												// Current character, next character
+			arr[row]=arr[row] || [];             											// Create a new row if necessary
+			arr[row][col]= arr[row][col] || '';   											// Create a new column (start with empty string) if necessary
+			if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; } 	// If the cur char is ", and we're inside a quoted field, and the next char is also a ", add a " to the current column and skip the next character
+			if (cc == '"') { quote = !quote; continue; }        							// If it's just one quotation mark, begin/end quoted field
+			if (cc == ',' && !quote) { ++col; continue; }      								// If it's a comma and we're not in a quoted field, move on to the next column
+			if (cc == '\n' && !quote) { ++row; col = 0; continue; }     					// If it's a newline and we're not in a quoted field, move on to the next row and move to column 0 of that new row
+			arr[row][col] += cc;        													// Otherwise, append the current character to the current column
+			}
+		return arr;																			// Return nested arrays
+		}
 
-function trace(msg, p1, p2, p3, p4)										// CONSOLE 
+
+
+	function trace(msg, p1, p2, p3, p4)										// CONSOLE 
 	{
 		if (p4 != undefined)
 			console.log(msg,p1,p2,p3,p4);
