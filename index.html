@@ -256,13 +256,12 @@ class App  {
 	{
 		$("#co-card").remove();
 		$("#co-chat").remove();																		// Close chat if open
-		$("#co-sched").remove();																		// Remove old one
+		$("#co-sched").remove();																	// Remove old one
 		y=y-0;
 		let flip=false, y2=y;
 		if (y < 340) flip=true,y2=y+283;															// Flip to bottom
 
 		let o=this.people[id.substr(6)-0];															// Point at person
-		trace(o)
 		let str=`<div id='co-card' class='co-card' style='left:${x-140}px;top:${y2-208}px'>
 			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b><br><br>
 			<b>${o.title}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
