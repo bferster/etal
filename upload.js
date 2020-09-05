@@ -19,7 +19,6 @@
 
 // HELPERS
 
-	
 	function trace(msg, p1, p2, p3, p4)									
 	{
 		if (p4 != undefined)
