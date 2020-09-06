@@ -139,6 +139,12 @@ class App  {
 				}
 			Sound("ding");																			// Ring the bell
 			}
+		else if (v[0] == "L")	{
+			let px=$("#co-main").offset();															// Offset of main div
+			let x=v[2]/100*$("#co-main").width()-0+px.left;											// Calc x from %
+			let y=v[3]/100*$("#co-main").height()-0+px.top;											// Y
+			$("#co-Av-"+v[1].split("~")[1]).animate({ left:x+"px", top:y+"px"});					// Animate icon there
+			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 	}
 	
@@ -177,7 +183,6 @@ class App  {
 			x=$("#co-hall").position().left-px.left+$("#co-quiet").width()/2-8;						// Center x
 			y=$("#co-hall").height()-100-px.top;													// On top
 			this.quiet=true;																		// In quite mode
-			this.ReportPosition(0,0,"quiet");														// Report
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			x=$("#co-hall").position().left-px.left-$("#co-coffee").width()/2+$("#co-hall").width()-38;// Center x
@@ -186,12 +191,14 @@ class App  {
 			}
 		else this.quiet=false;																		// Not in quiet mode
 		$("#co-AvMe").animate({ left:x-0+px.left, top:y-0+px.top});									// Animate me there
-		this.ReportPosition(x/$("body").width(),x/$("body").height(),targetId.substr(3));			// Report my move
+		this.ReportLocation(x/$("body").width(),y/$("body").height());								// Report my move
 	}
 
-	ReportPosition(x, y, id)
+	ReportLocation(x, y)
 	{
-//		trace(x, y,id)
+		x=(x*100).toFixed(2);																		// Scale x 0-100
+		y=(y*100).toFixed(2);																		// y
+		if (app.ws)	app.ws.send(`L|${app.meetingId}~${app.myId}|${x}|${y}|${this.quiet}`); 			// Send Location message
 	}
 	
 	Draw() 																						// REDRAW
@@ -290,7 +297,7 @@ class App  {
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
 		$("#co-AvMe").animate({ left:x+4, top:y+68});												// Animate me there
-		this.ReportPosition(x/$("body").width(),x/$("body").height(),id.substr(6));					// Report my move
+		this.ReportLocation(x/$("body").width(),y/$("body").height());								// Report my move
 		let y2=y;
 		id=id.substr(6);																			// Just the number
 		if (flip) y2=y+519;
@@ -379,12 +386,12 @@ class App  {
 		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable({ drop:(e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
 		$("#co-AvMe").draggable();																		// Make me draggable
+		$("#co-Av-"+this.myId).hide();																	// Hide my own
 		$("#co-AvMe").on("click", (e)=>{ 																// ON ME CLICK
 			let x=$("#co-AvMe").css("left").replace("px","")-0+2;										// CX
 			let y=$("#co-AvMe").css("top").replace("px","")-0+10;										// Y
 			this.ShowQueue(x,y);																		// Show my message queue
 			}); 							
-
 	}
 
 	LoadProject(meetingId)																			// LOAD PROJECT DATA
@@ -452,7 +459,6 @@ class App  {
 		$("#co-zoomOut").on("click",  (e)=>{ this.scale=Math.max(1,this.scale-.5); this.Draw(); }); 	// ON ZOOM OUT
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
 		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 		// ON JOIN CLICK
-		$("[id^=co-Av-]").droppable({ drop:(e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
 		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }}); // ON DROP ON  ROOM
 	}
 

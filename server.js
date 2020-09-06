@@ -18,10 +18,12 @@
 			let v=message.split("|");
 			if (!webSocket.myId) 	webSocket.myId=v[1];
 			if (v[0] == "C") 		Chat(v[1],v[2],v[3]);
+			else if (v[0] == "L") 	Location(v[1],v[2],v[3]);
 			else if (v[0] == "B") 	Broadcast(v[1],v[2]);
 			else if (v[0] == "P") 	SendPeople(v[1],v[2]);
 			});
 		});
+
 
 	function Broadcast(id, msg)
 	{
@@ -38,18 +40,17 @@
 				if (client.readyState === WebSocket.OPEN) 
 					client.send(data);
 			});
-		}
+	}
 	
 	function Chat(fromId,toId, msg) 
 	{
 		let str="C|"+toId+"|"+fromId+"|"+msg;
-		trace(fromId, toId, msg) 
 		webSocketServer.clients.forEach((client) => {
 			if (client.myId == toId)
 				if (client.readyState === WebSocket.OPEN) 
 					client.send(str);
 			});
-		}
+	}
 	
 	function SendPeople(id)	
 	{
@@ -58,7 +59,15 @@
 			if (err) 	{ console.error("Unable to read data: ", JSON.stringify(err, null, 2)); }
 			else 		{ console.log("People sent to "+id); Send(id,"P|"+JSON.stringify(data.Items)); };
 		});
-	
+	}
+
+	function Location(id, x, y)
+	{
+		let str="L|"+id+"|"+x+"|"+y;
+		webSocketServer.clients.forEach((client) => {
+			if (client.readyState === WebSocket.OPEN) 
+					client.send(str);
+			});
 	}
 
 
