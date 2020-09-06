@@ -4,9 +4,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="lib/jquery.ui.touch-punch.min.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
 	<title>tè2té</title>
@@ -50,16 +50,16 @@
 
 <script>
 
-if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
+//if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 var app=null;																						// Holds app
 
 	$(window).resize(function() { if (app) app.Draw();	  })                                      // ON WINDOW RESIZE
 
-	$(document).ready(function() {								           						// ON PAGE LOADED
+	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","100px");			// Set CSS var
 		var url=window.location.search.substring(1);						   						// Get query string
-		app=new App("meeting1", url);                                                    			// Alloc app
+		app=new App("1", url ? url : 0);                                                    		// Alloc app
 		if (window.location.host != "localhost")  {													// Not in debug 
 			$("#splashDiv").fadeIn().delay(3000).fadeOut();											// Fade out splash
 			$("#co-top").delay(3400).animate({opacity:1},1000);										// Wait, and fade in main
@@ -86,8 +86,8 @@ class App  {
 	{
 		app=this;																					// App global pointer
 		this.scale=1;																				// Scale
-		this.meetingId="";																			// Meeting id
-		this.myId=Math.floor(Math.random()*1000);													// My unique id
+		this.meetingId=meetingId;																	// Meeting id
+		this.myId=myId;																				// My unique id
 		this.venue="";																				// Venue frame
 		this.people=[];																				// Holds attendees
 		this.rooms=[];																				// Holds rooms
@@ -96,10 +96,13 @@ class App  {
 		this.quiet-false;																			// Not in quiet mode
 		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
-		this.ws.onopen=()=>    { console.log('connected'); };										// ON OPEN
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
 		this.ws.onerror=(e)=>  { console.log('failed to connect', e); };							// ON ERROR
-		this.LoadProject(meetingId);																// Load project																	
+		this.ws.onopen=()=> { 																		// ON OPEN
+			console.log('connected');  
+			app.ws.send(`P|${app.meetingId}~${app.myId}`);											// Request people data	
+			};				
+		this.LoadProject(meetingId);		
 		this.Draw();																				// Draw screen
 	
 		this.n=1;
@@ -120,24 +123,25 @@ class App  {
 			},10000);
 		}	
 
-	SocketIn(event)	
+	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
-		let id=event.data.match(/{(\d*)}/)[1];
-		if (id == this.myId)	return;																// No neeed to echo my message out
-		let msg=event.data.replace(/{\d*}/,"");														// Strip id out
-		if ($("#co-textDiv").length) {																// If chat window is open
-			$("#co-textDiv").append("<div class='co-textR'>"+msg+"</div><br>");						// Add message
-			$("#co-textDiv").scrollTop(10000);														// Scroll to bottom
+		let msg=event.data;																			// Get message
+		let v=event.data.split("|");																// Split message
+		if (v[0] == "C") {																			// If chat
+			if ($("#co-textDiv").length) {															// If chat window is open
+				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
+				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
+				}
+			else{
+				this.queue.push({ id:v[2].split("~")[1], msg:v[3] });								// Add to queue
+				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
+				$("#co-queue").show();																// Show dot
+				}
+			Sound("ding");																			// Ring the bell
 			}
-		else{
-			this.queue.push({ id:5, msg:msg });														// Add to queue
-			$("#co-queue").text(app.queue.length); 													// Reset queue dot length
-			$("#co-queue").show();																	// Show dor
-			}
-		Sound("ding");																			// Ring the bell
-		trace(id,msg)
+		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 	}
-
+	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
@@ -288,9 +292,10 @@ class App  {
 		$("#co-AvMe").animate({ left:x+4, top:y+68});												// Animate me there
 		this.ReportPosition(x/$("body").width(),x/$("body").height(),id.substr(6));					// Report my move
 		let y2=y;
+		id=id.substr(6);																			// Just the number
 		if (flip) y2=y+519;
-		let str=`<div id='co-chat' class='co-chat' style='left:${x-118}px;top:${y2-382}px'>
-			<b>Chat with ${this.people[id.substr(6)].name}</b><hr>
+			let str=`<div id='co-chat' class='co-chat' style='left:${x-118}px;top:${y2-382}px'>
+			<b>Chat with ${this.people[id].firstName}</b><hr>
 			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Ask to video chat</button>
 			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:0 4px"></div>														
 			<div style="position:absolute;top:330px;left:24px">
@@ -315,7 +320,7 @@ class App  {
 			var s=$("#revText").val();																// Get text
 			if (s) {																				// If something there
 				$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");						// Add to display 
-				if (app.ws)	app.ws.send("{"+app.myId+"}"+s);										// Send message
+				if (app.ws)	app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|${s}`);	// Send chat message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
 			$("#revText").val("");																	// Clear input
@@ -358,24 +363,35 @@ class App  {
 // DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
+	AddPeople(people)																				// ADD PEOPLE TO MEETING
+	{
+		let i,o,str="";
+		this.people=people;																				// Set data
+		people.sort((a, b) => (a.id > b.id) ? 1 : -1);													// Sort by id
+		for (i=0;i<people.length;++i) {																	// For each person
+			o=people[i];																				// Point at them
+			let id=o.id.split("~")[1];																	// Split id out
+			str+=`<img class="co-avatar" id="co-Av-${id}" src="${o.pic}" style="top:${o.x}%;left:${o.y}%">`;	// Add icon
+			}
+		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png"><div id="co-queue" class="co-queue"></div>`;	// Add me
+		$("body").append(str);																			// Add to body
+	
+		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON PERSON CLICK
+		$("[id^=co-Av-]").droppable({ drop:(e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
+		$("#co-AvMe").draggable();																		// Make me draggable
+		$("#co-AvMe").on("click", (e)=>{ 																// ON ME CLICK
+			let x=$("#co-AvMe").css("left").replace("px","")-0+2;										// CX
+			let y=$("#co-AvMe").css("top").replace("px","")-0+10;										// Y
+			this.ShowQueue(x,y);																		// Show my message queue
+			}); 							
+
+	}
+
 	LoadProject(meetingId)																			// LOAD PROJECT DATA
 	{
 		let i,j,o,row,n;
-		this.meetingId=meetingId;																	// Project id
-		this.people=[];
-		$.ajax({ url:"meetings/"+meetingId+"-people.csv", dataType:'text', error:(e)=>{ trace("Error",e)} }).done((data)=>{
-			data=ParseCSV(data)
-			n=data[0].length;
-			for (i=1;i<data.length;++i) {
-				row=data[i];
-				o={};
-				for (j=0;j<n;++j)	o[data[0][j]]=data[i][j]
-				this.people[i]=o;
-				}
-				
-			});
-
-		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50%;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
+		this.meetingId=meetingId;																		// Project id
+		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50vw;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
 				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
 				<td style="text-align:center;width:33%">`;
 		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">&nbsp;&nbsp;`
@@ -419,23 +435,12 @@ class App  {
 			<div id="co-Rm-${i}" style="position:relative;height:100%">
 			${o.title}${o.content}<div id="co-Jo-${i}" class="co-join">Join!</div></div></div>`;
 			}
-		this.venue+=`</div>
-			<img class="co-avatar" id="co-Av-0" src="av0.png" style="top:20%;left:35%">
-			<img class="co-avatar" id="co-Av-1" src="av1.png" style="top:80%;left:45%">
-			<img class="co-avatar" id="co-Av-2" src="av2.png" style="top:22%;left:65%">
-			<img class="co-avatar" id="co-Av-3" src="av3.png" style="top:70%;left:35%">
-			<img class="co-avatar" id="co-Av-4" src="av4.png" style="top:60%;left:60%">
-			<img class="co-avatar" id="co-Av-5" src="av5.png" style="top:55%;left:45%">
-			<img class="co-avatar" id="co-Av-6" src="av6.png" style="top:85%;left:36%">
-			<div class="co-me"     id="co-AvMe"><img src="avme.png"><div id="co-queue" class="co-queue"></div>
-		</div>
+		this.venue+=`</div></div>
 		<img src="img/help.png"    id="co-help"    style="position:fixed;width:22px;top:calc(100vh - 81px - var(--mobileOff));left:16px;cursor:pointer">
 		<img src="img/zoomin.png"  id="co-zoomIn"  style="position:fixed;width:22px;top:calc(100vh - 55px - var(--mobileOff));left:16px;cursor:pointer">
 		<img src="img/zoomout.png" id="co-zoomOut" style="position:fixed;width:22px;top:calc(100vh - 34px - var(--mobileOff));left:16px;cursor:pointer">
-		</div></div>
-		`;
+		</div></div>`;
 		$("body").html(this.venue.replace(/\t|\n|\r/g,""));										// Create venue
-		$("#co-AvMe").draggable();																// Make me draggable
 		$("#co-main").draggable();																// Make screen draggable
 		$("body").on("wheel", (e)=>{															// ON SCROLL WHEEL
 			if (e.originalEvent.deltaY < 0)	this.scale=Math.min(4,this.scale+.5);				// Scale up
@@ -446,40 +451,14 @@ class App  {
 		$("#co-zoomIn").on("click",   (e)=>{ this.scale=Math.min(4,this.scale+.5); this.Draw(); }); 	// ON ZOOM IN
 		$("#co-zoomOut").on("click",  (e)=>{ this.scale=Math.max(1,this.scale-.5); this.Draw(); }); 	// ON ZOOM OUT
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
-		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON PERSON CLICK
 		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 		// ON JOIN CLICK
 		$("[id^=co-Av-]").droppable({ drop:(e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
 		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }}); // ON DROP ON  ROOM
-		$("#co-AvMe").on("click", (e)=>{ 																// ON ME CLICK
-			let x=$("#co-AvMe").css("left").replace("px","")-0+2;										// CX
-			let y=$("#co-AvMe").css("top").replace("px","")-0+10;										// Y
-			this.ShowQueue(x,y)
-			}); 							
 	}
 
 } // APP CLASS CLOSURE
 
 // HELPERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-
-	function ParseCSV(str) {															// PARSE CSV TO NESTED ARRAYS
-		var arr=[];
-		var quote=false;  																	// True means we're inside a quoted field
-		str=str.replace(/\\r\\n/g,"\n");													// Convert \r\n -> \n
-		str=str.replace(/\\n\\r/g,"\n");													// Convert \n\r -> \n
-		for (var row=col=c=0;c < str.length;c++) {   										// Iterate over each character, keep track of current row and column (of the returned array)
-			var cc=str[c],nc=str[c+1];        												// Current character, next character
-			arr[row]=arr[row] || [];             											// Create a new row if necessary
-			arr[row][col]= arr[row][col] || '';   											// Create a new column (start with empty string) if necessary
-			if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; } 	// If the cur char is ", and we're inside a quoted field, and the next char is also a ", add a " to the current column and skip the next character
-			if (cc == '"') { quote = !quote; continue; }        							// If it's just one quotation mark, begin/end quoted field
-			if (cc == ',' && !quote) { ++col; continue; }      								// If it's a comma and we're not in a quoted field, move on to the next column
-			if (cc == '\n' && !quote) { ++row; col = 0; continue; }     					// If it's a newline and we're not in a quoted field, move on to the next row and move to column 0 of that new row
-			arr[row][col] += cc;        													// Otherwise, append the current character to the current column
-			}
-		return arr;																			// Return nested arrays
-		}
-
-
 
 	function trace(msg, p1, p2, p3, p4)										// CONSOLE 
 	{
