@@ -18,7 +18,7 @@
 			let v=message.split("|");
 			if ((webSocket.myId == -1) && (v[0] != "P")) 	webSocket.myId=v[1];
 			if (v[0] == "C") 		Chat(v[1],v[2],v[3]);
-			else if (v[0] == "L") 	Location(v[1],v[2],v[3]);
+			else if (v[0] == "L") 	Location(v[1],v[2],v[3],v[4]);
 			else if (v[0] == "B") 	Broadcast(v[1],v[2]);
 			else if (v[0] == "P") 	SendPeople(v[1],webSocket);
 			});
@@ -56,14 +56,27 @@
 		});
 	}
 
-	function Location(id, x, y)
+	function Location(id, x, y, s)
 	{
 		let str="L|"+id+"|"+x+"|"+y;
 		webSocketServer.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) 
 					client.send(str);
-			});
+		Update(id, x, y, s)
+		});
 	}
+
+	function Update(id, x, y, s)
+	{
+		let params={ TableName:"people",  Key:{ "id":id },
+   		UpdateExpression:"set x=:x, y=:y, stats=:s", ExpressionAttributeValues:{ ":x":x, ":y":y, ":s": s } };
+		console.log("Updating the item...");
+		docClient.update(params, (err)=> {
+			if (err) console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+			else 	 console.log("UpdateItem succeeded");
+			});
+		}
+
 
 
 

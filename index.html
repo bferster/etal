@@ -103,7 +103,7 @@ var app=null;																						// Holds app
 				let i=Math.floor(Math.random()*app.people.length);									// Random person
 				let x=Math.floor(Math.random()*70)+26;												// Random x 
 				let y=Math.floor(Math.random()*80)+10;												// Random y 
-				if (app.ws)	app.ws.send(`L|${app.meetingId}~${i}|${x}|${y}|active`); 				// Send location message
+				if (app.ws)	app.ws.send(`L|${app.meetingId}~${i}|${x}|${y}|A`); 				// Send location message
 				++this.demoNum;
 				if (!(this.demoNum%6)) {
 					$("#co-queue").show();
@@ -141,10 +141,12 @@ class App  {
 		this.schedule="{}";																			// Holds schedule
 		this.queue=[];																				// Contact queue
 		this.quiet-false;																			// Not in quiet mode
+		this.coffeeZoom="https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09";
 		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
 		this.ws.onerror=(e)=>  { console.log('failed to connect', e); };							// ON ERROR
+
 		this.ws.onopen=()=> { 																		// ON OPEN
 			app.ws.send(`P|${app.meetingId}`);														// Request people data	
 			console.log('connected');  
@@ -245,19 +247,20 @@ class App  {
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			x=$("#co-hall").position().left-px.left-$("#co-coffee").width()/2+$("#co-hall").width()-38;// Center x
-			y=$("#co-hall").height()-100-px.top;													// On top
+			y=$("#co-hall").height()-60-px.top;														// On top
 			this.quiet=false;																		// Not in quiet mode
+			this.StartZoom(this.coffeeZoom);														// Go to the coffee bar zoom	
 			}
 		else this.quiet=false;																		// Not in quiet mode
 		$("#co-AvMe").animate({ left:x-0+px.left, top:y-0+px.top});									// Animate me there
 		this.ReportLocation(x/$("body").width(),y/$("body").height());								// Report my move
 	}
 
-	ReportLocation(x, y, status="active")														// REPORT LOCATION TO SERVER
+	ReportLocation(x, y, status="A")														// REPORT LOCATION TO SERVER
 	{
 		x=(x*100).toFixed(2);																		// Scale x 0-100
 		y=(y*100).toFixed(2);																		// y
-		if (this.quiet)	status="quiet";																// Set status
+		if (this.quiet)	status="Q";																	// Set status
 		if (app.ws)	app.ws.send(`L|${app.meetingId}~${app.myId}|${x}|${y}|${status}`); 				// Send Location message
 	}
 	
@@ -450,7 +453,7 @@ class App  {
 		$("#co-AvMe").draggable({stop:(e,ui)=>{
 			this.ReportLocation(ui.position.left/$("body").width(),ui.position.top/$("body").height());	// Report my move
 			}})
-		$("#co-AvMe").on("click dblclick", (e)=>{ 														// ON ME CLICK
+		$("#co-AvMe").on("click", (e)=>{ 														// ON ME CLICK
 			let x=$("#co-AvMe").css("left").replace("px","")-0+2;										// CX
 			let y=$("#co-AvMe").css("top").replace("px","")-0+10;										// Y
 			this.ShowQueue(x,y);																		// Show my message queue
