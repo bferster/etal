@@ -14,7 +14,7 @@
 <style>
 	:root 		{ 	--mobileOff:0px; }
 	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
-	.co-splash 	{ 	position:absolute;width:100%; color:#999; text-align:center; margin-top:15%;  display:none; }
+	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0;color:#999; text-align:center; margin-top:15%; display:none; }
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); }
 	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  
 					font-size: 30px; text-align:center; height:100%;
@@ -23,11 +23,11 @@
 	.co-room 	{	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000; }
 	.co-join	{	position:absolute;left:calc(50% - 30px); width:60px; top:calc(100% - 26px);cursor:pointer; font-size:14px; 
 					border:0px solid #fff; border-radius:12px; background-color:#2d6ab3; padding-bottom:1px; }
-	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa}
- 	.co-me 		{	position:absolute;  cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; }
+	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
+ 	.co-me 		{	position:absolute;  cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; }
 	.co-queue 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000;
 					border:1px solid; white; cursor:pointer; margin:-14px 0 0 50px; width:12px; height:12px; display:none; }
-	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px; }
+	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px; display:none; }
 	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
 	.co-qlist 	{	position:absolute; width:250px; height:300px; background-color:#fff; border-radius:8px;
@@ -38,6 +38,9 @@
 	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%;  margin:5px 0; float:right; color:#fff;	}
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
+					.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
+
+	.co-logon 	{	border-radius:16px; padding:0 8px; width:200px; height: 24px; border:1px solid #999; font-size: 13px; text-align:center; }
 	.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
@@ -47,6 +50,17 @@
 
 </style>
 <body>
+
+	<div id="co-top" class="co-top">
+		<div id="co-main"></div>
+	</div>
+	<div id="splashDiv" class="co-splash">
+		<img src="img/t2logo.png" alt="" style="width:33%"><br><br>
+		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
+		<br><br>
+		<input type="text" id="co-logon" class="co-logon" placeholder="Type email to join">
+		<p style="font-size:11px">For demo mode, type demo</p>
+	</div>
 
 <script>
 
@@ -59,12 +73,45 @@ var app=null;																						// Holds app
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","100px");			// Set CSS var
 		var url=window.location.search.substring(1);						   						// Get query string
-		app=new App("1", url ? url : 0);                                                    		// Alloc app
-		if (window.location.host != "localhost")  {													// Not in debug 
-			$("#splashDiv").fadeIn().delay(3000).fadeOut();											// Fade out splash
-			$("#co-top").delay(3400).animate({opacity:1},1000);										// Wait, and fade in main
-			}	
+		let meetingId=url ? url : 1;																// Set meeting id
+		app=new App(meetingId);                                      								// Alloc app
+		if (window.location.host != "loclhost")  $("#splashDiv").fadeIn();							// If not in debug fade out splas
 		else $("#co-top").css("opacity",1);															// Load fast
+
+		$("#co-logon").on("change",()=>{															// ON LOGON
+			let i,pid=$("#co-logon").val();															// Get value
+			for (i=0;i<app.people.length;++i) 
+				if (app.people[i].email == pid)
+					break;
+			if (i == app.people.length) {															// Email not found
+				alert("Email not found, please try again"); 										// Alert
+				return;																				// Quit																				
+				}
+			app.InitProject(meetingId,i);															// Init project		
+			app.Draw();																				// Draw screen
+			app.ReportLocation(.5,.5);																// Report location to set server myId
+			$("#splashDiv").fadeOut();																// Fade out splash
+			$("#co-top").animate({opacity:1},1000);													// Fade in main
+			$("[id^=co-Av]").fadeIn(1500) 															// Fade in avatars
+			$("#co-Av-"+app.myId).hide();															// Hide my own
+			if (pid.toLowerCase() == "demo") Demo();												// Run demo
+		});
+	
+		function Demo()	{																			// DEMO MODE
+			this.demoNum=1;
+			setInterval(()=>{
+				let i=Math.floor(Math.random()*app.people.length);									// Random person
+				let x=Math.floor(Math.random()*70)+26;												// Random x 
+				let y=Math.floor(Math.random()*80)+10;												// Random y 
+				if (app.ws)	app.ws.send(`L|${app.meetingId}~${i}|${x}|${y}|active`); 				// Send location message
+				++this.demoNum;
+				if (!(this.demoNum%6)) {
+					$("#co-queue").show();
+					app.queue.push({ id:i, msg:"Got a minute to talk?" });
+					$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
+					if (app.quiet)	return;
+					}},15000);																			// Every 15 seconds																				
+		}
 
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
@@ -82,12 +129,12 @@ var app=null;																						// Holds app
 
 class App  {																					
 
-	constructor(meetingId, myId)   																// CONSTRUCTOR
+	constructor(meetingId)   																// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
 		this.scale=1;																				// Scale
-		this.meetingId=meetingId;																	// Meeting id
-		this.myId=myId;																				// My unique id
+		this.meetingId=""+meetingId;																// Meeting id
+		this.myId="";																				// My unique id
 		this.venue="";																				// Venue frame
 		this.people=[];																				// Holds attendees
 		this.rooms=[];																				// Holds rooms
@@ -99,29 +146,10 @@ class App  {
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
 		this.ws.onerror=(e)=>  { console.log('failed to connect', e); };							// ON ERROR
 		this.ws.onopen=()=> { 																		// ON OPEN
+			app.ws.send(`P|${app.meetingId}`);														// Request people data	
 			console.log('connected');  
-			app.ws.send(`P|${app.meetingId}~${app.myId}`);											// Request people data	
 			};				
-		this.LoadProject(meetingId);		
-		this.Draw();																				// Draw screen
-	
-		this.n=1;
-		setInterval(()=>{
-			let i=Math.floor(Math.random()*app.people.length);										// Random person
-			let x=Math.floor(Math.random()*70)+26;													// Random x 
-			let y=Math.floor(Math.random()*80)+10;													// Random y 
-			$("#co-Av-"+i).animate({ left:x+"%", top:y+"%"});										// Animate them there
-			++this.n;
-			if (!(this.n%6)) {
-				$("#co-queue").show();
-				this.queue.push({ id:i, msg:"Got a minute to talk?" });
-				$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
-				if (app.quiet)	return;
-				$("#co-Av-"+i).animate({ left:$("#co-AvMe").css("left"), top:$("#co-AvMe").css("top").replace("px","")-0+62+"px"}
-				,400,()=>{Sound("ding"); })															// Ring the bell
-				}																					// Ring the bell
-			},10000);
-		}	
+	}	
 
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
@@ -129,15 +157,41 @@ class App  {
 		let v=event.data.split("|");																// Split message
 		if (v[0] == "C") {																			// If chat
 			if ($("#co-textDiv").length) {															// If chat window is open
+				if (v[3].match(/@ZA@/)) {															// If asking to zoom
+					v[3]=v[3].replace(/@ZA@/,"");													// Kill tag
+					v[3]+=`<br><img id="co-zoomAgree" src="img/zoom.png" 
+					style="width:24px;margin-top:8px;cursor:pointer">`; 
+					}
+				if (v[3].match(/@ZR@/)) {															// If responding to zoom
+					v[3]=v[3].replace(/@ZR@/,"");													// Kill tag
+					v[3]+=`<br><img id="co-zoomReply" src="img/zoom.png" 
+					style="width:24px;margin-top:8px;cursor:pointer">`; 
+					}
+				if (v[3].match(/@ZS@/)) {															// If starting zoom
+					let link=v[3].substr(4);														// Kill tag
+					v[3]="Starting Zoom...";														// Add message
+					this.StartZoom(link);															// Start zoom
+					}
 				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
 			else{
+				if (v[3].match(/@ZA@/)) {															// If asking to zoom
+					v[3]=v[3].replace(/@ZA@/,"");													// Kill tag
+					v[3]+=`&nbsp;&nbsp;<img id="co-zoomAgree" src="img/zoomblue.png" style="width:16px;cursor:pointer">`; 
+					}
 				this.queue.push({ id:v[2].split("~")[1], msg:v[3] });								// Add to queue
 				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
 				$("#co-queue").show();																// Show dot
 				}
 			Sound("ding");																			// Ring the bell
+			$("#co-zoomAgree").on("click",()=>{
+				if (app.ws)	app.ws.send(`C|${v[1]}|${v[2]}|Click below to join@ZR@`);				// Send chat message
+				});
+			$("#co-zoomReply").on("click",()=>{
+				if (app.ws)	app.ws.send(`C|${v[1]}|${v[2]}|@ZS@${this.people[this.myId].zoom}`);	// Send chat message
+				this.StartZoom(this.people[this.myId].zoom);										// Start zoom
+				});
 			}
 		else if (v[0] == "L")	{
 			let px=$("#co-main").offset();															// Offset of main div
@@ -148,20 +202,25 @@ class App  {
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 	}
 	
+	StartZoom(link)																				// INITIATE ZOOM
+	{
+		let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");		// Open zoom link
+		setTimeout(function(){ myWin.close(); },10000);												// Close after 10 secs
+		this.quiet=false;																			// Not in quiet mode
+	}
+
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		$("#co-card").remove();																		// Close card if open
 		$("#co-chat").remove();																		// Close chat if open
-		$("#co-sched").remove();																		// Remove old one
+		$("#co-sched").remove();																	// Remove old one
 		let px=$("#co-main").offset();																// Offset of main div
 	
 		if (targetId.match(/co-Jo-/)) {																// Join a room
 			let link=this.rooms[targetId.substr(6)].zoom;											// Get zoom link
 			if (!link)	return;																		// Quit if no link set
-			let myWin=window.open(link,"_blank","height=100,width=100,scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
-			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
-			this.quiet=false;																		// Not in quiet mode
+			this.StartZoom(link);																	// Start a zoom
 			}
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			return;																					// Quit
@@ -194,11 +253,12 @@ class App  {
 		this.ReportLocation(x/$("body").width(),y/$("body").height());								// Report my move
 	}
 
-	ReportLocation(x, y)
+	ReportLocation(x, y, status="active")														// REPORT LOCATION TO SERVER
 	{
 		x=(x*100).toFixed(2);																		// Scale x 0-100
 		y=(y*100).toFixed(2);																		// y
-		if (app.ws)	app.ws.send(`L|${app.meetingId}~${app.myId}|${x}|${y}|${this.quiet}`); 			// Send Location message
+		if (this.quiet)	status="quiet";																// Set status
+		if (app.ws)	app.ws.send(`L|${app.meetingId}~${app.myId}|${x}|${y}|${status}`); 				// Send Location message
 	}
 	
 	Draw() 																						// REDRAW
@@ -230,7 +290,7 @@ class App  {
 			for (i=0;i<this.queue.length;++i) {
 				str+=`<div id="co-qv-${i}" style="vertical-align:top">
 				<div style="float:left;text-align:left;width:100%">
-					<img id="co-qi-${i}" style="float:left;width:40px;margin: -4px 8px 8px 4px" src="av${this.queue[i].id}.png">
+					<img id="co-qi-${i}" style="float:left;width:40px;margin: -4px 8px 8px 4px" src="${this.people[this.queue[i].id].pic}">
 					<b>${this.people[this.queue[i].id].firstName} ${this.people[this.queue[i].id].lastName}</b></br>
 					<i>${this.queue[i].msg}</i>
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
@@ -270,7 +330,7 @@ class App  {
 		$("#co-sched").remove();																	// Remove old one
 		y=y-0;
 		let flip=false, y2=y;
-		if (y < 340) flip=true,y2=y+283;															// Flip to bottom
+		if (y < 360) flip=true,y2=y+283;															// Flip to bottom
 
 		let o=this.people[id.substr(6)-0];															// Point at person
 		let str=`<div id='co-card' class='co-card' style='left:${x-140}px;top:${y2-208}px'>
@@ -297,7 +357,7 @@ class App  {
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
 		$("#co-AvMe").animate({ left:x+4, top:y+68});												// Animate me there
-		this.ReportLocation(x/$("body").width(),y/$("body").height());								// Report my move
+//		this.ReportLocation((x-0+4)/$("body").width(),(y-0+68)/$("body").height());					// Report my move
 		let y2=y;
 		id=id.substr(6);																			// Just the number
 		if (flip) y2=y+519;
@@ -319,7 +379,9 @@ class App  {
 		$("#revText").on("change",   function(e) { chatWith();	});									// On text enter
 		$("#revTextBut").on("click", function(e) { chatWith();	});									// On text button click
 		$("#co-zoomBut").on("click", ()=>{															// On Zoom button click
-			$("#co-textDiv").append("<div class='co-textS'>Want to video chat?</div>");				// Ask to video chat
+			let s=`Want to video chat?`
+			if (app.ws)	app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|${s}@ZA@`)// Send chat message
+			$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");							// Add to display 
 			$("#co-textDiv").scrollTop(10000);														// Scroll to bottom
 			});
 
@@ -342,7 +404,7 @@ class App  {
 			return;																				// Quit																					
 			}
 		var h=window.innerHeight;
-		var str="<div id='helpDiv' class='lz-dialog'style='height:"+(h-106)+"px;overflow:hidden;display:none;;left:calc(100vw - 646px)'>";
+		var str="<div id='helpDiv' class='co-dialog'style='height:"+(h-106)+"px;overflow:hidden;display:none;;left:calc(100vw - 646px)'>";
 		str+="<img src='img/lizalogo.png' style='vertical-align:-6px' width='64'><span style='font-size:18px;margin-left:8px'>"
 		str+="help</span><img src='img/closedot.gif' style='float:right' onclick='$(\"#helpDiv\").remove()'><br><br>";	
 		str+="<iframe src='https://docs.google.com/document/d/e/2PACX-1vTXAsMJ-YlQaNtT49RtKvEnT5v5Xzz-TKPyVlo2px-23vDt-4lZFB7JujSKyDXs38hiSMISQoulYXB5/pub?embedded=true' ";
@@ -382,22 +444,24 @@ class App  {
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png"><div id="co-queue" class="co-queue"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
-	
+
 		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable({ drop:(e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
-		$("#co-AvMe").draggable();																		// Make me draggable
-		$("#co-Av-"+this.myId).hide();																	// Hide my own
-		$("#co-AvMe").on("click", (e)=>{ 																// ON ME CLICK
+		$("#co-AvMe").draggable({stop:(e,ui)=>{
+			this.ReportLocation(ui.position.left/$("body").width(),ui.position.top/$("body").height());	// Report my move
+			}})
+		$("#co-AvMe").on("click dblclick", (e)=>{ 														// ON ME CLICK
 			let x=$("#co-AvMe").css("left").replace("px","")-0+2;										// CX
 			let y=$("#co-AvMe").css("top").replace("px","")-0+10;										// Y
 			this.ShowQueue(x,y);																		// Show my message queue
 			}); 							
 	}
 
-	LoadProject(meetingId)																			// LOAD PROJECT DATA
+	InitProject(meetingId, myId)																			// INIT PROJECT DATA
 	{
 		let i,j,o,row,n;
-		this.meetingId=meetingId;																		// Project id
+		this.meetingId=""+meetingId;																		// Project id
+		this.myId=myId;																					// Project id
 		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50vw;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
 				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
 				<td style="text-align:center;width:33%">`;
@@ -427,11 +491,7 @@ class App  {
 				content:`` }
 			];
 
-		this.venue=`<div id="splashDiv" class="co-splash">
-			<img src="img/t2logo.png" alt="" style="width:33%"><br><br>
-			<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
-			</div>
-		<div id="co-top" class="co-top"><div id="co-main"><div id="co-grid" class="co-venue">`;
+		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
 		${o.title}${o.content}</div>`;
@@ -445,9 +505,8 @@ class App  {
 		this.venue+=`</div></div>
 		<img src="img/help.png"    id="co-help"    style="position:fixed;width:22px;top:calc(100vh - 81px - var(--mobileOff));left:16px;cursor:pointer">
 		<img src="img/zoomin.png"  id="co-zoomIn"  style="position:fixed;width:22px;top:calc(100vh - 55px - var(--mobileOff));left:16px;cursor:pointer">
-		<img src="img/zoomout.png" id="co-zoomOut" style="position:fixed;width:22px;top:calc(100vh - 34px - var(--mobileOff));left:16px;cursor:pointer">
-		</div></div>`;
-		$("body").html(this.venue.replace(/\t|\n|\r/g,""));										// Create venue
+		<img src="img/zoomout.png" id="co-zoomOut" style="position:fixed;width:22px;top:calc(100vh - 34px - var(--mobileOff));left:16px;cursor:pointer">`
+		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));								// Add venue
 		$("#co-main").draggable();																// Make screen draggable
 		$("body").on("wheel", (e)=>{															// ON SCROLL WHEEL
 			if (e.originalEvent.deltaY < 0)	this.scale=Math.min(4,this.scale+.5);				// Scale up
@@ -460,6 +519,7 @@ class App  {
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
 		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 		// ON JOIN CLICK
 		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }}); // ON DROP ON  ROOM
+
 	}
 
 } // APP CLASS CLOSURE

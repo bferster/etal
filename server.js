@@ -11,38 +11,33 @@
 
 	webSocketServer.on('connection', (webSocket) => {
 		console.log("New connect");
-		webSocket.myId=0;
+		webSocket.myId=-1;
 		webSocket.on('message', (message) => {
 			console.log('Received:', message);
 			if (!message)	return;
 			let v=message.split("|");
-			if (!webSocket.myId) 	webSocket.myId=v[1];
+			if ((webSocket.myId == -1) && (v[0] != "P")) 	webSocket.myId=v[1];
 			if (v[0] == "C") 		Chat(v[1],v[2],v[3]);
 			else if (v[0] == "L") 	Location(v[1],v[2],v[3]);
 			else if (v[0] == "B") 	Broadcast(v[1],v[2]);
-			else if (v[0] == "P") 	SendPeople(v[1],v[2]);
+			else if (v[0] == "P") 	SendPeople(v[1],webSocket);
 			});
 		});
 
-
 	function Broadcast(id, msg)
 	{
-		let str="C|"+id+"|*|"+msg;
+		let str="B|"+id+"|*|"+msg;
 		webSocketServer.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) 	client.send(str);
 			});
 	}
 	
-	function Send(id, data) 
+	function SendData(client, data) 
 	{
-		webSocketServer.clients.forEach((client) => {
-			if (client.myId == id)
-				if (client.readyState === WebSocket.OPEN) 
-					client.send(data);
-			});
+		if (client.readyState === WebSocket.OPEN)	client.send(data);
 	}
 	
-	function Chat(fromId,toId, msg) 
+	function Chat(fromId, toId, msg) 
 	{
 		let str="C|"+toId+"|"+fromId+"|"+msg;
 		webSocketServer.clients.forEach((client) => {
@@ -52,12 +47,12 @@
 			});
 	}
 	
-	function SendPeople(id)	
+	function SendPeople(meetingId, client)	
 	{
-		var params = { TableName : 'people', FilterExpression : 'meeting = :q',ExpressionAttributeValues : {':q' :id.split("~")[0]}  };
+		var params = { TableName : 'people', FilterExpression : 'meeting = :q',ExpressionAttributeValues : {':q' :meetingId }  };
 		docClient.scan(params, (err, data)=> {
 			if (err) 	{ console.error("Unable to read data: ", JSON.stringify(err, null, 2)); }
-			else 		{ console.log("People sent to "+id); Send(id,"P|"+JSON.stringify(data.Items)); };
+			else 		{ console.log("People sent"); SendData(client,"P|"+JSON.stringify(data.Items)); };
 		});
 	}
 
