@@ -173,6 +173,7 @@ class App  {
 					let link=v[3].substr(4);														// Kill tag
 					v[3]="Starting Zoom...";														// Add message
 					this.StartZoom(link);															// Start zoom
+					this.status="Z";																// Zooming	
 					}
 				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
@@ -183,6 +184,7 @@ class App  {
 					v[3]+=`&nbsp;&nbsp;<img id="co-zoomAgree" src="img/zoomblue.png" style="width:16px;cursor:pointer">`; 
 					}
 				this.queue.push({ id:v[2].split("~")[1], msg:v[3] });								// Add to queue
+				if ($("#co-qv-0").length) this.ShowQueue();											// Show the message queue, if open	
 				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
 				$("#co-queue").show();																// Show dot
 				}
@@ -193,7 +195,8 @@ class App  {
 			$("#co-zoomReply").on("click",()=>{
 				if (app.ws)	app.ws.send(`C|${v[1]}|${v[2]}|@ZS@${this.people[this.myId].zoom}`);	// Send chat message
 				this.StartZoom(this.people[this.myId].zoom);										// Start zoom
-				});
+				this.status="Z";																	// Zooming	
+			});
 			}
 		else if (v[0] == "L")	{
 			let x=v[2]/100*$("#co-main").width();													// Calc x from %
@@ -220,6 +223,7 @@ class App  {
 			let link=this.rooms[targetId.substr(6)].zoom;											// Get zoom link
 			if (!link)	return;																		// Quit if no link set
 			this.StartZoom(link);																	// Start a zoom
+			this.status="Z:"+targetId.substr(6);													// Zooming	
 			}
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			return;																					// Quit
@@ -244,6 +248,7 @@ class App  {
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			this.status="B";																		// In coffee bar
+			this.people[this.myId].stats="B";														// Update me
 			this.StartZoom(this.coffeeZoom);														// Go to the coffee bar zoom	
 			}
 		else this.status="A";																		// Not in quiet mode
@@ -259,7 +264,6 @@ class App  {
 			}
 		let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");		// Open zoom link
 		setTimeout(function(){ myWin.close(); },10000);												// Close after 10 secs
-		this.status="Z";																			// In a zoom
 	}
 
 	ArrangeCoffeeBar()																			// ARRANGE COFFEEBAR MEMBERS
@@ -267,18 +271,18 @@ class App  {
 		let i,bar=[];
 		let x=$("#co-coffee").offset().left;														// left side of bar
 		let w=$("#co-coffee").width();																// Width of space
+		let x2=$("#co-coffee").offset().left+w-avSize;												// Last stool
 		let y=$("#co-main").height()-$("#co-coffee").height()-avSize-16;							// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
 		if (!bar.length)	return
-
 		for (i=0;i<bar.length;++i) {																// For each barmate
 			if (i == this.myId)	continue;															// Skip me
 			$("#co-Av-"+bar[i]).animate({ left:x, top:y});											// Animate them there
 			x+=w/bar.length;																		// Move over													
+			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y}); // If I'm at the bar, move me
+			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y});	// Animate last one
 			}
-		if (this.people[this.myId].stats.charAt(0) == "B")											// If I'm at the bar
-			$("#co-AvMe").animate({ left:x-avSize, top:y});											// Animate me there
-		}
+	}
 
 	ReportLocation(x, y, status="A")															// REPORT LOCATION TO SERVER
 	{
@@ -301,15 +305,17 @@ class App  {
 // CARDS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ShowQueue(x, y)																				// SHOW QUEUE DOT
+	ShowQueue()																					// SHOW QUEUE DOT
 	{
 		let i;
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-card").remove();																		// Close card if open
 		$("#co-sched").remove();																	// Remove old one
-		
-		let str=`<div id='co-card' class='co-qlist' style='left:${x-150+avSize/2}px;top:${y-0+avSize+11}px'>
-			<b style='font-size:18px'>Messages</b><hr><br>
+
+		let x=$("#co-AvMe").css("left").replace("px","");											// Get my pos x
+		let y=$("#co-AvMe").css("top").replace("px","");											// Y
+		let str=`<div id='co-card' class='co-qlist' style='left:${x-150+avSize/2}px;top:${y-326-12}px'>
+			<b style='font-size:18px'>Missed messages</b><hr><br>
 			<div style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 50px)">`;
 			for (i=0;i<this.queue.length;++i) {
 				str+=`<div id="co-qv-${i}" style="vertical-align:top">
@@ -321,8 +327,8 @@ class App  {
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
 				}
 			str+="</div>"
-			str+=`<div style="position:absolute;left:142px; top:-10px; width:0;height:0; 
-				transform:rotate(180deg); border-style:solid; border-width: 14px 8px 0 8px;
+			str+=`<div style="position:absolute;left:142px; top:322px; width:0;height:0; 
+				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
@@ -334,9 +340,8 @@ class App  {
 			this.queue.splice(i,1);																	// Remove it
 			Sound("delete");																		// Delete sound
 			if (this.queue.length) 	$("#co-queue").text(this.queue.length);							// Update count
-			else 		$("#co-queue").hide();														// Remove	
-			this.ShowQueue(x,y);																	// Reshow
-//			ReportChange("queue", id)
+			else 					$("#co-queue").hide();														// Remove	
+			this.ShowQueue();																		// Reshow
 			});
 
 		$("[id^=co-qv-]").on("click",(e)=>{															// ON AVATAR CLICK
@@ -380,13 +385,13 @@ class App  {
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
-		$("#co-AvMe").animate({ left:x+avSize, top:y});										// Animate me there
-		this.ReportLocation((x-0+avSize)/$("body").width(),y/$("body").height(),"A");			// Report my move
+		$("#co-AvMe").animate({ left:x-0+avSize, top:y});											// Animate me there
+		this.ReportLocation((x-0+avSize)/$("body").width(),y/$("body").height(),"A");				// Report my move
 		let y2=y-370-12;																			// Chat height - 12
-		let x2=x-150+avSize/2;
+		let x2=x-150+avSize/2;																		// Center on avatar
 		id=id.substr(6);																			// Just the number
 	
-		if (flip) y2=(y-0+avSize+12);															// Put below
+		if (flip) y2=(y-0+avSize+12);																// Put below
 			let str=`<div id='co-chat' class='co-chat' style='left:${x2}px;top:${y2}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr>
 			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Ask to video chat</button>
@@ -477,9 +482,7 @@ class App  {
 		$("#co-AvMe").draggable({stop:(e,ui)=>{
 			this.ReportLocation(ui.position.left/$("body").width(),ui.position.top/$("body").height());	// Report my move
 			}})
-		$("#co-AvMe").on("click", (e)=>{ 																// ON ME CLICK
-			this.ShowQueue($("#co-AvMe").css("left").replace("px",""),$("#co-AvMe").css("top").replace("px",""));																		// Show my message queue
-			}); 							
+		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
 	}
 
 	InitProject(meetingId, myId)																			// INIT PROJECT DATA
@@ -512,7 +515,7 @@ class App  {
 				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3,
 				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:this.people[this.myId].firstName+"\'s Room", cs:3, ce:3, rs:4, re:4,
 				content:`` }
 			];
 
