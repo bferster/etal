@@ -141,7 +141,7 @@ class App  {
 		this.schedule="{}";																			// Holds schedule
 		this.queue=[];																				// Contact queue
 		this.status="";																				// My status
-		this.coffeeZoom="https://zoom.us/j/5232205750?pwd=ZG9UMllEVS93ZlkyQ3RCNzRteFY3Zz09";
+		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
 		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
@@ -244,7 +244,6 @@ class App  {
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
 			x=$("#co-hall").position().left+$("#co-quiet").width()/2-8;								// Center x
 			y=$("#co-quiet").offset().top-avSize;													// On top of quiet area
-			this.status="Q";																		// In quiet mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			this.status="B";																		// In coffee bar
@@ -349,7 +348,7 @@ class App  {
 			let targetId="co-Av-"+this.queue[id].id;												// Recreate id
 			let x=$("#"+targetId).css("left").replace("px","");										// Position directly over X
 			let y=$("#"+targetId).css("top").replace("px","");										// Y
-			this.ShowCard(x,y,targetId);															// Show card
+			this.Chat(x,y,targetId,false,true);														// Show card
 			});
 	}
 
@@ -380,8 +379,10 @@ class App  {
 		$("#co-chatBut").on("click",()=>{ this.Chat(x,y,id,flip)} )
 	}
 
-	Chat(x, y, id, flip)																		// CHAT CLIENT
+	Chat(x, y, id, flip, from)																	// CHAT CLIENT
 	{
+		let i;
+		if (y < 382) flip=true;
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
@@ -390,7 +391,7 @@ class App  {
 		let y2=y-370-12;																			// Chat height - 12
 		let x2=x-150+avSize/2;																		// Center on avatar
 		id=id.substr(6);																			// Just the number
-	
+
 		if (flip) y2=(y-0+avSize+12);																// Put below
 			let str=`<div id='co-chat' class='co-chat' style='left:${x2}px;top:${y2}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr>
@@ -406,7 +407,15 @@ class App  {
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add chatbox
-	
+		if (from) {
+			for (i=0;i<this.queue.length;++i)
+				if (this.queue[i].id == id) 
+					$("#co-textDiv").append("<div class='co-textR'>"+this.queue[i].msg+"</div><br>");	// Add message
+					$("#co-zoomAgree").on("click",()=>{
+						if (app.ws)	app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|Click below to join@ZR@`);		// Send chat message
+						});
+				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
+		}
 
 		$("#revText").on("change",   function(e) { chatWith();	});									// On text enter
 		$("#revTextBut").on("click", function(e) { chatWith();	});									// On text button click
