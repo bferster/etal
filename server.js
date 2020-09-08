@@ -58,7 +58,7 @@
 
 	function Location(id, x, y, s)
 	{
-		let str="L|"+id+"|"+x+"|"+y;
+		let str="L|"+id+"|"+x+"|"+y+"|"+s;
 		webSocketServer.clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) 
 					client.send(str);
@@ -70,15 +70,11 @@
 	{
 		let params={ TableName:"people",  Key:{ "id":id },
    		UpdateExpression:"set x=:x, y=:y, stats=:s", ExpressionAttributeValues:{ ":x":x, ":y":y, ":s": s } };
-		console.log("Updating the item...");
 		docClient.update(params, (err)=> {
 			if (err) console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
-			else 	 console.log("UpdateItem succeeded");
+			else 	 console.log("UpdateItem");
 			});
 		}
-
-
-
 
 // HELPERS
 
