@@ -1,3 +1,5 @@
 te2te.ppk
 config/
 node_modules/
+config/config.json
+config/server.json
