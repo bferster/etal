@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <link REL="SHORTCUT ICON" HREF="img/favicon.ico">
+  <title>tè2té Meeting Manager</title>
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.747.0.min.js"></script>
+</head> 
+<style>
+	:root 		{ 	--mobileOff:0px; }
+	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:16px; box-sizing:content-box; }
+	.co-splash 	{ 	position:absolute;width:100%; color:#999; text-align:center; margin-top:15%;  display:none; }
+	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); }
+</style>
+<body>
+
+	<h3>PEOPLE<h3>
+	<textarea id="co-people" style="width:100%;height:25vh;margin-bottom:8px" placeholder="  Paste people CSV data here"></textarea>
+	<input type="file" id="co-file-people">
+	<div style="float:right">
+		<button onclick="Upload()">Append to existing people</button></form>&nbsp;&nbsp;&nbsp;		
+		<button onclick="Upload()">Full upload</button>
+	</div>
+	<h3>VENUE<h3>
+	<textarea id="co-venue" style="width:100%;height:25vh" placeholder="  Paste venue CSV data here"></textarea>
+	<h3>SCHEDULE<h3>
+	<textarea id="co-schedule" style="width:100%;height:25vh" placeholder="  Paste schedule CSV data here"></textarea>
+	<script>
+
+	$("#co-file-people").on("change", (e)=>{ ReadFile(e,"co-people"); });
+	
+	AWS.config.update({
+ 		region: "us-east-1",
+ 		endpoint: 'https://dynamodb.us-east-1.amazonaws.com',
+   		accessKeyId: "AKIAJNUJSERSC54T6OUA",
+ 	  	secretAccessKey: "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"
+		});
+	
+	var docClient=new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
+	var meetingId="1";
+
+	function Upload()
+	{
+		let params,i,j=0,o;
+		let people=ParseCSV($("#co-people").val());
+		if (!people) trace("Error parsing People CSV file");
+		else {
+			for (i=0;i<people.length;++i) {
+				if (!people[i])	continue;
+				params={ TableName: 'people', Item: { "id":meetingId+"~"+j++ }};
+				for (o in people[i]) params.Item[o]=people[i][o];
+				docClient.put(params, (err, data)=> {
+					if (err) 	{ console.error("Unable to write data: ", JSON.stringify(err, null, 2)); }
+					else 	 	{ console.log("PutItem succeeded"); }
+					});
+				}
+			}
+
+	}
+
+	function ParseCSV(str) 																// PARSE CSV TO NESTED ARRAYS
+	{	
+		let arr=[],obj=[];
+		let i,j,o,row,cc;
+		let quote=false;  																	// True means we're inside a quoted field
+		str=str.replace(/\\r\\n/g,"\n");													// Convert \r\n -> \n
+		str=str.replace(/\\n\\r/g,"\n");													// Convert \n\r -> \n
+		for (row=col=c=0;c < str.length;c++) {   											// Iterate over each character, keep track of current row and column (of the returned array)
+			cc=str[c],nc=str[c+1];        													// Current character, next character
+			arr[row]=arr[row] || [];             											// Create a new row if necessary
+			arr[row][col]= arr[row][col] || '';   											// Create a new column (start with empty string) if necessary
+			if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; } 	// If the cur char is ", and we're inside a quoted field, and the next char is also a ", add a " to the current column and skip the next character
+			if (cc == '"') { quote = !quote; continue; }        							// If it's just one quotation mark, begin/end quoted field
+			if (cc == ',' && !quote) { ++col; continue; }      								// If it's a comma and we're not in a quoted field, move on to the next column
+			if (cc == '\n' && !quote) { ++row; col = 0; continue; }     					// If it's a newline and we're not in a quoted field, move on to the next row and move to column 0 of that new row
+			arr[row][col] += cc;        													// Otherwise, append the current character to the current column
+			}
+		let n=arr[0].length;
+		for (i=1;i<arr.length;++i) {
+			row=arr[i];
+			o={};
+			for (j=0;j<n;++j)	o[arr[0][j]]=arr[i][j]
+			obj[i]=o;
+			}
+		return obj;																			// Return nested arrays
+		}
+
+	function ReadFile(e, id) 
+	{
+		let file=e.target.files[0];
+		if (!file) 	return;
+		let reader=new FileReader();
+		reader.onload=(e)=>{ $("#"+id).val(e.target.result); };
+		reader.readAsText(file);
+		$("#co-file-people").val("");
+	}
+
+	function trace(msg, p1, p2, p3, p4)									
+	{
+		if (p4 != undefined)
+			console.log(msg,p1,p2,p3,p4);
+		else if (p3 != undefined)
+			console.log(msg,p1,p2,p3);
+		else if (p2 != undefined)
+			console.log(msg,p1,p2);
+		else if (p1 != undefined)
+			console.log(msg,p1);
+		else
+			console.log(msg);
+	}
+
+</script>
+</body>
+</html>
