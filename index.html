@@ -97,6 +97,8 @@
 			$("#co-top").animate({opacity:1},1000);													// Fade in main
 			$("[id^=co-Av]").fadeIn(1500) 															// Fade in avatars
 			$("#co-Av-"+app.myId).hide();															// Hide my own
+			for (i=0;i<app.people.length;++i) 														// For each person
+				if (app.people[i].stats == "Q")	$("#co-Av-"+i).hide();								// Hide people who are quiet
 			if (pid.toLowerCase() == "demo") Demo();												// Run demo
 		});
 	
@@ -214,7 +216,7 @@ class App  {
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
 			x=$("#co-hall").position().left+$("#co-quiet").width()/2-8;								// Center x
 			y=$("#co-quiet").offset().top-avSize;													// On top of quiet area
-			this.status="Q";																			// In quiet mode
+			this.status="Q";																		// In quiet mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			this.status="B";																		// In coffee bar
@@ -441,6 +443,8 @@ class App  {
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
 
+
+
 		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
 		$("#co-AvMe").draggable({stop:(e,ui)=>{
@@ -483,7 +487,7 @@ class App  {
 				content:`` }
 			];
 
-		if (meetingId.toLowerCase() == "aims") {
+		if (this.meetingId.toLowerCase() == "aims") {
 			}
 
 		this.venue=`<div id="co-grid" class="co-venue">`;
