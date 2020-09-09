@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,8 +33,8 @@
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666}
 	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
-	.co-textS 	{	background-color:#ddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
-	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding: 2px 8px; width:fit-content; max-width: 66%;  margin:5px 0; float:right; color:#fff;	}
+	.co-textS 	{	background-color:#dddddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
+	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; float:right; color:#fff;	}
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
 					.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
@@ -107,14 +106,14 @@
 				let i=Math.floor(Math.random()*app.people.length);									// Random person
 				let x=Math.floor(Math.random()*70)+26;												// Random x 
 				let y=Math.floor(Math.random()*80)+10;												// Random y 
-				if (app.ws)	app.ws.send(`L|${app.meetingId}~${i}|${x}|${y}|A`); 				// Send location message
+				app.ws.send(`L|${app.meetingId}~${i}|${x}|${y}|A`); 								// Send location message
 				++this.demoNum;
 				if (!(this.demoNum%6)) {
 					$("#co-queue").show();
 					app.queue.push({ id:i, msg:"Got a minute to talk?" });
 					$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
 					if (app.quiet)	return;
-					}},15000);																			// Every 15 seconds																				
+					}},15000);																		// Every 15 seconds																				
 		}
 
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
@@ -138,6 +137,7 @@ class App  {
 		this.venue="";																				// Venue frame
 		this.people=[];																				// Holds attendees
 		this.rooms=[];																				// Holds rooms
+		this.chats=[];																				// Holds chats
 		this.schedule="{}";																			// Holds schedule
 		this.queue=[];																				// Contact queue
 		this.status="";																				// My status
@@ -158,45 +158,18 @@ class App  {
 		let msg=event.data;																			// Get message
 		let v=event.data.split("|");																// Split message
 		if (v[0] == "C") {																			// If chat
+			this.chats.push({ dir:0, id:v[2].split("~")[1], msg:v[3] });							// Archive
 			if ($("#co-textDiv").length) {															// If chat window is open
-				if (v[3].match(/@ZA@/)) {															// If asking to zoom
-					v[3]=v[3].replace(/@ZA@/,"");													// Kill tag
-					v[3]+=`<br><img id="co-zoomAgree" src="img/zoom.png" 
-					style="width:24px;margin-top:8px;cursor:pointer">`; 
-					}
-				if (v[3].match(/@ZR@/)) {															// If responding to zoom
-					v[3]=v[3].replace(/@ZR@/,"");													// Kill tag
-					v[3]+=`<br><img id="co-zoomReply" src="img/zoom.png" 
-					style="width:24px;margin-top:8px;cursor:pointer">`; 
-					}
-				if (v[3].match(/@ZS@/)) {															// If starting zoom
-					let link=v[3].substr(4);														// Kill tag
-					v[3]="Starting Zoom...";														// Add message
-					this.StartZoom(link);															// Start zoom
-					this.status="Z";																// Zooming	
-					}
 				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
 			else{
-				if (v[3].match(/@ZA@/)) {															// If asking to zoom
-					v[3]=v[3].replace(/@ZA@/,"");													// Kill tag
-					v[3]+=`&nbsp;&nbsp;<img id="co-zoomAgree" src="img/zoomblue.png" style="width:16px;cursor:pointer">`; 
-					}
 				this.queue.push({ id:v[2].split("~")[1], msg:v[3] });								// Add to queue
 				if ($("#co-qv-0").length) this.ShowQueue();											// Show the message queue, if open	
 				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
 				$("#co-queue").show();																// Show dot
 				}
 			Sound("ding");																			// Ring the bell
-			$("#co-zoomAgree").on("click",()=>{
-				if (app.ws)	app.ws.send(`C|${v[1]}|${v[2]}|Click below to join@ZR@`);				// Send chat message
-				});
-			$("#co-zoomReply").on("click",()=>{
-				if (app.ws)	app.ws.send(`C|${v[1]}|${v[2]}|@ZS@${this.people[this.myId].zoom}`);	// Send chat message
-				this.StartZoom(this.people[this.myId].zoom);										// Start zoom
-				this.status="Z";																	// Zooming	
-			});
 			}
 		else if (v[0] == "L")	{
 			let x=v[2]/100*$("#co-main").width();													// Calc x from %
@@ -236,9 +209,7 @@ class App  {
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-Av-/)) {														// ON A PERSON
-			x=$("#"+targetId).css("left").replace("px","");											// Position directly over X
-			y=$("#"+targetId).css("top").replace("px","");											// Y
-			this.ShowCard(x,y,targetId);															// Show card
+			this.ShowCard(targetId.substr(6));														// Show card
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
@@ -257,6 +228,7 @@ class App  {
 
 	StartZoom(link)																				// INITIATE ZOOM
 	{
+		trace(link)
 		if (window.location.host == "localhost") {
 			Popup("Zooming!")
 			return;
@@ -306,14 +278,14 @@ class App  {
 
 	ShowQueue()																					// SHOW QUEUE DOT
 	{
-		let i;
+		let i,flip=false;
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-card").remove();																		// Close card if open
 		$("#co-sched").remove();																	// Remove old one
-
-		let x=$("#co-AvMe").css("left").replace("px","");											// Get my pos x
-		let y=$("#co-AvMe").css("top").replace("px","");											// Y
-		let str=`<div id='co-card' class='co-qlist' style='left:${x-150+avSize/2}px;top:${y-326-12}px'>
+		let x=$("#co-AvMe").css("left").replace("px","")-150+avSize/2;								// Get my pos x
+		let y=$("#co-AvMe").css("top").replace("px","")-326-12;										// Y
+		if (y < 12) flip=true,y=y-0+avSize+326+24;													// Flip it
+		let str=`<div id='co-card' class='co-qlist' style='left:${x}px;top:${y}px'>
 			<b style='font-size:18px'>Missed messages</b><hr><br>
 			<div style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 50px)">`;
 			for (i=0;i<this.queue.length;++i) {
@@ -326,9 +298,9 @@ class App  {
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
 				}
 			str+="</div>"
-			str+=`<div style="position:absolute;left:142px; top:322px; width:0;height:0; 
-				border-style:solid; border-width: 14px 8px 0 8px;
-    			border-color: #fff transparent transparent transparent"></div>
+			str+=`<div style="position:absolute;left:141px; top:${flip ? "-10" : "323"}px; width:0;height:0; 
+				${flip ? "transform: rotate(180deg)" : ""};border-style:solid; border-width: 14px 8px 0 8px;
+				border-color: #fff transparent transparent transparent"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
 	
@@ -339,29 +311,27 @@ class App  {
 			this.queue.splice(i,1);																	// Remove it
 			Sound("delete");																		// Delete sound
 			if (this.queue.length) 	$("#co-queue").text(this.queue.length);							// Update count
-			else 					$("#co-queue").hide();														// Remove	
+			else 					$("#co-queue").hide();											// Remove	
 			this.ShowQueue();																		// Reshow
 			});
 
-		$("[id^=co-qv-]").on("click",(e)=>{															// ON AVATAR CLICK
+		$("[id^=co-qi-]").on("click",(e)=>{															// ON AVATAR CLICK
 			let id=e.target.id.substr(6)-0;															// Get id
-			let targetId="co-Av-"+this.queue[id].id;												// Recreate id
-			let x=$("#"+targetId).css("left").replace("px","");										// Position directly over X
-			let y=$("#"+targetId).css("top").replace("px","");										// Y
-			this.Chat(x,y,targetId,false,true);														// Show card
+			app.Chat(app.queue[id].id);														// Show card
 			});
 	}
 
-	ShowCard(x, y, id)																			// SHOW BUSINESS CARD
+	ShowCard(id)																			// SHOW BUSINESS CARD
 	{
-		$("#co-card").remove();
+		let x=$("#co-Av-"+id).css("left").replace("px","")-175+avSize/2;;							// Center X on avatar 
+		let y=$("#co-Av-"+id).css("top").replace("px","")-200-12;									// Y atop avatar
+		$("#co-card").remove();																		// Close card if open
 		$("#co-chat").remove();																		// Close chat if open
-		$("#co-sched").remove();																	// Remove old one
-		let flip=false, y2=y-200-12;																// Position above avatar
-		if (y < 382) flip=true,y2=(y-0+avSize+12);													// Flip to bottom
-		let o=this.people[id.substr(6)-0];															// Point at person
-		let x2=x-175+avSize/2;																		// Center card
-		let str=`<div id='co-card' class='co-card' style='left:${x2}px;top:${y2}px'>
+		$("#co-sched").remove();																	// Close schedule if open
+		let flip=false;																				// Position above avatar
+		if (y<12) flip=true,y=(y-0+avSize+224);														// Flip to bottom
+		let o=this.people[id];																		// Point at person
+		let str=`<div id='co-card' class='co-card' style='left:${x}px;top:${y}px'>
 			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b><br><br>
 			<b>${o.title}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
 			<p style="position:absolute;left:24px;bottom:0">`;
@@ -376,26 +346,25 @@ class App  {
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-		$("#co-chatBut").on("click",()=>{ this.Chat(x,y,id,flip)} )
+		$("#co-chatBut").on("click",()=>{ this.Chat(id)} )
 	}
 
-	Chat(x, y, id, flip, from)																	// CHAT CLIENT
+	Chat(id)																					// CHAT CLIENT
 	{
-		let i;
-		if (y < 382) flip=true;
+		let i,flip=false;
+		let ox=$("#co-Av-"+id).css("left").replace("px","");										// Avatar  left
+		let oy=$("#co-Av-"+id).css("top").replace("px","");											// Top
+		let x=ox-150+avSize/2;;																		// Center X on avatar 
+		let y=oy-370-12;																			// Y atop avatar
+		if (y < 12) flip=true,y=(y-0+avSize+394);													// Flip it
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
-		$("#co-AvMe").animate({ left:x-0+avSize, top:y});											// Animate me there
-		this.ReportLocation((x-0+avSize)/$("body").width(),y/$("body").height(),"A");				// Report my move
-		let y2=y-370-12;																			// Chat height - 12
-		let x2=x-150+avSize/2;																		// Center on avatar
-		id=id.substr(6);																			// Just the number
-
-		if (flip) y2=(y-0+avSize+12);																// Put below
-			let str=`<div id='co-chat' class='co-chat' style='left:${x2}px;top:${y2}px'>
+		$("#co-AvMe").animate({ left:ox-0+avSize, top:oy});											// Animate me there
+		this.ReportLocation((ox-0+avSize)/$("body").width(),oy/$("body").height(),"A");				// Report my move
+			let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr>
-			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Ask to video chat</button>
+			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Send Zoom invite</button>
 			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:0 4px"></div>														
 			<div style="position:absolute;top:330px;left:24px">
 				<input  id="revText" placeholder="Type here..." class='co-is' style='width:202px'>			
@@ -407,30 +376,34 @@ class App  {
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add chatbox
-		if (from) {
-			for (i=0;i<this.queue.length;++i)
-				if (this.queue[i].id == id) 
-					$("#co-textDiv").append("<div class='co-textR'>"+this.queue[i].msg+"</div><br>");	// Add message
-					$("#co-zoomAgree").on("click",()=>{
-						if (app.ws)	app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|Click below to join@ZR@`);		// Send chat message
-						});
-				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
-		}
-
-		$("#revText").on("change",   function(e) { chatWith();	});									// On text enter
-		$("#revTextBut").on("click", function(e) { chatWith();	});									// On text button click
-		$("#co-zoomBut").on("click", ()=>{															// On Zoom button click
-			let s=`Want to video chat?`
-			if (app.ws)	app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|${s}@ZA@`)// Send chat message
-			$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");							// Add to display 
-			$("#co-textDiv").scrollTop(10000);														// Scroll to bottom
-			});
-
-		function chatWith() {																		// TEXT CHATTING
-			var s=$("#revText").val();																// Get text
+	
+		for (i=0;i<this.chats.length;++i) {															// For each chat in archive
+			if (this.chats[i].id == id) 															// If it's whom I'm chatting with
+				$("#co-textDiv").append(`<div class="co-text${this.chats[i].dir ? "S" : "R"}">${this.chats[i].msg}</div><br>`);	// Add message
+			}
+		$("#co-textDiv").scrollTop(10000);															// Scroll to bottom
+		
+		for (i=0;i<this.queue.length;++i) {															// For item in message box
+			if (this.queue[i].id == id) 															// If it's whom I'm chatting with
+				this.queue.splice(i,1);																// Remove it
+			if (this.queue.length) 			$("#co-queue").text(this.queue.length);					// Update count
+			else 							$("#co-queue").hide();									// Remove	
+			}
+	
+		$("#revText").on("change",   ()=>{ sendChat(); });											// ON TEXT ENTER
+		$("#revTextBut").on("click", ()=>{ sendChat(); });											// ON SEND CLICK 
+		$("#co-zoomBut").on("click", ()=>{ 															// ON ZOOM BUT CLICK
+			let str=`Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"
+			onclick="app.StartZoom('${app.people[app.myId].zoom}')"> to join`;
+			sendChat(str)
+			})					
+	
+		function sendChat(msg) {																	// TEXT CHATTING
+			let s=msg ? msg : $("#revText").val();													// Get text fron msg or textbox
 			if (s) {																				// If something there
 				$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");						// Add to display 
-				if (app.ws)	app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|${s}`);	// Send chat message
+				app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|${s}`);			// Send chat message
+				app.chats.push({ dir:1, id:id, msg:s});												// Archive
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
 			$("#revText").val("");																	// Clear input
@@ -508,23 +481,23 @@ class App  {
 				</tr></table>`;
 
 		this.rooms=[
-			{ zoom:"", title:"<img src='site.png'>", cs:2, ce:2, rs:1, re:5, content:hallway  },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3,
+			{ zoom:"", title:"<img src='site.png'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room",
 				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
 				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room",
 				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room",
 				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room",
 				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room",
 				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:this.people[this.myId].firstName+"\'s Room", cs:3, ce:3, rs:4, re:4,
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:this.people[this.myId].firstName+"\'s Room", cs:3, ce:3, rs:4, re:4, use:"room",
 				content:`` }
 			];
 
