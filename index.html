@@ -23,7 +23,7 @@
 	.co-join	{	position:absolute;left:calc(50% - 30px); width:60px; top:calc(100% - 26px);cursor:pointer; font-size:14px; 
 					border:0px solid #fff; border-radius:12px; background-color:#2d6ab3; padding-bottom:1px; }
 	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
- 	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; background-color:#fff; border-radius:64px; display:none; width:var(--avSize); }
+ 	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
 					border:1px solid white; cursor:pointer; margin:-14px 0 0 calc(var(--avSize) - 4px); width:12px; height:12px; display:none; }
@@ -112,7 +112,6 @@
 					$("#co-queue").show();
 					app.queue.push({ id:i, msg:"Got a minute to talk?" });
 					$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
-					if (app.quiet)	return;
 					}},15000);																		// Every 15 seconds																				
 		}
 
@@ -215,6 +214,7 @@ class App  {
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
 			x=$("#co-hall").position().left+$("#co-quiet").width()/2-8;								// Center x
 			y=$("#co-quiet").offset().top-avSize;													// On top of quiet area
+			this.status="Q";																			// In quiet mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			this.status="B";																		// In coffee bar
@@ -228,7 +228,6 @@ class App  {
 
 	StartZoom(link)																				// INITIATE ZOOM
 	{
-		trace(link)
 		if (window.location.host == "localhost") {
 			Popup("Zooming!")
 			return;
@@ -237,7 +236,7 @@ class App  {
 		setTimeout(function(){ myWin.close(); },10000);												// Close after 10 secs
 	}
 
-	ArrangeCoffeeBar()																			// ARRANGE COFFEEBAR MEMBERS
+	ArrangeCoffeeBar()																			// ARRANGE COFFEE BAR MEMBERS
 	{
 		let i,bar=[];
 		let x=$("#co-coffee").offset().left;														// left side of bar
@@ -248,10 +247,10 @@ class App  {
 		if (!bar.length)	return
 		for (i=0;i<bar.length;++i) {																// For each barmate
 			if (i == this.myId)	continue;															// Skip me
-			$("#co-Av-"+bar[i]).animate({ left:x, top:y});											// Animate them there
-			x+=w/bar.length;																		// Move over													
-			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y}); // If I'm at the bar, move me
-			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y});	// Animate last one
+			$("#co-Av-"+bar[i]).animate({ left:x, top:y},0);										// Move there
+			x+=w/bar.length;																		// X pos													
+			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y},0); // If I'm at the bar, move me
+			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y},0);	// Move last one
 			}
 	}
 
@@ -316,11 +315,11 @@ class App  {
 
 		$("[id^=co-qi-]").on("click",(e)=>{															// ON AVATAR CLICK
 			let id=e.target.id.substr(6)-0;															// Get id
-			app.Chat(app.queue[id].id);														// Show card
+			app.Chat(app.queue[id].id);																// Show card
 			});
 	}
 
-	ShowCard(id)																			// SHOW BUSINESS CARD
+	ShowCard(id)																				// SHOW BUSINESS CARD
 	{
 		let x=$("#co-Av-"+id).css("left").replace("px","")-175+avSize/2;;							// Center X on avatar 
 		let y=$("#co-Av-"+id).css("top").replace("px","")-200-12;									// Y atop avatar
@@ -344,8 +343,8 @@ class App  {
 				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
-		$("body").append(str.replace(/\t|\n|\r/g,""));
-		$("#co-chatBut").on("click",()=>{ this.Chat(id)} )
+		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add dialog
+		$("#co-chatBut").on("click",()=>{ this.Chat(id)} );											// ON CHAT BUTTON CLICK
 	}
 
 	Chat(id)																					// CHAT CLIENT
@@ -409,28 +408,10 @@ class App  {
 			}	
 		}
 	
-	ShowHelp() 																					// SHOW HELP
+	ShowSchedule()																				// SHOW EVENT SCHEDULE
 	{
-		return;
-		if ($("#helpDiv").length) {																// If already up, bring it down
-			$("#helpDiv").hide("slide",{ direction:"down", complete: ()=>{ $("#helpDiv").remove(); } }); // Slide down
-			return;																				// Quit																					
-			}
-		var h=window.innerHeight;
-		var str="<div id='helpDiv' class='co-dialog'style='height:"+(h-106)+"px;overflow:hidden;display:none;;left:calc(100vw - 646px)'>";
-		str+="<img src='img/lizalogo.png' style='vertical-align:-6px' width='64'><span style='font-size:18px;margin-left:8px'>"
-		str+="help</span><img src='img/closedot.gif' style='float:right' onclick='$(\"#helpDiv\").remove()'><br><br>";	
-		str+="<iframe src='https://docs.google.com/document/d/e/2PACX-1vTXAsMJ-YlQaNtT49RtKvEnT5v5Xzz-TKPyVlo2px-23vDt-4lZFB7JujSKyDXs38hiSMISQoulYXB5/pub?embedded=true' ";
-		str+="style='border: 1px solid #999;width:100%;height:"+(h-154)+"px' scrolling='yes'></iframe></div>";
-		$("body").append(str);																	// Add to body
-		$("#helpDiv").show("slide",{ direction:"down" });										// Slide up
-		if (!isMobile)	$("#helpDiv").draggable();												// Make it draggable on desktop
-	}
-
-	ShowSchedule()																			// SHOW EVENT SCHEDULE
-	{
-		$("#co-sched").remove(); 
-		let b=$("#co-schedule").offset();
+		$("#co-sched").remove(); 																	// Remove old schedule
+		let b=$("#co-schedule").offset();															// Get offset
 		let str=`<div id="co-sched" class="co-card"' style="top:12px; display:none;
 			left:${$("#co-hall").offset().left+12}px;
 			width:${$("#co-hall").width()-68}px; height:${b.top-80}px">
@@ -438,7 +419,7 @@ class App  {
 				<br>Events listed here, along with button to add them to attendee's personal schedule.
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
-		$("#co-sched").show("slide",{ direction:"down" });										// Slide up
+		$("#co-sched").show("slide",{ direction:"down" });											// Slide up
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -453,23 +434,25 @@ class App  {
 		for (i=0;i<people.length;++i) {																	// For each person
 			o=people[i];																				// Point at them
 			let id=o.id.split("~")[1];																	// Split id out
-			str+=`<img class="co-avatar" id="co-Av-${id}" src="${o.pic}" style="top:${o.x}%;left:${o.y}%">`;	// Add icon
+			str+=`<div class="co-avatar" id="co-Av-${id}" style="top:${o.x}%;left:${o.y}%"> 
+			<img src="${o.pic}" style="width:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
+			${o.firstName}<br>${o.lastName}</div>`;														// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
 
-		$("[id^=co-Av-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON PERSON CLICK
-		$("[id^=co-Av-]").droppable({ drop:(e)=>{ this.OnMeMove(0,0,e.target.id) }} ); 					// ON DROP ON PERSON
+		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
+		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
 		$("#co-AvMe").draggable({stop:(e,ui)=>{
 			this.ReportLocation(ui.position.left/$("body").width(),ui.position.top/$("body").height());	// Report my move
 			}})
 		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
 	}
 
-	InitProject(meetingId, myId)																			// INIT PROJECT DATA
+	InitProject(meetingId, myId)																	// INIT PROJECT DATA
 	{
 		let i,j,o,row,n;
-		this.meetingId=""+meetingId;																		// Project id
+		this.meetingId=""+meetingId;																	// Project id
 		this.myId=myId;																					// Project id
 		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50vw;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
 				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
@@ -499,6 +482,9 @@ class App  {
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:this.people[this.myId].firstName+"\'s Room", cs:3, ce:3, rs:4, re:4, use:"room",
 				content:`` }
 			];
+
+		if (meetingId.toLowerCase() == "aims") {
+			}
 
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
