@@ -2,7 +2,7 @@
 	console.log("Initializing nodeJS server");
 	const WebSocket = require('ws');
 	const AWS = require("aws-sdk");
-	AWS.config.loadFromPath('./config.json');
+	AWS.config.loadFromPath('./config/config.json');
 	var docClient=new AWS.DynamoDB.DocumentClient({apiVersion: '2012-08-10'});
 
 // WEBSOCKET SERVER

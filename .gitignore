@@ -1,3 +1,4 @@
 te2te.ppk
-config.json
+config/config.json
 meetings.htm
+config/server.json
