@@ -70,8 +70,7 @@
 	let	avSize=45;																						// Avatar size
 
 	$(window).resize(function() { if (app) app.Draw();	  })                                      // ON WINDOW RESIZE
-	
-	
+		
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		document.documentElement.style.setProperty("--avSize",avSize+"px");							// Set CSS var for avatar size
@@ -438,7 +437,7 @@ class App  {
 			o=people[i];																				// Point at them
 			let id=o.id.split("~")[1];																	// Split id out
 			str+=`<div class="co-avatar" id="co-Av-${id}" style="top:${o.x}%;left:${o.y}%"> 
-			<img src="${o.pic}" style="width:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
+			<img src="${o.pic ? o.pic : "avyou.png"}" style="width:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
 			${o.firstName}<br>${o.lastName}</div>`;														// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
@@ -489,7 +488,27 @@ class App  {
 			];
 
 		if (this.meetingId.toLowerCase() == "aims") {
-			}
+			this.rooms=[
+			{ zoom:"", title:"<br><img src='https://theiabm.org/wp-content/uploads/2019/04/Wall-Street.png' width='50%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room",
+				content:`<div style="font-size:18px;background-color:#c38d13;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
+				Please join president<br><b>Chris Lesieutre</b><br><br>
+				<img src="https://www.wallstcom.com/wp-content/uploads/2020/02/Chris-L.png" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
+				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
+				 content:`<div class="co-roomTitle"><b>Dynatech 101</b><br>Sunny Branson</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room",
+				content:`<div class="co-roomTitle"><b>The Great Salt Lake</b><br>Pat Brown</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room",
+				content:`<div class="co-roomTitle"><b>Motorcycle Racing</b></Graphing><br>Bill Robertson</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room",
+				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room",
+				content:`<div class="co-roomTitle"><b>Non-linear Editing</b><br>Bill Ferster</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:this.people[this.myId].firstName+"\'s Room", cs:3, ce:3, rs:4, re:4, use:"room",
+				content:`` }
+				]
+				}
 
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
