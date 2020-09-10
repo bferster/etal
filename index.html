@@ -20,7 +20,7 @@
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000; }
-	.co-join	{	position:absolute;left:calc(50% - 30px); width:60px; top:calc(100% - 26px);cursor:pointer; font-size:14px; 
+	.co-join	{	position:absolute;left:calc(50% - 30px); width:60px; top:calc(100% - 26px);cursor:pointer; font-size:14px; z-index:2;
 					border:0px solid #fff; border-radius:12px; background-color:#2d6ab3; padding-bottom:1px; }
 	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; }
@@ -64,6 +64,7 @@
 	</div>
 
 <script>
+
 
 //if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 	let app=null;																						// Holds app
@@ -141,6 +142,7 @@ class App  {
 		this.chats=[];																				// Holds chats
 		this.schedule="{}";																			// Holds schedule
 		this.queue=[];																				// Contact queue
+		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
 		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
@@ -158,14 +160,20 @@ class App  {
 	{
 		let msg=event.data;																			// Get message
 		let v=event.data.split("|");																// Split message
+		let id,meeting="";
+		if (v[1]) meeting=v[1].split("~")[0];
+		
 		if (v[0] == "C") {																			// If chat
-			this.chats.push({ dir:0, id:v[2].split("~")[1], msg:v[3] });							// Archive
+			if (meeting != this.meetingId)	return;													// Not this meeting
+			id=this.pIndex[v[2]];																	// Get index from id			
+			
+			this.chats.push({ dir:0, id:id, msg:v[3] });											// Archive
 			if ($("#co-textDiv").length) {															// If chat window is open
 				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
 			else{
-				this.queue.push({ id:v[2].split("~")[1], msg:v[3] });								// Add to queue
+				this.queue.push({ id:id, msg:v[3] });												// Add to queue
 				if ($("#co-qv-0").length) this.ShowQueue();											// Show the message queue, if open	
 				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
 				$("#co-queue").show();																// Show dot
@@ -173,9 +181,12 @@ class App  {
 			Sound("ding");																			// Ring the bell
 			}
 		else if (v[0] == "L")	{
+			if (meeting != this.meetingId)	return;													// Not this meeting
 			let x=v[2]/100*$("#co-main").width();													// Calc x from %
 			let y=v[3]/100*$("#co-main").height();													// Y
-			let id=+v[1].split("~")[1];																// Get id
+			id=this.pIndex[v[1]];																	// Get index from id			
+			
+			
 			this.people[id].x=x;	this.people[id].y=y;	this.people[id].stats=v[4];				// Update people object
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
 			if (v[4].charAt(0) == "Q")	$("#co-Av-"+id).css("display","none");						// Hide this person if quiet
@@ -260,7 +271,7 @@ class App  {
 	{
 		x=(x*100).toFixed(2);																		// Scale x 0-100
 		y=(y*100).toFixed(2);																		// y
-		if (app.ws)	app.ws.send(`L|${app.meetingId}~${app.myId}|${x}|${y}|${status}`); 				// Send Location message
+		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${x}|${y}|${status}`); 				// Send Location message
 	}
 	
 	Draw() 																						// REDRAW
@@ -335,8 +346,13 @@ class App  {
 			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b><br><br>
 			<b>${o.title}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
 			<p style="position:absolute;left:24px;bottom:0">`;
-			if (o.li) str+=`<a href="https://linkedin.com/in/${o.li}" target="_blank">
-				<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
+			if (o.li) {
+				o.li=o.li.replace(/https:\/\//,"");
+				o.li=o.li.replace(/linkedin.com\//,"");
+				o.li=o.li.replace(/in\//,"");
+				str+=`<a href="https://linkedin.com/in/${o.li}" target="_blank">
+					<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
+				}
 			str+=`</p><button id="co-chatBut" style="position:absolute; left:225px; bottom:14px; cursor:pointer;
 				border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">
 				Chat now!</button> &nbsp;&nbsp
@@ -402,7 +418,9 @@ class App  {
 			let s=msg ? msg : $("#revText").val();													// Get text fron msg or textbox
 			if (s) {																				// If something there
 				$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");						// Add to display 
-				app.ws.send(`C|${app.meetingId}~${app.myId}|${app.meetingId}~${id}|${s}`);			// Send chat message
+				let fid=app.people[app.myId].id;													// From id (me)
+				let tid=app.people[id].id															// To id
+				app.ws.send(`C|${fid}|${tid}|${s}`);												// Send chat message
 				app.chats.push({ dir:1, id:id, msg:s});												// Archive
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
@@ -432,18 +450,16 @@ class App  {
 	{
 		let i,o,str="";
 		this.people=people;																				// Set data
-		people.sort((a, b) => (a.id > b.id) ? 1 : -1);													// Sort by id
 		for (i=0;i<people.length;++i) {																	// For each person
+			let id=people[i].id.split("~")[1];															// Split id out
+			this.pIndex[people[i].id]=i;																// Save index by full id
 			o=people[i];																				// Point at them
-			let id=o.id.split("~")[1];																	// Split id out
-			str+=`<div class="co-avatar" id="co-Av-${id}" style="top:${o.x}%;left:${o.y}%"> 
-			<img src="${o.pic ? o.pic : "avyou.png"}" style="width:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
+			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.x}%;left:${o.y}%"> 
+			<img src="${o.pic ? o.pic : "avyou.png"}" style="width:${avSize-4}px;height:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
 			${o.firstName}<br>${o.lastName}</div>`;														// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
-
-
 
 		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
