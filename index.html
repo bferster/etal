@@ -8,7 +8,7 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="lib/jquery.ui.touch-punch.min.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
-	<title>tè2té</title>
+	<title>èt | al</title>
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px; --avSize:45px}
@@ -57,18 +57,17 @@
 		<div id="co-main"></div>
 	</div>
 	<div id="splashDiv" class="co-splash">
-		<img src="img/t2logo.png" alt="" style="width:33%"><br><br>
+		<img src="img/logo.png" alt="" style="widows: 20%"><br><br>
 		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
 		<br><br>
-		<input type="text" id="co-logon" class="co-logon" placeholder="Type code to join">
+		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type code to join"></div>
 	</div>
 
 <script>
 
-
-//if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
-	let app=null;																						// Holds app
-	let	avSize=45;																						// Avatar size
+	let app=null;																					// Holds app
+	let	avSize=45;																					// Avatar size
+	let butCol="#2d6ab3"																			// Color  of vutton and ui
 
 	$(window).resize(function() { if (app) app.Draw();	  })                                      // ON WINDOW RESIZE
 		
@@ -95,7 +94,7 @@
 			app.Draw();																				// Draw screen
 			app.ReportLocation(.5,.5);																// Report location to set server myId
 			$("#splashDiv").fadeOut();																// Fade out splash
-			$("#co-top").animate({opacity:1},1000);													// Fade in main
+			$("#co-top").animate({opacity:1},1000,()=>{ app.ArrangePeople() });						// Fade in main, the arrange people
 			$("[id^=co-Av]").fadeIn(1500) 															// Fade in avatars
 			$("#co-Av-"+app.myId).hide();															// Hide my own
 			for (i=0;i<app.people.length;++i) 														// For each person
@@ -144,11 +143,18 @@ class App  {
 		this.queue=[];																				// Contact queue
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
+		this.infoDeskId=1;																			// IF of info desk person
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
 		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
-		this.ws.onerror=(e)=>  { console.log('failed to connect', e); };							// ON ERROR
+		this.ws.onerror=(e)=> { 																	// ON ERROR
+			console.log('error',e);
+			let str=`<h1 style="color:#990000">There was a problem joining the meeting!</h1><p style="color:#000;font-size:14px;">
+				Either the meeting server is down, or there may be a firewall blocking your access.<br><br>
+				<b>Please contact you meeting's host for help.<b></p>`;
+				$("#co-splash2").html(str); 
+			};
 
 		this.ws.onopen=()=> { 																		// ON OPEN
 			app.ws.send(`P|${app.meetingId}`);														// Request people data	
@@ -185,14 +191,13 @@ class App  {
 			let x=v[2]/100*$("#co-main").width();													// Calc x from %
 			let y=v[3]/100*$("#co-main").height();													// Y
 			id=this.pIndex[v[1]];																	// Get index from id			
-			
-			
 			this.people[id].x=x;	this.people[id].y=y;	this.people[id].stats=v[4];				// Update people object
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
 			if (v[4].charAt(0) == "Q")	$("#co-Av-"+id).css("display","none");						// Hide this person if quiet
 			else						$("#co-Av-"+id).css("display","block");						// Show them
-			this.ArrangeCoffeeBar();																// Arrange people at bar
+			if (v[4] == "B")			this.ArrangePeople();										// Arrange people at bar
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
+			$("#co-At-"+id).css("display",v[4].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 	}
@@ -216,6 +221,10 @@ class App  {
 		if (targetId == "co-search") {																// ON SEARCH BUTTON
 			return;																					// Quit
 			}
+		if (targetId == "co-infoDesk") {																// ON INFO DESK BUTTON
+			this.Chat(this.infoDeskId,true);														// Chat with help desk person
+			return;																					// Quit
+			}
 		if (targetId == "co-schedule") {															// ON SCHEDULE BUTTON
 			this.ShowSchedule();																	// Show schedule
 			return;																					// Quit
@@ -225,8 +234,8 @@ class App  {
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
-			x=$("#co-hall").position().left+$("#co-quiet").width()/2-8;								// Center x
-			y=$("#co-quiet").offset().top-avSize;													// On top of quiet area
+			x=$("#co-quiet").offset().left+4;														// Center x
+			y=$("#co-quiet").offset().top+4;														// Y
 			this.status="Q";																		// In quiet mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
@@ -249,22 +258,23 @@ class App  {
 		setTimeout(function(){ myWin.close(); },10000);												// Close after 10 secs
 	}
 
-	ArrangeCoffeeBar()																			// ARRANGE COFFEE BAR MEMBERS
+	ArrangePeople()																				// ARRANGE COFFEE BAR / ROOM MEMBERS
 	{
 		let i,bar=[];
 		let x=$("#co-coffee").offset().left;														// left side of bar
-		let w=$("#co-coffee").width();																// Width of space
-		let x2=$("#co-coffee").offset().left+w-avSize;												// Last stool
-		let y=$("#co-main").height()-$("#co-coffee").height()-avSize-16;							// On top of bar area
+		let w=$("#co-coffee").width()-avSize;														// Width of space
+		let x2=$("#co-coffee").offset().left+w;														// Last stool
+		let y=$("#co-main").height()-$("#co-coffee").height()-avSize-4;								// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
 		if (!bar.length)	return
 		for (i=0;i<bar.length;++i) {																// For each barmate
-			if (i == this.myId)	continue;															// Skip me
+			if (bar[i] == this.myId)	continue;													// Skip me
 			$("#co-Av-"+bar[i]).animate({ left:x, top:y},0);										// Move there
-			x+=w/bar.length;																		// X pos													
-			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y},0); // If I'm at the bar, move me
-			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y},0);	// Move last one
+			$("#co-At-"+bar[i]).css("display","none");												// Hide nme tag
+			if (bar.length > 1) x+=w/(bar.length-1);												// Advance
 			}
+		if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y},0); // If I'm at the bar, move me
+		else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y},0);	// Move last one
 	}
 
 	ReportLocation(x, y, status="A")															// REPORT LOCATION TO SERVER
@@ -281,6 +291,7 @@ class App  {
 		$("#co-main").width(x);		$("#co-main").height(y);										// Scale div
 		let p=$("#co-main").offset();																// Get offset
 		$("#co-main").css({ left:Math.max(bx-x,p.left), top:Math.max(by-y,p.top) });				// Cap to max
+		this.ArrangePeople();																		// Arrange people				
 		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -365,11 +376,16 @@ class App  {
 		$("#co-chatBut").on("click",()=>{ this.Chat(id)} );											// ON CHAT BUTTON CLICK
 	}
 
-	Chat(id)																					// CHAT CLIENT
+	Chat(id, infoDesk)																			// CHAT CLIENT
 	{
 		let i,flip=false;
-		let ox=$("#co-Av-"+id).css("left").replace("px","");										// Avatar  left
+		let ox=$("#co-Av-"+id).css("left").replace("px","");										// Avatar left
 		let oy=$("#co-Av-"+id).css("top").replace("px","");											// Top
+		if (infoDesk) {
+			ox=$("#co-infoDesk").offset().left+2;													// Desk left
+			oy=$("#co-infoDesk").offset().top-2														// Top
+			}		
+		
 		let x=ox-150+avSize/2;;																		// Center X on avatar 
 		let y=oy-370-12;																			// Y atop avatar
 		if (y < 12) flip=true,y=(y-0+avSize+394);													// Flip it
@@ -454,20 +470,20 @@ class App  {
 			let id=people[i].id.split("~")[1];															// Split id out
 			this.pIndex[people[i].id]=i;																// Save index by full id
 			o=people[i];																				// Point at them
-			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.x}%;left:${o.y}%"> 
+			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
 			<img src="${o.pic ? o.pic : "avyou.png"}" style="width:${avSize-4}px;height:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
-			${o.firstName}<br>${o.lastName}</div>`;														// Add person
+			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
 
 		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
-		$("#co-AvMe").draggable({stop:(e,ui)=>{
+		$("#co-AvMe").draggable({ containment:"window", stop:(e,ui)=>{ 
 			this.ReportLocation(ui.position.left/$("body").width(),ui.position.top/$("body").height());	// Report my move
 			}})
 		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
-	}
+		}
 
 	InitProject(meetingId, myId)																	// INIT PROJECT DATA
 	{
@@ -475,15 +491,16 @@ class App  {
 		this.meetingId=""+meetingId;																	// Project id
 		this.myId=myId;																					// Project id
 		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50vw;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
-				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:50%"></td>
+				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:${avSize-0+8}px;cursor:pointer">
+					&nbsp;&nbsp;<img src="img/infodesk.png" id="co-infoDesk" style="width:${avSize-0+8}px;cursor:pointer"></td>
 				<td style="text-align:center;width:33%">`;
 		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">&nbsp;&nbsp;`
 		hallway+=`<img src="img/search.png" id="co-search" style="width:12.5%;cursor:pointer"></td>
-				<td style="text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png" style="width:50%"></td>
+				<td style="z-index:2;text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png"></td>
 				</tr></table>`;
 
 		this.rooms=[
-			{ zoom:"", title:"<img src='site.png'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
+			{ zoom:"", title:"<br><img src='img/logo.png' style='width:30%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room",
 				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
@@ -545,7 +562,6 @@ class App  {
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
 		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 		// ON JOIN CLICK
 		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }}); // ON DROP ON  ROOM
-
 	}
 
 } // APP CLASS CLOSURE
