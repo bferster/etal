@@ -8,7 +8,7 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="lib/jquery.ui.touch-punch.min.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
-	<title>èt | al</title>
+	<title>èt•al Meeting</title>
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px; --avSize:45px}
@@ -19,7 +19,7 @@
 					font-size: 30px; text-align:center; height:100%;
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 3px solid #000; }
+	.co-room 	{	background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000; }
 	.co-join	{	position:absolute;left:calc(50% - 30px); width:60px; top:calc(100% - 26px);cursor:pointer; font-size:14px; z-index:2;
 					border:0px solid #fff; border-radius:12px; background-color:#2d6ab3; padding-bottom:1px; }
 	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
@@ -33,6 +33,10 @@
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666}
 	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
+					.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
+					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666}
+	.co-people 	{	position:absolute; width:274px; height:50vh; background-color:#fff; border-radius:8px;
+					border:1px solid #666; padding:12px; font-size:12px; box-shadow:3px 3px 6px #666}
 	.co-textS 	{	background-color:#dddddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
 	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; float:right; color:#fff;	}
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
@@ -40,7 +44,7 @@
 					.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
 
 	.co-logon 	{	border-radius:16px; padding:0 8px; width:200px; height: 24px; border:1px solid #999; font-size: 13px; text-align:center; }
-	.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
+	.co-is 		{	border-radius:16px; padding:0 8px; height: 24px; border:1px solid #999; font-size: 13px; }
 	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
 					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
 					font-size: 14px; text-align:center; display: none; }
@@ -143,14 +147,14 @@ class App  {
 		this.queue=[];																				// Contact queue
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
-		this.infoDeskId=1;																			// IF of info desk person
+		this.infoDeskId=6;																			// IF of info desk person
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
 		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
 		this.ws.onerror=(e)=> { 																	// ON ERROR
 			console.log('error',e);
-			let str=`<h1 style="color:#990000">There was a problem joining the meeting!</h1><p style="color:#000;font-size:14px;">
+			let str=`<h1 style="color:#ff0000">There was a problem joining the meeting!</h1><p style="color:#000;font-size:14px;">
 				Either the meeting server is down, or there may be a firewall blocking your access.<br><br>
 				<b>Please contact you meeting's host for help.<b></p>`;
 				$("#co-splash2").html(str); 
@@ -188,8 +192,10 @@ class App  {
 			}
 		else if (v[0] == "L")	{
 			if (meeting != this.meetingId)	return;													// Not this meeting
-			let x=v[2]/100*$("#co-main").width();													// Calc x from %
-			let y=v[3]/100*$("#co-main").height();													// Y
+			let x=v[2]/100*this.bx;																	// Calc x from %
+			let y=v[3]/100*this.by;																	// Y
+			x=Math.max(0,Math.min(this.bx-avSize,x));												// Cap x to screen
+			y=Math.max(0,Math.min(this.by-avSize*2,y));												// Y
 			id=this.pIndex[v[1]];																	// Get index from id			
 			this.people[id].x=x;	this.people[id].y=y;	this.people[id].stats=v[4];				// Update people object
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
@@ -218,13 +224,8 @@ class App  {
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			return;																					// Quit
 			}
-		if (targetId == "co-search") {																// ON SEARCH BUTTON
-			return;																					// Quit
-			}
-		if (targetId == "co-infoDesk") {																// ON INFO DESK BUTTON
-			this.Chat(this.infoDeskId,true);														// Chat with help desk person
-			return;																					// Quit
-			}
+		if (targetId == "co-infoDesk")  { this.Chat(this.infoDeskId,true);			return; }		// ON INFO DESK BUTTON
+		if (targetId == "co-attendees") { this.ShowPeople(this.infoDeskId,true);	return; }		// ON PEOPLES BUTTON
 		if (targetId == "co-schedule") {															// ON SCHEDULE BUTTON
 			this.ShowSchedule();																	// Show schedule
 			return;																					// Quit
@@ -244,8 +245,10 @@ class App  {
 			this.StartZoom(this.coffeeZoom);														// Go to the coffee bar zoom	
 			}
 		else this.status="A";																		// Not in quiet mode
-		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there
-		this.ReportLocation(x/$("body").width(),y/$("body").height(),this.status);					// Report my move
+		x=Math.max(0,Math.min(this.bx-avSize,x));													// Cap x to screen
+		y=Math.max(0,Math.min(this.by-avSize,y));													// Y
+		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
+		this.ReportLocation(x/this.bx,y/this.by,this.status);										// Report my move
 	}
 
 	StartZoom(link)																				// INITIATE ZOOM
@@ -264,7 +267,7 @@ class App  {
 		let x=$("#co-coffee").offset().left;														// left side of bar
 		let w=$("#co-coffee").width()-avSize;														// Width of space
 		let x2=$("#co-coffee").offset().left+w;														// Last stool
-		let y=$("#co-main").height()-$("#co-coffee").height()-avSize-4;								// On top of bar area
+		let y=this.by-$("#co-coffee").height()-avSize-4;											// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
 		if (!bar.length)	return
 		for (i=0;i<bar.length;++i) {																// For each barmate
@@ -286,17 +289,55 @@ class App  {
 	
 	Draw() 																						// REDRAW
 	{
-		let bx=$("body").width(), by=$("body").height();											// Body size
-		let x=bx*this.scale, y=by*this.scale;														// Max
+		this.bx=$("body").width(),		this.by=$("body").height();									// Body size
+		let x=this.bx*this.scale, y=this.by*this.scale;												// Max
 		$("#co-main").width(x);		$("#co-main").height(y);										// Scale div
 		let p=$("#co-main").offset();																// Get offset
-		$("#co-main").css({ left:Math.max(bx-x,p.left), top:Math.max(by-y,p.top) });				// Cap to max
+		$("#co-main").css({ left:Math.max(this.bx-x,p.left), top:Math.max(this.by-y,p.top) });		// Cap to max
 		this.ArrangePeople();																		// Arrange people				
-		}
+	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CARDS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	ShowPeople()																				// SHOW THE ATTENDEES
+	{
+		let i;
+		$("#co-chat").remove();																		// Close chat if open
+		$("#co-card").remove();																		// Close 
+		$("#co-sched").remove();																	// Close
+		$("#co-people").remove();																	// Close
+	
+		let x=this.bx/4+12;																			// Left
+		let	y=this.by/4																				// Top
+		let w=this.bx/2-48;																			// Width
+		let h=this.by/2-48;																			// Height
+		let p=[]
+		let str=`<div id='co-people' class='co-people' style="left:${x}px;top:${y}px;background-color:#eee">
+			<img id="co-spc" style="float:right;cursor:pointer;margin-top:5px" src="/img/closedot.png" onclick="$('#co-people').remove()">
+			<div style='text-align:center;font-size:18px'><b>Attendees</b></div><br>
+			<div style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 140px);margin-bottom:12px;background-color:#fff;border:1px solid #999">`;
+			for (i=0;i<this.people.length;++i) {
+				str+=`<div style="vertical-align:top">
+				<div style="float:left;text-align:left;width:100%">
+				<img id="co-qi-${i}" style="float:left;width:40px;margin:0 8px 16px 4px;border:1px solid #333;border-radius:64px;width:${avSize}px" 
+				src="${this.people[i].pic}">
+				<b>${this.people[i].firstName} ${this.people[i].lastName}</b>
+				<br>${this.people[i].title}
+				<br>${this.people[i].org}
+				</div></div>`;
+				}
+		str+=`</div><table>
+			<tr><td>Sort by </td><td><select class="co-is" id="co-sps" style="width:auto">
+			<option>Name</option><option>Organization</option></select></td></tr>
+			<tr><td>In </td><td><select class="co-is" id="co-spr" style="width:auto"></select></td></tr>	
+			<tr><td>Find </td><td><input class="co-is" id="co-spf" style="width:100px" placeholder"Type name"></td></tr></table>`;
+		$("body").append(str.replace(/\t|\n|\r/g,""));
+		$("#co-people").draggable();
+		$("#co-spr").append("<option>Any area</option><option>Hallway</option>");
+		for (i=1;i<this.rooms.length;++i)	$("#co-spr").append("<option>"+this.rooms[i].title+"</option>");
+	}
 
 	ShowQueue()																					// SHOW QUEUE DOT
 	{
@@ -393,7 +434,7 @@ class App  {
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
 		$("#co-AvMe").animate({ left:ox-0+avSize, top:oy});											// Animate me there
-		this.ReportLocation((ox-0+avSize)/$("body").width(),oy/$("body").height(),"A");				// Report my move
+		this.ReportLocation((ox-0+avSize)/this.by,oy/this.by,"A");									// Report my move
 			let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr>
 			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Send Zoom invite</button>
@@ -469,18 +510,20 @@ class App  {
 		for (i=0;i<people.length;++i) {																	// For each person
 			let id=people[i].id.split("~")[1];															// Split id out
 			this.pIndex[people[i].id]=i;																// Save index by full id
-			o=people[i];																				// Point at them
+			o=this.people[i];																			// Point at them
+			if (!this.people[i].pic)	this.people[i].pic="avyou.png";									// Use generic pic
 			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
-			<img src="${o.pic ? o.pic : "avyou.png"}" style="width:${avSize-4}px;height:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
+			<img src="${o.pic}" style="width:${avSize-4}px;height:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
 			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
 
+		this.infoDeskId=this.pIndex[this.meetingId+"~"+this.infoDeskId];								// Convert info id to index
 		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
 		$("#co-AvMe").draggable({ containment:"window", stop:(e,ui)=>{ 
-			this.ReportLocation(ui.position.left/$("body").width(),ui.position.top/$("body").height());	// Report my move
+			this.ReportLocation(ui.position.left/this.bx,ui.position.top/this.by);						// Report my move
 			}})
 		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
 		}
@@ -491,16 +534,17 @@ class App  {
 		this.meetingId=""+meetingId;																	// Project id
 		this.myId=myId;																					// Project id
 		let hallway=`<table style="position:absolute;top:calc(100% - 105px);width:50vw;padding:0 12px;height:100px"><tr style="vertical-align:bottom">
-				<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="width:${avSize-0+8}px;cursor:pointer">
-					&nbsp;&nbsp;<img src="img/infodesk.png" id="co-infoDesk" style="width:${avSize-0+8}px;cursor:pointer"></td>
-				<td style="text-align:center;width:33%">`;
-		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="width:12.5%;cursor:pointer">&nbsp;&nbsp;`
-		hallway+=`<img src="img/search.png" id="co-search" style="width:12.5%;cursor:pointer"></td>
-				<td style="z-index:2;text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png"></td>
-				</tr></table>`;
+			<td style="text-align:left;width:33%"><img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer">
+			</td><td style="text-align:center;width:33%">`
+		
+		if (this.infoDeskId	) hallway+=`<img src="img/infodesk.png" id="co-infoDesk" style="height:${avSize}px;cursor:pointer">&nbsp;&nbsp;`;
+		if (this.schedule)	hallway+=`<img src="img/schedule2.png" id="co-schedule" style="height:${avSize}px;cursor:pointer;vertical-align:-10px">&nbsp;&nbsp;`
+		hallway+=`<img src="img/people.png" id="co-attendees" style="height:${avSize}px;cursor:pointer"></td>
+			<td style="z-index:2;text-align:right;width:33%"><img id="co-coffee" src="img/coffeebar.png"></td>
+			</tr></table>`;
 
 		this.rooms=[
-			{ zoom:"", title:"<br><img src='img/logo.png' style='width:30%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
+			{ zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room",
 				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
@@ -555,7 +599,7 @@ class App  {
 			${o.title}${o.content}<div id="co-Jo-${i}" class="co-join">Join!</div></div></div>`;
 			}
 		this.venue+=`</div></div>`;
-		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));								// Add venue
+		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));										// Add venue
 		$("#co-help").on("click",     (e)=>{ this.ShowHelp(); }); 										// ON HELPN
 		$("#co-zoomIn").on("click",   (e)=>{ this.scale=Math.min(4,this.scale+.5); this.Draw(); }); 	// ON ZOOM IN
 		$("#co-zoomOut").on("click",  (e)=>{ this.scale=Math.max(1,this.scale-.5); this.Draw(); }); 	// ON ZOOM OUT
@@ -607,7 +651,6 @@ class App  {
 		$("#pu-close").click(function() { $("#co-popupDiv").remove(); });								// Remove on click of close but
 		$("#co-popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500)							// Animate in and out		
 	}
-
 
 	function trace2(msg, p1, p2, p3, p4)										// CONSOLE 
 	{
