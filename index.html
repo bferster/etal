@@ -13,15 +13,14 @@
 <style>
 	:root 		{ 	--mobileOff:0px; --avSize:45px}
 	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
-	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0;color:#999; text-align:center; margin-top:15%; display:none; }
+	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px}
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); }
 	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  
-					font-size: 30px; text-align:center; height:100%;
+					text-align:center; height:100%;
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 3px solid #000; }
-	.co-join	{	position:absolute;left:calc(50% - 30px); width:60px; top:calc(100% - 26px);cursor:pointer; font-size:14px; z-index:2;
-					border:0px solid #fff; border-radius:12px; background-color:#2d6ab3; padding-bottom:1px; }
+	.co-room 	{	background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 2px solid#777 }
+	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#777; font-size:16px}
 	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
@@ -37,14 +36,16 @@
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666}
 	.co-people 	{	position:absolute; width:274px; height:50vh; background-color:#fff; border-radius:8px; z-index:2;
 					border:1px solid #666; padding:12px; font-size:12px; box-shadow:3px 3px 6px #666; }
-	.co-textS 	{	background-color:#dddddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; }
-	.co-textR 	{	background-color:#0099ff; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; float:right; color:#fff;	}
+	.co-textR 	{	background-color:#dddddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; text-align:left; }
+	.co-textS 	{	background-color:#0099ff; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; float:right; color:#fff; text-align:right}
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
 					.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
 
 	.co-logon 	{	border-radius:16px; padding:0 8px; width:200px; height: 24px; border:1px solid #999; font-size: 13px; text-align:center; }
 	.co-is 		{	border-radius:16px; padding:0 8px; height: 24px; border:1px solid #999; font-size: 13px; }
+	.co-bs 		{	display:inline-block; border-radius:16px; padding:0 8px; border:1px solid #eee; font-size: 13px; 
+					cursor:pointer; z-index:2; padding-bottom:1px; color:#fff}
 	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
 					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
 					font-size: 14px; text-align:center; display: none; }
@@ -61,10 +62,14 @@
 		<div id="co-main"></div>
 	</div>
 	<div id="splashDiv" class="co-splash">
-		<img src="img/logo.png" alt="" style="widows: 20%"><br><br>
+		<img src="img/logo.png" alt="" style="width: 20%"><br><br>
 		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
 		<br><br>
-		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type code to join"></div>
+		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"></div><br><br> 
+			<b style="colo"#00",>In order to use Zoom, we need to open it as a popup.</b><br>
+			Most browsers block pop-ups from opening.<br>
+			The address bar will show a red icon on the right.<br>
+			Allow thie site to always show popups.
 	</div>
 
 <script>
@@ -78,8 +83,7 @@
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		document.documentElement.style.setProperty("--avSize",avSize+"px");							// Set CSS var for avatar size
-		if (isMobile)	document.documentElement.style.setProperty("--mobileOff","100px");			// Set CSS var
-
+		if (isMobile) document.documentElement.style.setProperty("--mobileOff","100px"); 			// Set CSS mobile var
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url : 1;																// Set meeting id
 		app=new App(meetingId);                                      								// Alloc app
@@ -91,7 +95,7 @@
 				if (app.people[i].email == pid)														// If a match
 					break;																			// Quit looking
 			if (i == app.people.length) {															// Email not found
-				alert("This number not found, please try again"); 									// Alert
+				alert("This email was not found, please try again, or contact your meeting host"); // Alert
 				return;																				// Quit																				
 				}
 			app.InitProject(meetingId,i);															// Init project		
@@ -139,6 +143,7 @@ class App  {
 		this.scale=1;																				// Scale
 		this.meetingId=""+meetingId;																// Meeting id
 		this.myId="";																				// My unique id
+		this.curFloor="A";																			// Current floor
 		this.venue="";																				// Venue frame
 		this.people=[];																				// Holds attendees
 		this.rooms=[];																				// Holds rooms
@@ -313,14 +318,14 @@ class App  {
 		let y=$("#co-attendees").offset().top-50-this.by/2											// Top
 
 		let str=`<div id="co-people" class="co-people" style="left:${x}px;top:${y}px;background-color:#eee">
-			<img id="co-spc" style="float:right;cursor:pointer;margin-top:5px" src="/img/closedot.png" onclick="$('#co-people').remove()">
+			<img style="float:right;cursor:pointer;margin-top:5px" src="/img/closedot.png" onclick="$('#co-people').remove()">
 			<div style='text-align:center;font-size:18px'><b>Attendees</b></div><br>
 			<div id="co-spp"style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 140px);margin-bottom:12px;background-color:#fff;border:1px solid #999">`;
 		str+=`</div><table>
-			<tr><td>Sort by </td><td><select class="co-is" id="co-sps" style="width:auto">
+			<tr><td>Sort by </td><td><select class="co-is" id="co-sps" style="width:148px">
 			<option>None</option><option>Name</option><option>Organization</option></select></td></tr>
-			<tr><td>In </td><td><select class="co-is" id="co-spr" style="width:auto"></select></td></tr>	
-			<tr><td>Find </td><td><input class="co-is" id="co-spf" style="width:100px" placeholder="Type here"></td></tr></table>`;
+			<tr><td>In </td><td><select class="co-is" id="co-spr" style="width:148px"></select></td></tr>	
+			<tr><td>Find </td><td><input class="co-is" id="co-spf" style="width:130px;height:21px;" placeholder="Type here"></td></tr></table>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
 		$("#co-people").draggable();
 		$("#co-spr").append("<option>Any area</option><option>Hallway</option><option>Coffee bar</option>");
@@ -522,8 +527,10 @@ class App  {
 		let str=`<div id="co-sched" class="co-card"' style="top:12px; display:none;
 			left:${$("#co-hall").offset().left+12}px;
 			width:${$("#co-hall").width()-68}px; height:${b.top-80}px">
-			<b style="'font-size:30px">Event schedule</b><hr><br>
-				<br>Events listed here, along with button to add them to attendee's personal schedule.
+			<b style="'font-size:30px">Event schedule</b>
+			<img style="float:right;cursor:pointer" src="/img/closedot.png" onclick="$('#co-sched').remove()">
+			<hr><br>
+			<br>Events listed here, along with button to add them to attendee's personal schedule.
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
 		$("#co-sched").show("slide",{ direction:"down" });											// Slide up
@@ -563,34 +570,34 @@ class App  {
 		let i,j,o,row,n;
 		this.meetingId=""+meetingId;																	// Project id
 		this.myId=myId;																					// Project id
-		let hallway=`<div style="position:absolute;top:calc(100vh - 66px);width:calc(50% - 36px);padding:0 12px">
+		let hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
 			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:8px" src="img/coffeebar.png">
 			<div style="float:right;margin-top:18px">			
-				<img src="img/schedule2.png" id="co-schedule"  style="height:32px;cursor:pointer">&nbsp;
-				<img src="img/infodesk.png"  id="co-infoDesk"  style="height:32px;cursor:pointer">&nbsp;
+				<img src="img/schedule2.png" id="co-schedule"  style="height:32px;cursor:pointer;margin-right:12px">
+				<img src="img/infodesk.png"  id="co-infoDesk"  style="height:32px;cursor:pointer;margin-right:12px">;
 				<img src="img/people.png" 	 id="co-attendees" style="height:28px;cursor:pointer">
 			</div></div>`
 		
 		this.rooms=[
-			{ zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room",
+			{ zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall", floor:"1",  },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
 				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
 				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
 				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:this.people[this.myId].firstName+"\'s Room", cs:3, ce:3, rs:4, re:4, use:"room",
-				content:`` }
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", cs:3, ce:3, rs:4, re:4, use:"room",  floor:"1",
+				content:``,	title:"" }
 			];
 
 		if (this.meetingId.toLowerCase() == "aims") {
@@ -624,9 +631,14 @@ class App  {
 		for (i=1;i<this.rooms.length;++i) {														// For each room
 			o=this.rooms[i];																	// Point at it
 			this.venue+=`<div class="co-room" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
-			<div id="co-Rm-${i}" style="position:relative;height:100%">
-			${o.title}${o.content}<div id="co-Jo-${i}" class="co-join">Join!</div></div></div>`;
-			}
+				<div id="co-Rm-${i}" style="position:relative;height:100%">
+				<div class="co-roomHdr"><div style="display:inline-block;margin-left:48px">${o.title}</div>
+					<div id="co-Jo-${i}" class="co-bs" style="float:right;width:32px;margin:1px 8px 0 0">Join</div>
+					</div>
+			${o.content}</div></div>`;
+			
+		
+		}
 		this.venue+=`</div></div>`;
 		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));										// Add venue
 		$("#co-help").on("click",     (e)=>{ this.ShowHelp(); }); 										// ON HELPN
