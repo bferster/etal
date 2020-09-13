@@ -19,21 +19,21 @@
 					text-align:center; height:100%;
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 2px solid#777 }
-	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#777; font-size:16px}
+	.co-room 	{	background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 2px solid#777; }
+	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#777; font-size:16px; }
 	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
 					border:1px solid white; cursor:pointer; margin:-14px 0 0 calc(var(--avSize) - 4px); width:12px; height:12px; display:none; }
 	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
-					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
+					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
-					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666}
+					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666; }
 	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
-					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666}
+					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666; }
 					.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
-					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666}
+					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666; }
 	.co-people 	{	position:absolute; width:274px; height:50vh; background-color:#fff; border-radius:8px; z-index:2;
 					border:1px solid #666; padding:12px; font-size:12px; box-shadow:3px 3px 6px #666; }
 	.co-textR 	{	background-color:#dddddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; text-align:left; }
@@ -65,11 +65,12 @@
 		<img src="img/logo.png" alt="" style="width: 20%"><br><br>
 		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
 		<br><br>
-		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"></div><br><br> 
-			<b style="colo"#00",>In order to use Zoom, we need to open it as a popup.</b><br>
+		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"><br><br> 
+			<b style="color:#000">In order to use Zoom, we need to open it as a popup.</b><br>
 			Most browsers block pop-ups from opening.<br>
 			The address bar will show a red icon on the right.<br>
 			Allow thie site to always show popups.
+		</div>
 	</div>
 
 <script>
@@ -206,7 +207,7 @@ class App  {
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
 			if (v[4].charAt(0) == "Q")	$("#co-Av-"+id).css("display","none");						// Hide this person if quiet
 			else						$("#co-Av-"+id).css("display","block");						// Show them
-			if (v[4] == "B")			this.ArrangePeople();										// Arrange people at bar
+			if (v[4].match(/^[B|R]/))	this.ArrangePeople(v[4]);									// Arrange people at bar and rooms
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
 			$("#co-At-"+id).css("display",v[4].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
@@ -274,15 +275,40 @@ class App  {
 		let x2=$("#co-coffee").offset().left+w;														// Last stool
 		let y=this.by-$("#co-coffee").height()-avSize-4;											// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
-		if (!bar.length)	return
 		for (i=0;i<bar.length;++i) {																// For each barmate
 			if (bar[i] == this.myId)	continue;													// Skip me
 			$("#co-Av-"+bar[i]).animate({ left:x, top:y},0);										// Move there
-			$("#co-At-"+bar[i]).css("display","none");												// Hide nme tag
+			$("#co-At-"+bar[i]).css("display","none");												// Hide me tag
 			if (bar.length > 1) x+=w/(bar.length-1);												// Advance
 			}
-		if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y},0); // If I'm at the bar, move me
-		else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y},0);	// Move last one
+		if (bar.length) {
+			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y},0); // If I'm at the bar, move me
+			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y},0);		// Move last one
+			}
+		let o,j,ox,y2,rms=[];
+		for (i=0;i<this.rooms.length;++i)	rms.push([]);											// Make room arrays
+		for (i=0;i<this.people.length;++i) {														// For each person
+			o=this.people[i].stats;																	// Point at stats
+			if (o.charAt(0) == "R") rms[o.substr(1)].push(i);										// If in a room, add person to it
+			}
+		for (j=1;j<rms.length;++j) {																// For each room
+			ox=$("#co-Rm-"+j).offset().left+4;														// Left side
+			x=ox;																					// Start pos
+			x2=x+$("#co-Rm-"+j).width()-avSize-8;													// Width of space
+			w=avSize+2;																				// Full size spacing
+			y2=$("#co-Rm-"+j).offset().top+30;														// Top
+			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-8;							// Bottom
+			if (this.people[this.myId].stats.substr(1) == j)										// If I'm in this room		
+				$("#co-AvMe").animate({ left:x, top:y},0),x+=w; 									// Move me in
+			for (i=0;i<rms[j].length;++i) {															// For person in room
+				if (rms[j][i] == this.myId)	continue;												// Skip me
+				$("#co-Av-"+rms[j][i]).animate({ left:x, top:y},0);									// Move there
+				$("#co-At-"+rms[j][i]).css("display","none");										// Hide me tag
+				x+=w;																				// Advance
+				if (x > x2)	{ x=ox;	 y-=w; }														// Next row
+				if (y < y2)	break;																	// Quit if too many
+				}
+			}
 	}
 
 	ReportLocation(x, y, status="A")															// REPORT LOCATION TO SERVER
@@ -636,9 +662,7 @@ class App  {
 					<div id="co-Jo-${i}" class="co-bs" style="float:right;width:32px;margin:1px 8px 0 0">Join</div>
 					</div>
 			${o.content}</div></div>`;
-			
-		
-		}
+			}
 		this.venue+=`</div></div>`;
 		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));										// Add venue
 		$("#co-help").on("click",     (e)=>{ this.ShowHelp(); }); 										// ON HELPN
