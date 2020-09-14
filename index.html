@@ -13,15 +13,14 @@
 <style>
 	:root 		{ 	--mobileOff:0px; --avSize:45px}
 	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
-	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px}
-	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); }
-	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  
-					text-align:center; height:100%;
+	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
+	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0; }
+	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  text-align:center; height:100%; 
 					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-image:url("img/carpet2.jpg"); background-repeat:repeat; border: 2px solid#777; }
+	.co-room 	{	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 2px solid#777; }
 	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#777; font-size:16px; }
-	.co-roomTitle {	font-size:18px; margin:32px; color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
+	.co-roomTitle {	font-size:18px;  color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
@@ -41,7 +40,6 @@
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
 					.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
-
 	.co-logon 	{	border-radius:16px; padding:0 8px; width:200px; height: 24px; border:1px solid #999; font-size: 13px; text-align:center; }
 	.co-is 		{	border-radius:16px; padding:0 8px; height: 24px; border:1px solid #999; font-size: 13px; }
 	.co-bs 		{	display:inline-block; border-radius:16px; padding:0 8px; border:1px solid #eee; font-size: 13px; 
@@ -66,10 +64,10 @@
 		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
 		<br><br>
 		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"><br><br> 
-			<b style="color:#000">In order to use Zoom, we need to open it as a popup.</b><br>
-			Most browsers block pop-ups from opening.<br>
+			<b style="color:#000">In order to use Zoom, we need to open it as a popup.</b>
+			<p>Most browsers block pop-ups from opening.<br>
 			The address bar will show a red icon on the right.<br>
-			Allow thie site to always show popups.
+			Allow thie site to always show popups.</p>
 		</div>
 	</div>
 
@@ -593,9 +591,12 @@ class App  {
 
 	InitProject(meetingId, myId)																	// INIT PROJECT DATA
 	{
-		let i,j,o,row,n;
+		let i,j,o,row,n,w,h,x,y;
 		this.meetingId=""+meetingId;																	// Project id
-		this.myId=myId;																					// Project id
+		this.myId=myId;																					// My id
+		let nCols=4,nRows=4;																			// Venue shape																	
+		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
+	
 		let hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
 			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:8px" src="img/coffeebar.png">
@@ -606,7 +607,7 @@ class App  {
 			</div></div>`
 		
 		this.rooms=[
-			{ zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall", floor:"1",  },
+			{ zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:3, rs:1, re:5, content:hallway, use:"hall", floor:"1",  },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
 				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
@@ -620,51 +621,55 @@ class App  {
 				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
 				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
-				content:`<div class="co-roomTitle"><b>Digital Storytelling</b><br>Bill Ferster</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", cs:3, ce:3, rs:4, re:4, use:"room",  floor:"1",
-				content:``,	title:"" }
+			 { zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
+				content:"" },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4, use:"room", floor:"1",
+				content:"" }
 			];
 
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.rooms=[
 			{ zoom:"", title:"<br><img src='https://theiabm.org/wp-content/uploads/2019/04/Wall-Street.png' width='50%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:2, use:"room",
 				content:`<div style="font-size:18px;background-color:#c38d13;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join president<br><b>Chris Lesieutre</b><br><br>
 				<img src="https://www.wallstcom.com/wp-content/uploads/2020/02/Chris-L.png" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:2, re:2, use:"room",
 				 content:`<div class="co-roomTitle"><b>Dynatech 101</b><br>Sunny Branson</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:3, re:3, use:"room",
 				content:`<div class="co-roomTitle"><b>The Great Salt Lake</b><br>Pat Brown</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room",
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:2, use:"room",
 				content:`<div class="co-roomTitle"><b>Motorcycle Racing</b></Graphing><br>Bill Robertson</div>` },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room",
 				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room",
 				content:`<div class="co-roomTitle"><b>Non-linear Editing</b><br>Bill Ferster</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:this.people[this.myId].firstName+"\'s Room", cs:3, ce:3, rs:4, re:4, use:"room",
-				content:`` }
-				]
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4, use:"room", floor:"1",
+				content:"" }
+			]
 				}
 
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
 		${o.title}${o.content}</div>`;
-
 		for (i=1;i<this.rooms.length;++i) {														// For each room
 			o=this.rooms[i];																	// Point at it
-			this.venue+=`<div class="co-room" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
+			w=this.bx/nCols*(o.ce-o.cs+1);														// Room width
+			h=this.by/nRows*(o.re-o.rs+1)-26;													// Height
+			y=(o.rs > 1) ? this.by/nRows*o.rs : 0												// Set top
+	
+			this.venue+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
 				<div class="co-roomHdr"><div style="display:inline-block;margin-left:48px">${o.title}</div>
 					<div id="co-Jo-${i}" class="co-bs" style="float:right;width:32px;margin:1px 8px 0 0">Join</div>
 					</div>
-			${o.content}</div></div>`;
+				<br>${o.content}</div></div>`;
 			}
 		this.venue+=`</div></div>`;
 		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));										// Add venue
+	
 		$("#co-help").on("click",     (e)=>{ this.ShowHelp(); }); 										// ON HELPN
 		$("#co-zoomIn").on("click",   (e)=>{ this.scale=Math.min(4,this.scale+.5); this.Draw(); }); 	// ON ZOOM IN
 		$("#co-zoomOut").on("click",  (e)=>{ this.scale=Math.max(1,this.scale-.5); this.Draw(); }); 	// ON ZOOM OUT
