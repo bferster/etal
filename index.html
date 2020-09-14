@@ -20,7 +20,7 @@
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-image:url("img/carpet3.jpg"); background-repeat:repeat; border: 2px solid#777; }
 	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#777; font-size:16px; }
-	.co-roomTitle {	font-size:18px;  color:#000; pointer-events:none; text-shadow:2px 2px 6px #aaa; }
+	.co-roomTitle {	font-size:18px;  color:#000; pointer-events:none; margin-top:12px; text-shadow: -3px -3px 6px #a39372, 3px 3px 6px#a39372; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
@@ -67,7 +67,7 @@
 			<b style="color:#000">In order to use Zoom, we need to open it as a popup.</b>
 			<p>Most browsers block pop-ups from opening.<br>
 			The address bar will show a red icon on the right.<br>
-			Allow thie site to always show popups.</p>
+			Allow this site to always show popups.</p>
 		</div>
 	</div>
 
@@ -91,7 +91,7 @@
 		$("#co-logon").on("change",()=>{															// ON LOGON
 			let i,pid=$("#co-logon").val();															// Get value
 			for (i=0;i<app.people.length;++i) 														// For each person
-				if (app.people[i].email == pid)														// If a match
+				if (app.people[i].email.trim().toLowerCase() == pid.trim().toLowerCase())			// If a match
 					break;																			// Quit looking
 			if (i == app.people.length) {															// Email not found
 				alert("This email was not found, please try again, or contact your meeting host"); // Alert
@@ -191,6 +191,10 @@ class App  {
 				if ($("#co-qv-0").length) this.ShowQueue();											// Show the message queue, if open	
 				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
 				$("#co-queue").show();																// Show dot
+				let o=this.people[id];																// Point at person
+				let str=`New message from<hr><img class="co-avatar" src="${o.pic}">
+				<b>${o.firstName} ${o.lastName}</b><br>${o.org}<hr>${v[3]}`;		
+				Popup(str,5000);																	// Show popup
 				}
 			Sound("ding");																			// Ring the bell
 			}
@@ -407,6 +411,8 @@ class App  {
 		let x=$("#co-AvMe").css("left").replace("px","")-150+avSize/2;								// Get my pos x
 		let y=$("#co-AvMe").css("top").replace("px","")-326-12;										// Y
 		if (y < 12) flip=true,y=y-0+avSize+326+24;													// Flip it
+		if (x < 12)	x=12;																			// Too far left
+		if (x > this.bx-312)	x=this.bx-312;														// Too far right
 		let str=`<div id='co-card' class='co-qlist' style='left:${x}px;top:${y}px'>
 			<b style='font-size:18px'>Missed messages</b><hr><br>
 			<div style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 50px)">`;
@@ -451,7 +457,9 @@ class App  {
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-sched").remove();																	// Close schedule if open
 		let flip=false;																				// Position above avatar
-		if (y<12) flip=true,y=(y-0+avSize+224);														// Flip to bottom
+		if (y< 12) flip=true,y=(y-0+avSize+224);													// Flip to bottom
+		if (x < 12)	x=12;																			// Too far left
+		if (x > this.bx-362)	x=this.bx-362;														// Too far right
 		let o=this.people[id];																		// Point at person
 		let str=`<div id='co-card' class='co-card' style='left:${x}px;top:${y}px'>
 			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b><br><br>
@@ -461,7 +469,7 @@ class App  {
 				o.li=o.li.replace(/https:\/\//,"");
 				o.li=o.li.replace(/linkedin.com\//,"");
 				o.li=o.li.replace(/in\//,"");
-				str+=`<a href="https://linkedin.com/in/${o.li}" target="_blank">
+				str+=`<a href="https://link		if (x < 12)	x=12;																			// Too faredin.com/in/${o.li}" target="_blank">
 					<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
 				}
 			str+=`</p><button id="co-chatBut" style="position:absolute; left:225px; bottom:14px; cursor:pointer;
@@ -479,21 +487,24 @@ class App  {
 	Chat(id, infoDesk)																			// CHAT CLIENT
 	{
 		let i,flip=false;
-		let ox=$("#co-Av-"+id).css("left").replace("px","");										// Avatar left
-		let oy=$("#co-Av-"+id).css("top").replace("px","");											// Top
-		if (infoDesk) {
+		let ox=$("#co-Av-"+id).offset().left;														// Avatar left
+		let oy=$("#co-Av-"+id).offset().top;														// Top
+		if (infoDesk) {																				// If an info desk query
 			ox=$("#co-infoDesk").offset().left-7;													// Desk left
 			oy=$("#co-infoDesk").offset().top-4														// Top
 			}		
-		
-		let x=ox-150+avSize/2;;																		// Center X on avatar 
+		let x=ox-150+avSize/2;																		// Center X on avatar 
 		let y=oy-370-12;																			// Y atop avatar
 		if (y < 12) flip=true,y=(y-0+avSize+394);													// Flip it
+		if (x < 12)	x=12;																			// Too far left
+		if (x > this.bx-312)	x=this.bx-312;														// Too far right
+
+		let o=this.people[id];																		// Point at person
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
-		$("#co-AvMe").animate({ left:ox-0+avSize, top:oy});											// Animate me there
-		this.ReportLocation((ox-0+avSize)/this.by,oy/this.by,"A");									// Report my move
+			$("#co-AvMe").animate({ left:(ox-0+avSize), top:oy});											// Animate me there
+		this.ReportLocation((ox-0+avSize)/this.bx,oy/this.by,"A");									// Report my move
 			let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr>
 			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Send Zoom invite</button>
@@ -629,27 +640,26 @@ class App  {
 
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.rooms=[
-			{ zoom:"", title:"<br><img src='https://theiabm.org/wp-content/uploads/2019/04/Wall-Street.png' width='50%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:2, use:"room",
+			{ zoom:"", title:"<img src='misc/aimslogo.png' width='100%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
 				content:`<div style="font-size:18px;background-color:#c38d13;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
-				Please join president<br><b>Chris Lesieutre</b><br><br>
-				<img src="https://www.wallstcom.com/wp-content/uploads/2020/02/Chris-L.png" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
+				Please join GVC president<br><b>Micheal Cronk</b><br><br>
+				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:2, re:2, use:"room",
-				 content:`<div class="co-roomTitle"><b>Dynatech 101</b><br>Sunny Branson</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:3, re:3, use:"room",
-				content:`<div class="co-roomTitle"><b>The Great Salt Lake</b><br>Pat Brown</div>` },
-			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:2, use:"room",
-				content:`<div class="co-roomTitle"><b>Motorcycle Racing</b></Graphing><br>Bill Robertson</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
+				 content:`<div class="co-roomTitle">Panel discussion<br>Standards-based IP adoption</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room",
+				content:`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>` },
+			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room",
+				content:`<div class="co-roomTitle">AMWA NMOS<br>technology stack</div>` },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room",
-				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
+				 content:`<div class="co-roomTitle"">improving media workflows<br>for deployment</div>` },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room",
-				content:`<div class="co-roomTitle"><b>Non-linear Editing</b><br>Bill Ferster</div>` },
+				content:`<div class="co-roomTitle">Proposed IPMX<br>specification</div>` },
 			{ zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4, use:"room", floor:"1",
 				content:"" }
-			]
-				}
-
+				];
+			}
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re}">
@@ -665,7 +675,7 @@ class App  {
 				<div class="co-roomHdr"><div style="display:inline-block;margin-left:48px">${o.title}</div>
 					<div id="co-Jo-${i}" class="co-bs" style="float:right;width:32px;margin:1px 8px 0 0">Join</div>
 					</div>
-				<br>${o.content}</div></div>`;
+				${o.content}</div></div>`;
 			}
 		this.venue+=`</div></div>`;
 		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));										// Add venue
