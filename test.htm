@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>Yoga Timer</title>
+	<style type="text/css">
+		body { 			font-family:Verdana,Geneva,sans-serif; font-size:80px; }
+	</style>
+
+</head>
+<body>
+	<div id='txt'>Start</div>
+<script>
+
+var volume=100;
+var time=60;
+var trt=0;
+var sound="chime"
+var url=window.location.search.substring(1);	
+
+
+if (url)	time=url;
+
+Sound();
+var myVar=setInterval(Sound, time*1000);
+
+function Sound()										// PLAY SOUND
+	{
+		var snd=new Audio();													// Init audio object
+		if (!snd.canPlayType("audio/mpeg") || (snd.canPlayType("audio/mpeg") == "maybe")) 
+			snd=new Audio(sound+".ogg");										// Use ogg
+		else	
+			snd=new Audio(sound+".mp3");										// Use mp3
+		snd.volume=volume/100;												// Set volume
+		snd.play();															// Play it
+		document.getElementById('txt').innerText=Math.floor(trt)+" minutes";
+		trt+=time/60;
+	}
+</script>
+</body></html>
