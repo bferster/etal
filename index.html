@@ -78,7 +78,8 @@
 	let	avSize=45;																					// Avatar size
 	let butCol="#2d6ab3"																			// Color  of vutton and ui
 
-	$(window).resize(function() { if (app) app.Draw();	  })                                      // ON WINDOW RESIZE
+	$(window).resize(function() { if (app) app.Draw();	  })                                      	// ON WINDOW RESIZE
+	window.addEventListener("beforeunload", function(event) { app.ReportLocation(.5,.5, "Q") });	// Close me out from server
 		
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
