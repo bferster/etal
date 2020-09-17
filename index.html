@@ -670,7 +670,7 @@ class App  {
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
-		background-image:url('${o.rug}')">
+		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 		${o.title}${o.content}</div>`;
 		for (i=1;i<this.rooms.length;++i) {														// For each room
 			o=this.rooms[i];																	// Point at it
@@ -679,7 +679,7 @@ class App  {
 			y=(o.rs > 1) ? this.by/nRows*o.rs : 0												// Set top
 	
 			this.venue+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
-				background-image:url('${o.rug}')">
+			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
 				<div class="co-roomHdr"><div style="display:inline-block;margin-left:48px">${o.title}</div>
 					<div id="co-Jo-${i}" class="co-bs" style="float:right;width:32px;margin:1px 8px 0 0">Join</div>
