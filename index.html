@@ -8,7 +8,7 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="lib/jquery.ui.touch-punch.min.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
-	<title>èt • al Meeting</title>
+	<title>èt•al Meeting</title>
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px; --avSize:45px}
@@ -277,18 +277,22 @@ class App  {
 		let x=$("#co-coffee").offset().left;														// left side of bar
 		let w=$("#co-coffee").width()-avSize;														// Width of space
 		let x2=$("#co-coffee").offset().left+w;														// Last stool
-		let y=this.by-$("#co-coffee").height()-avSize+12;											// On top of bar area
+		let y=this.by-$("#co-coffee").height()-avSize+22;											// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
+		let inc=avSize+2;																			// Spacing between barmates
+		if (bar.length > 1)	inc=Math.min(inc,w/(bar.length-1));										// Squeeze them in?
+			
 		for (i=0;i<bar.length;++i) {																// For each barmate
 			if (bar[i] == this.myId)	continue;													// Skip me
 			$("#co-Av-"+bar[i]).animate({ left:x, top:y},0);										// Move there
 			$("#co-At-"+bar[i]).css("display","none");												// Hide me tag
-			if (bar.length > 1) x+=w/(bar.length-1);												// Advance
+			x+=inc;																					// Advance
 			}
 		if (bar.length) {
-			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x2, top:y},0); // If I'm at the bar, move me
-			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x2, top:y},0);		// Move last one
+			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x, top:y},0); // If I'm at the bar, move me
+			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x, top:y},0);	// Move last one
 			}
+	
 		let o,j,n,ox,y2,rms=[];
 		for (i=0;i<this.rooms.length;++i)	rms.push([]);											// Make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
@@ -586,13 +590,13 @@ class App  {
 		this.people=people;																				// Set data
 		for (i=0;i<people.length;++i) {																	// For each person
 			let id=people[i].id.split("~")[1];															// Split id out
-			this.pIndex[people[i].id]=i;																// Save index by full id
 			o=this.people[i];																			// Point at them
+			this.pIndex[people[i].id]=i;																// Save index by full id
 			o.x=Math.max(0,Math.min(o.x,95));															// Cap x to screen
 			o.y=Math.max(0,Math.min(o.y,95));															// Cap x to screen
 			if (!this.people[i].pic)	this.people[i].pic="avyou.png";									// Use generic pic
 			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
-			<img src="${o.pic}" style="width:${avSize-4}px;height:${avSize-4}px;border:2px solid #fff;border-radius:64px;"><br>
+			<img src="${o.pic}" style="width:${avSize-2}px;height:${avSize-2}px;border:1px solid #fff;border-radius:64px;"><br>
 			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
@@ -626,39 +630,39 @@ class App  {
 		
 		this.rooms=[
 			{ rug:"img/concrete.jpg", zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:3, rs:1, re:4, content:hallway, use:"hall", floor:"1",  },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
-				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
+			{ fcol:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
+				content:`<div style="font-size:18px;background-color:#999;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
+			{ fcol:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
 				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
+			{ fcol:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
+			{ fcol:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
+			{ fcol:"#a2733f", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
 				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` }
 			];
 
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.rooms=[
 			{ rug:"img/concrete.jpg", zoom:"", title:"<img src='misc/aimslogo.jpg' style='width:100%;border-radius:16px 16px 0 0'>", cs:2, ce:2, rs:1, re:4, content:hallway, use:"hall"  },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
+			{ fcol:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
 				content:`<div style="font-size:18px;background-image:url('misc/aimsbg.jpg');background-size:cover;color:#fff;margin:10%;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join GVG chairman<br><b>Micheal Cronk</b><br><br>
 				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
+			{ fcol:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
 				 content:`<div class="co-roomTitle">Panel discussion:<br>Standards-based IP adoption</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room",
+			{ fcol:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room",
 				content:`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
+			{ col:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
 				content:`<div class="co-roomTitle">AMWA NMOS<br>Technology stack</div>` },
-			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room",
+			{ fcol:"#a2733f", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room",
 				 content:`<div class="co-roomTitle"">improving media workflows<br>for deployment</div>` }
-					];
-			}
+			];
+		}
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
 
@@ -670,11 +674,12 @@ class App  {
 			w=this.bx/nCols*(o.ce-o.cs+1);														// Room width
 			h=this.by/nRows*(o.re-o.rs+1)-26;													// Height
 			y=(o.rs > 1) ? this.by/nRows*o.rs : 0												// Set top
-			if (!o.rug)	o.rug=this.rooms[i-1].rug;												// Use flooring from room above if not set
+			if (!o.rug)		o.rug=this.rooms[i-1].rug;											// Use flooring from room above if not set
+			if (!o.fcol)	o.fcol=this.rooms[i-1].fcol;										// Frame col
 			this.venue+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
-				<div class="co-roomHdr"><div style="display:inline-block;margin-left:48px">${o.title}</div>
+				<div class="co-roomHdr" style="background-color:${o.fcol}"><div style="display:inline-block;margin-left:48px">${o.title}</div>
 					<div id="co-Jo-${i}" class="co-bs" style="float:right;width:32px;margin:1px 8px 0 0">Join</div>
 					</div>
 				${o.content}</div></div>`;
