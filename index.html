@@ -12,17 +12,17 @@
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px; --avSize:45px}
-	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; margin:0px; box-sizing:content-box; }
+	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:8px; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
-	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0; }
-	.co-venue 	{	display:grid; grid-template-columns: 25% 50% 25%;  text-align:center; height:100%; 
-					text-shadow:2px 2px 3px #8a7a56; border-radius:8px; color:#fff; 
-					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-repeat:repeat; border: 2px solid#777; }
-	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#777; font-size:16px; }
-	.co-roomTitle {	font-size:18px;  color:#000; pointer-events:none; margin-top:12px; text-shadow: -3px -3px 6px #ccc, 3px 3px 6px#ccc; }
+	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - 16px - var(--mobileOff)); z-index:0;}
+	.co-venue 	{	display:grid; grid-template-columns: 25% calc(50% - 16px) 25%;  text-align:center; height:100%; grid-gap:8px;
+					color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+	.co-room 	{	background-repeat:repeat; border: 1px solid #999; border-radius:16px; }
+	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#2d6ab3; padding-top:6px;
+					font-size:16px; border-radius:16px 16px 0 0; }
+	.co-roomTitle {	font-size:18px;  color:#000; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; 
-					text-shadow: -2px -2px 4px #ccc, 2px 2px 2px #ccc; }
+					user-select:none; -webkit-user-select:none; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
 					border:1px solid white; cursor:pointer; margin:-14px 0 0 calc(var(--avSize) - 4px); width:12px; height:12px; display:none; }
@@ -277,7 +277,7 @@ class App  {
 		let x=$("#co-coffee").offset().left;														// left side of bar
 		let w=$("#co-coffee").width()-avSize;														// Width of space
 		let x2=$("#co-coffee").offset().left+w;														// Last stool
-		let y=this.by-$("#co-coffee").height()-avSize-4;											// On top of bar area
+		let y=this.by-$("#co-coffee").height()-avSize+12;											// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
 		for (i=0;i<bar.length;++i) {																// For each barmate
 			if (bar[i] == this.myId)	continue;													// Skip me
@@ -566,7 +566,7 @@ class App  {
 		let b=$("#co-schedule").offset();															// Get offset
 		let str=`<div id="co-sched" class="co-card"' style="top:12px; display:none;
 			left:${$("#co-hall").offset().left+12}px;
-			width:${$("#co-hall").width()-68}px; height:${b.top-80}px">
+			width:${$("#co-hall").width()-68}px; height:${b.top-110}px">
 			<b style="'font-size:30px">Event schedule</b>
 			<img style="float:right;cursor:pointer" src="/img/closedot.png" onclick="$('#co-sched').remove()">
 			<hr><br>
@@ -618,57 +618,50 @@ class App  {
 		let hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
 			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:8px" src="img/coffeebar.png">
-			<div style="float:right;margin-top:18px">			
+			<div style="float:right;margin:18px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:32px;cursor:pointer;margin-right:12px">
 				<img src="img/people.png" 	id="co-attendees" style="height:28px;cursor:pointer;margin-right:12px">
 				<img src="img/info.png"  	id="co-infoDesk"  style="height:32px;cursor:pointer">;
 			</div></div>`
 		
 		this.rooms=[
-			{ rug:"img/carpet1.jpg", zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:3, rs:1, re:5, content:hallway, use:"hall", floor:"1",  },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
+			{ rug:"img/concrete.jpg", zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:3, rs:1, re:4, content:hallway, use:"hall", floor:"1",  },
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
 				content:`<div style="font-size:18px;background-color:#42b97a;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
 				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room", floor:"1",
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
-				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
-				content:"" },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4, use:"room", floor:"1",
-				content:"" }
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
+				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` }
 			];
 
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.rooms=[
-			{ rug:"img/carpet1.jpg", zoom:"", title:"<img src='misc/aimslogo.jpg' style='width:100%'>", cs:2, ce:2, rs:1, re:5, content:hallway, use:"hall"  },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
+			{ rug:"img/concrete.jpg", zoom:"", title:"<img src='misc/aimslogo.jpg' style='width:100%;border-radius:16px 16px 0 0'>", cs:2, ce:2, rs:1, re:4, content:hallway, use:"hall"  },
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
 				content:`<div style="font-size:18px;background-image:url('misc/aimsbg.jpg');background-size:cover;color:#fff;margin:10%;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
 				Please join GVG chairman<br><b>Micheal Cronk</b><br><br>
 				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
 				 content:`<div class="co-roomTitle">Panel discussion:<br>Standards-based IP adoption</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:1, ce:1, rs:4, re:4, use:"room",
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room",
 				content:`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:1, re:1, use:"room",
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
 				content:`<div class="co-roomTitle">AMWA NMOS<br>Technology stack</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:2, re:2, use:"room",
-				 content:`<div class="co-roomTitle"">improving media workflows<br>for deployment</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room E", cs:3, ce:3, rs:3, re:3, use:"room",
-				content:`<div class="co-roomTitle">Proposed IPMX<br>specification</div>` },
-			{ rug:"img/carpet3.jpg", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room F", cs:3, ce:3, rs:4, re:4, use:"room", floor:"1",
-				content:"" }
-				];
+			{ rug:"", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room",
+				 content:`<div class="co-roomTitle"">improving media workflows<br>for deployment</div>` }
+					];
 			}
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
+
 		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 		${o.title}${o.content}</div>`;
@@ -677,7 +670,7 @@ class App  {
 			w=this.bx/nCols*(o.ce-o.cs+1);														// Room width
 			h=this.by/nRows*(o.re-o.rs+1)-26;													// Height
 			y=(o.rs > 1) ? this.by/nRows*o.rs : 0												// Set top
-	
+			if (!o.rug)	o.rug=this.rooms[i-1].rug;												// Use flooring from room above if not set
 			this.venue+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
