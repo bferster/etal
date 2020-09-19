@@ -77,6 +77,7 @@
 	let app=null;																					// Holds app
 	let	avSize=45;																					// Avatar size
 	let butCol="#2d6ab3"																			// Color  of vutton and ui
+	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 
 	$(window).resize(function() { if (app) app.Draw();	  })                                      	// ON WINDOW RESIZE
 	window.addEventListener("beforeunload", function(event) { app.ReportLocation(.5,.5, "Q") });	// Close me out from server
@@ -155,7 +156,8 @@ class App  {
 		this.status="";																				// My status
 		this.infoDeskId=6;																			// IF of info desk person
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
-		this.ws=new WebSocket('ws://'+window.location.host+':8080');								// Open websocket											
+		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
+		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
 		this.ws.onerror=(e)=> { 																	// ON ERROR
@@ -512,7 +514,7 @@ class App  {
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
-			$("#co-AvMe").animate({ left:(ox-0+avSize), top:oy});											// Animate me there
+//		$("#co-AvMe").animate({ left:(ox-0+avSize), top:oy});										// Animate me there
 		this.ReportLocation((ox-0+avSize)/this.bx,oy/this.by,"A");									// Report my move
 			let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr>
@@ -657,7 +659,7 @@ class App  {
 				 content:`<div class="co-roomTitle">Panel discussion:<br>Standards-based IP adoption</div>` },
 			{ fcol:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room",
 				content:`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>` },
-			{ col:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
+			{ fcol:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
 				content:`<div class="co-roomTitle">AMWA NMOS<br>Technology stack</div>` },
 			{ fcol:"#a2733f", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room",
 				 content:`<div class="co-roomTitle"">improving media workflows<br>for deployment</div>` }
