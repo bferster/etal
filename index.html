@@ -17,27 +17,26 @@
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - 16px - var(--mobileOff)); z-index:0;}
 	.co-venue 	{	display:grid; grid-template-columns: 25% calc(50% - 16px) 25%;  text-align:center; height:100%; grid-gap:8px;
 					color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-repeat:repeat; border: 1px solid #999; border-radius:16px; }
-	.co-roomHdr	{	width:100%; height:26px; text-align:center; color:#fff; background-color:#2d6ab3; padding-top:6px;
-					font-size:16px; border-radius:16px 16px 0 0; }
-	.co-roomTitle {	font-size:18px;  color:#000; pointer-events:none; margin-top:12px; }
+	.co-room 	{	background-repeat:repeat; border: 1px solid #999; border-radius:0px; }
+	.co-roomHdr	{	width:calc(100% - 24px); text-align:left; color:#fff; padding:12px; font-size:16px; }
+	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; 
 					user-select:none; -webkit-user-select:none; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
 					border:1px solid white; cursor:pointer; margin:-14px 0 0 calc(var(--avSize) - 4px); width:12px; height:12px; display:none; }
-	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:8px;
-					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666; }
+	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:4px;
+					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
-					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666; }
-	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:16px;
-					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:3px 3px 6px #666; }
-					.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
-					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:3px 3px 6px #666; }
+					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
+	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:12px;
+					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
+	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
+					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
+	.co-textR 	{	background-color:#dddddd; border-radius:16px; padding:4px 8px; width:fit-content; max-width: 66%; margin:4px 6px; clear:both; float:left;  text-align:left; }
+	.co-textS 	{	background-color:#0099ff; border-radius:16px; padding:4px 8px; width:fit-content; max-width: 66%; margin:4px 6px; clear:both; float:right; text-align:right; color:#fff; }
 	.co-people 	{	position:absolute; width:274px; height:50vh; background-color:#fff; border-radius:8px; z-index:2;
 					border:1px solid #666; padding:12px; font-size:12px; box-shadow:3px 3px 6px #666; }
-	.co-textR 	{	background-color:#dddddd; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; text-align:left; }
-	.co-textS 	{	background-color:#0099ff; border-radius:16px; padding:2px 8px; width:fit-content; max-width: 66%; margin:5px 0; clear:both; float:right; color:#fff; text-align:right}
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
 					.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
@@ -79,8 +78,8 @@
 	let butCol="#2d6ab3"																			// Color  of vutton and ui
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 
-	$(window).resize(function() { if (app) app.Draw();	  })                                      	// ON WINDOW RESIZE
-	window.addEventListener("beforeunload", function(event) { app.ReportLocation(.5,.5, "Q") });	// Close me out from server
+	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
+	window.addEventListener("beforeunload",  ()=>{ app.ReportLocation(.5,.5, "Q") });				// Close me out from server
 		
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
@@ -105,10 +104,7 @@
 			app.ReportLocation(.5,.5);																// Report location to set server myId
 			$("#splashDiv").fadeOut();																// Fade out splash
 			$("#co-top").animate({opacity:1},1000,()=>{ app.ArrangePeople() });						// Fade in main, the arrange people
-			$("[id^=co-Av]").fadeIn(1500) 															// Fade in avatars
-			$("#co-Av-"+app.myId).hide();															// Hide my own
-			for (i=0;i<app.people.length;++i) 														// For each person
-				if (app.people[i].stats == "Q")	$("#co-Av-"+i).hide();								// Hide people who are quiet
+			app.ShowPeople();																		// Show people																		
 			if (pid.toLowerCase() == "demo") Demo();												// Run demo
 		});
 	
@@ -129,7 +125,8 @@
 
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
-				}
+				app.ws.send(`U|${app.meetingId}`);													// Request people data	
+			}
 			});
 	});	
  
@@ -139,7 +136,7 @@
 
 class App  {																					
 
-	constructor(meetingId)   																// CONSTRUCTOR
+	constructor(meetingId)   																	// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
 		this.scale=1;																				// Scale
@@ -154,7 +151,8 @@ class App  {
 		this.queue=[];																				// Contact queue
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
-		this.infoDeskId=6;																			// IF of info desk person
+		this.infoDeskId=6;																			// Id of info desk person
+		this.curChat=-1;																			// Who I'm chatting with																			
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -184,9 +182,8 @@ class App  {
 		if (v[0] == "C") {																			// If chat
 			if (meeting != this.meetingId)	return;													// Not this meeting
 			id=this.pIndex[v[2]];																	// Get index from id			
-			
 			this.chats.push({ dir:0, id:id, msg:v[3] });											// Archive
-			if ($("#co-textDiv").length) {															// If chat window is open
+			if (($("#co-textDiv").length) && (this.curChat == id)) {								// If chat window is open with same person
 				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
@@ -204,8 +201,8 @@ class App  {
 			}
 		else if (v[0] == "L")	{
 			if (meeting != this.meetingId)	return;													// Not this meeting
-			let x=v[2]/100*this.bx;																	// Calc x from %
-			let y=v[3]/100*this.by;																	// Y
+			let x=v[2]/100*(this.bx-12);															// Calc x from %
+			let y=v[3]/100*(this.by-12);															// Y
 			x=Math.max(0,Math.min(this.bx-avSize,x));												// Cap x to screen
 			y=Math.max(0,Math.min(this.by-avSize*2,y));												// Y
 			id=this.pIndex[v[1]];																	// Get index from id			
@@ -218,6 +215,7 @@ class App  {
 			$("#co-At-"+id).css("display",v[4].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
+		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
 	}
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
@@ -236,8 +234,8 @@ class App  {
 		else if (targetId.match(/co-Rm-/)) {														// In a room
 			this.status="R"+targetId.substr(6);														// Status with room number
 			}
-		else if (targetId == "co-infoDesk")  { this.Chat(this.infoDeskId,true);			return; }	// ON INFO DESK BUTTON
-		else if (targetId == "co-attendees") { this.ShowPeople(this.infoDeskId,true);	return; }	// ON PEOPLES BUTTON
+		else if (targetId == "co-infoDesk")  { this.Chat(this.infoDeskId,true); return; }			// ON INFO DESK BUTTON
+		else if (targetId == "co-attendees") { this.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
 		else if (targetId == "co-schedule") {														// ON SCHEDULE BUTTON
 			this.ShowSchedule();																	// Show schedule
 			return;																					// Quit
@@ -260,17 +258,39 @@ class App  {
 		x=Math.max(0,Math.min(this.bx-avSize,x));													// Cap x to screen
 		y=Math.max(0,Math.min(this.by-avSize,y));													// Y
 		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
-		this.ReportLocation(x/this.bx,y/this.by,this.status);										// Report my move
+		this.ReportLocation(x/(this.bx-12),y/(this.by-12),this.status);								// Report my move
+		this.curChat=-1;																			// Not chatting with anyone
+	}
+
+	ShowPeople()																				// SHOW PEOPLE AVATARS
+	{
+		let i;
+		$("[id^=co-Av]").fadeIn(1500) 																// Fade in avatars
+			$("#co-Av-"+this.myId).hide();															// Hide my own
+			for (i=0;i<this.people.length;++i) 														// For each person
+				if (this.people[i].stats == "Q")	$("#co-Av-"+i).hide();							// Hide people who are quiet
 	}
 
 	StartZoom(link)																				// INITIATE ZOOM
 	{
-		if (window.location.host == "localhost") {
-			Popup("Zooming!")
-			return;
+		if (link && link.match(/zoom/i)) {
+			if (window.location.host == "localhost") {
+				Popup("Zooming!")
+				return;
+				}
+			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
+			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
-		let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");		// Open zoom link
-		setTimeout(function(){ myWin.close(); },10000);												// Close after 10 secs
+		else{
+			$("#co-iframe").remove(); 																// Remove old iframe
+			let str=`<div id="co-iframe" class="co-card"' style="top:12px;padding:0;background-color:#ccc;
+			left:${$("#co-hall").offset().left+12}px;top:150px;
+			width:${$("#co-hall").width()-24}px; height:${($("#co-hall").width()-30)*.5625}px">
+			<img style="float:right;margin:8px;cursor:pointer" src="/img/closedot.png" onclick="$('#co-iframe').remove()">
+			<br><iframe style="width:100%;height:100%" src="${link}" frameborder="0" allowfullscreen></iframe>`;
+			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
+			$("#co-iframe").draggable();
+			}
 	}
 
 	ArrangePeople()																				// ARRANGE COFFEE BAR / ROOM MEMBERS
@@ -344,13 +364,14 @@ class App  {
 // CARDS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ShowPeople()																				// SHOW THE ATTENDEES
+	ShowAttendees()																				// SHOW THE ATTENDEES
 	{
 		let i,selects=[];
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-card").remove();																		// Close 
 		$("#co-sched").remove();																	// Close
 		$("#co-people").remove();																	// Close
+		this.curChat=-1;																			// Not chatting with anyone
 	
 		let x=$("#co-attendees").offset().left-133;													// Left
 		let y=$("#co-attendees").offset().top-50-this.by/2											// Top
@@ -419,6 +440,7 @@ class App  {
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-card").remove();																		// Close card if open
 		$("#co-sched").remove();																	// Remove old one
+		this.curChat=-1;																			// Not chatting with anyone
 		let x=$("#co-AvMe").css("left").replace("px","")-150+avSize/2;								// Get my pos x
 		let y=$("#co-AvMe").css("top").replace("px","")-326-12;										// Y
 		if (y < 12) flip=true,y=y-0+avSize+326+24;													// Flip it
@@ -462,19 +484,21 @@ class App  {
 
 	ShowCard(id)																				// SHOW BUSINESS CARD
 	{
-		let x=$("#co-Av-"+id).css("left").replace("px","")-175+avSize/2;;							// Center X on avatar 
-		let y=$("#co-Av-"+id).css("top").replace("px","")-200-12;									// Y atop avatar
+		let x=$("#co-Ap-"+id).offset().left-175+avSize/2;;											// Center X on avatar 
+		let y=$("#co-Ap-"+id).offset().top-200-12;													// Y atop avatar
 		$("#co-card").remove();																		// Close card if open
 		$("#co-chat").remove();																		// Close chat if open
 		$("#co-sched").remove();																	// Close schedule if open
+		this.curChat=-1;																			// Not chatting with anyone
 		let flip=false;																				// Position above avatar
 		if (y< 12) flip=true,y=(y-0+avSize+224);													// Flip to bottom
 		if (x < 12)	x=12;																			// Too far left
 		if (x > this.bx-362)	x=this.bx-362;														// Too far right
 		let o=this.people[id];																		// Point at person
 		let str=`<div id='co-card' class='co-card' style='left:${x}px;top:${y}px'>
-			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b><br><br>
-			<b>${o.title}<br>${o.org}</b><br><br>Interests: ${o.ints}<br>
+			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b>
+			<p><b>${o.title} | ${o.org}</b></p>
+			<p>Interests: ${o.ints}<p>
 			<p style="position:absolute;left:24px;bottom:0">`;
 			if (o.li) {
 				o.li=o.li.replace(/https:\/\//,"");
@@ -483,9 +507,9 @@ class App  {
 				str+=`<a href="https://link		if (x < 12)	x=12;																			// Too faredin.com/in/${o.li}" target="_blank">
 					<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
 				}
-			str+=`</p><button id="co-chatBut" style="position:absolute; left:225px; bottom:14px; cursor:pointer;
-				border-radius:20px; width:100px; background-color:#2d6ab3; color:#fff">
-				Chat now!</button> &nbsp;&nbsp
+			str+=`</p><div id="co-chatBut" style="position:absolute; left:154px; bottom:10px; cursor:pointer;
+				border-radius:30px;width:36px;background-color:#2d6ab3; color:#fff; height:26px; padding-top:10px; font-size:12px">
+				chat</div> &nbsp;&nbsp
 				<div style="position:absolute;left:166px; top:${flip ? "-10" : "195"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};
 				border-style:solid; border-width: 14px 8px 0 8px;
@@ -498,8 +522,8 @@ class App  {
 	Chat(id, infoDesk)																			// CHAT CLIENT
 	{
 		let i,flip=false;
-		let ox=$("#co-Av-"+id).offset().left;														// Avatar left
-		let oy=$("#co-Av-"+id).offset().top;														// Top
+		let ox=$("#co-Ap-"+id).offset().left;														// Avatar left
+		let oy=$("#co-Ap-"+id).offset().top;														// Top
 		if (infoDesk) {																				// If an info desk query
 			ox=$("#co-infoDesk").offset().left-7;													// Desk left
 			oy=$("#co-infoDesk").offset().top-4														// Top
@@ -511,17 +535,16 @@ class App  {
 		if (x > this.bx-312)	x=this.bx-312;														// Too far right
 
 		let o=this.people[id];																		// Point at person
+		this.curChat=id;																			// Set curChat
 		$("#co-card").remove();																		// Remove old one
 		$("#co-chat").remove();																		// Remove old one
 		$("#co-sched").remove();																	// Remove old one
-//		$("#co-AvMe").animate({ left:(ox-0+avSize), top:oy});										// Animate me there
-		this.ReportLocation((ox-0+avSize)/this.bx,oy/this.by,"A");									// Report my move
 			let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
-			<b>Chat with ${this.people[id].firstName}</b><hr>
-			<button id="co-zoomBut"  style="cursor:pointer; border-radius:20px; background-color:#2d6ab3; color:#fff">Send Zoom invite</button>
-			<div id="co-textDiv" style="height:235px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:0 4px"></div>														
+			<b>Chat with ${this.people[id].firstName}</b><hr style="margin:8px 32px">
+			Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
+			<div id="co-textDiv" style="height:222px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
 			<div style="position:absolute;top:330px;left:24px">
-				<input  id="revText" placeholder="Type here..." class='co-is' style='width:202px'>			
+				<input  id="revText" placeholder="Type here..." class='co-is' style='width:202px;'>			
 				<img id='revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:5px;cursor:pointer'>
 				</div>	
 			<div style="position:absolute;left:141px; top:${flip ? "-10" : "365"}px; width:0;height:0; 
@@ -586,10 +609,11 @@ class App  {
 // DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	AddPeople(people)																				// ADD PEOPLE TO MEETING
+	AddPeople(people, show)																				// ADD PEOPLE TO MEETING
 	{
 		let i,o,str="";
 		this.people=people;																				// Set data
+		$("[id^=co-Av-]").remove();		$("#co-AvMe").remove();											// Remove existing people
 		for (i=0;i<people.length;++i) {																	// For each person
 			let id=people[i].id.split("~")[1];															// Split id out
 			o=this.people[i];																			// Point at them
@@ -598,20 +622,21 @@ class App  {
 			o.y=Math.max(0,Math.min(o.y,95));															// Cap x to screen
 			if (!this.people[i].pic)	this.people[i].pic="avyou.png";									// Use generic pic
 			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
-			<img src="${o.pic}" style="width:${avSize-2}px;height:${avSize-2}px;border:1px solid #fff;border-radius:64px;"><br>
+			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize-2}px;height:${avSize}px;border-radius:64px;"><br>
 			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
-
+	
+		if (show) this.ShowPeople()																		// If updating, show people
 		this.infoDeskId=this.pIndex[this.meetingId+"~"+this.infoDeskId];								// Convert info id to index
 		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
 		$("#co-AvMe").draggable({ containment:"window", stop:(e,ui)=>{ 
-			this.ReportLocation(ui.position.left/this.bx,ui.position.top/this.by);						// Report my move
+			this.ReportLocation(ui.position.left/(this.bx-12),ui.position.top/(this.by-12));			// Report my move
 			}})
 		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
-		}
+	}
 
 	InitProject(meetingId, myId)																	// INIT PROJECT DATA
 	{
@@ -631,40 +656,41 @@ class App  {
 			</div></div>`
 		
 		this.rooms=[
-			{ rug:"img/concrete.jpg", zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:3, rs:1, re:4, content:hallway, use:"hall", floor:"1",  },
-			{ fcol:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
-				content:`<div style="font-size:18px;background-color:#999;color:#fff;margin:24px;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
+			{ rug:"#d8c4ae", zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:3, rs:1, re:4, content:hallway, use:"hall", floor:"1",  },
+			{ rug:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
+				content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none; ">
 				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
-				<img src="liz.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
+				<img src="liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ fcol:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
+			{ rug:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
 				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ fcol:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
+			{ rug:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ fcol:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
+			{ rug:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
 				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ fcol:"#a2733f", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
-				 content:`<div class="co-roomTitle""><b>Birds of a Feather</b><br>Computer animation</div>` }
-			];
+			{ rug:"#a2733f", zoom:"https://www.youtube.com/embed/YVbkexkMwag", title:"Movie Theater", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
+				 content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div><br>` }
+				 	];
 
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.rooms=[
-			{ rug:"img/concrete.jpg", zoom:"", title:"<img src='misc/aimslogo.jpg' style='width:100%;border-radius:16px 16px 0 0'>", cs:2, ce:2, rs:1, re:4, content:hallway, use:"hall"  },
-			{ fcol:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
-				content:`<div style="font-size:18px;background-image:url('misc/aimsbg.jpg');background-size:cover;color:#fff;margin:10%;padding:12px;border:2px solid #fff;border-radius:8px;pointer-events:none; ">
+			{ rug:"#d8c4ae", zoom:"", title:"<img src='misc/aimslogo.jpg' style='width:100%'>", cs:2, ce:2, rs:1, re:4, content:hallway, use:"hall"  },
+			{ rug:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
+				content:`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
 				Please join GVG chairman<br><b>Micheal Cronk</b><br><br>
-				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:33%;border:2px solid #fff;border-radius:300px"><br>
+				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:50%;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ fcol:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
+			{ rug:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
 				 content:`<div class="co-roomTitle">Panel discussion:<br>Standards-based IP adoption</div>` },
-			{ fcol:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room",
+			{ rug:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room",
 				content:`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>` },
-			{ fcol:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
+			{ rug:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
 				content:`<div class="co-roomTitle">AMWA NMOS<br>Technology stack</div>` },
-			{ fcol:"#a2733f", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room D", cs:3, ce:3, rs:3, re:3, use:"room",
-				 content:`<div class="co-roomTitle"">improving media workflows<br>for deployment</div>` }
+			{ rug:"#a2733f", zoom:"https://www.youtube.com/embed/YVbkexkMwag", title:"Movie Theater", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
+				 content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div><br>` }
 			];
 		}
+
 		this.venue=`<div id="co-grid" class="co-venue">`;
 		o=this.rooms[0];
 
@@ -677,24 +703,24 @@ class App  {
 			h=this.by/nRows*(o.re-o.rs+1)-26;													// Height
 			y=(o.rs > 1) ? this.by/nRows*o.rs : 0												// Set top
 			if (!o.rug)		o.rug=this.rooms[i-1].rug;											// Use flooring from room above if not set
-			if (!o.fcol)	o.fcol=this.rooms[i-1].fcol;										// Frame col
-			this.venue+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
+				this.venue+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
-				<div class="co-roomHdr" style="background-color:${o.fcol}"><div style="display:inline-block;margin-left:48px">${o.title}</div>
-					<div id="co-Jo-${i}" class="co-bs" style="float:right;width:32px;margin:1px 8px 0 0">Join</div>
-					</div>
-				${o.content}</div></div>`;
+				<div class="co-roomHdr">${o.title}
+				<div id="co-Jo-${i}" class="co-bs" style="${o.zoom ? "" : "visibility:hidden;"}float:right">
+				${(o.zoom && o.zoom.match(/zoom/i)) ? "Join" : "View"}</div>
+				</div>${o.content}</div></div>`;
 			}
 		this.venue+=`</div></div>`;
 		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));										// Add venue
 	
-		$("#co-help").on("click",     (e)=>{ this.ShowHelp(); }); 										// ON HELPN
-		$("#co-zoomIn").on("click",   (e)=>{ this.scale=Math.min(4,this.scale+.5); this.Draw(); }); 	// ON ZOOM IN
-		$("#co-zoomOut").on("click",  (e)=>{ this.scale=Math.max(1,this.scale-.5); this.Draw(); }); 	// ON ZOOM OUT
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
-		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }); 		// ON JOIN CLICK
-		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX-30,e.pageY-70,e.target.id) }}); // ON DROP ON  ROOM
+		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 			// ON JOIN CLICK
+		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON JOIN
+		$("[id^=co-Rm-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON ROOM
+		$("#co-quiet").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 			// ON DROP ON QUIET AREA
+		$("#co-coffee").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON COFFEE BAR
+	
 	}
 
 } // APP CLASS CLOSURE
