@@ -65,7 +65,7 @@
 		<img src="img/logo.png" alt="" style="width: 20%"><br><br>
 		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
 		<br><br>
-		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"><br><br> 
+		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"><br><br><br> 
 			<b style="color:#000">In order to use Zoom, we need to open it as a popup.</b>
 			<p>Most browsers block pop-ups from opening.<br>
 			The address bar will show a red icon on the right.<br>
@@ -77,7 +77,7 @@
 
 	let app=null;																					// Holds app
 	let	avSize=45;																					// Avatar size
-	let butCol="#2d6ab3"																			// Color  of vutton and ui
+	let butCol="#5b66cb"																			// Color  of vutton and ui
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
@@ -223,10 +223,7 @@ class App  {
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
-		$("#co-card").remove();																		// Close card if open
-		$("#co-chat").remove();																		// Close chat if open
-		$("#co-sched").remove();																	// Remove old one
-	
+		this.CloseAll();																			// Close all open dialogs
 		if (targetId.match(/co-Jo-/)) {																// Join a room
 			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
 			if (!link)	return;																		// Quit if no link set
@@ -275,6 +272,7 @@ class App  {
 
 	StartZoom(link)																				// INITIATE ZOOM
 	{
+		this.CloseAll();																			// Close all open dialogs
 		if (link && link.match(/zoom/i)) {
 	//		this.ShowWebRTC(link)
 				if (window.location.host == "localhost") {
@@ -285,7 +283,6 @@ class App  {
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
 		else{
-			$("#co-iframe").remove(); 																// Remove old iframe
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;
 			left:${$("#co-hall").offset().left+12}px;top:150px;
 			width:${$("#co-hall").width()-24}px; height:${($("#co-hall").width()-30)*.5625}px">
@@ -298,9 +295,9 @@ class App  {
 
 	ShowWebRTC(link)																			// WEBRTC DEMO
 	{
+		this.CloseAll();																			// Close all open dialogs
 		let id="bferster"+Math.floor(Math.random()*10000+45);									// Random ID
 		link=`https://appr.tc/r/${id}?hd=true`;
-		$("#co-iframe").remove(); 																// Remove old iframe
 		let str=`<div id="co-iframe" class="co-card"' style="top:12px;padding:0;background-color:#ccc;
 		left:${$("#co-hall").offset().left+12}px;top:150px;
 		width:${$("#co-hall").width()-24}px; height:${($("#co-hall").width()-30)*.5625}px">
@@ -378,32 +375,36 @@ class App  {
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CARDS
+// DIALOGS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	CloseAll()																					// CLOSE ALL OPEN DIALOGS
+	{
+		$("#co-chat").remove();																		// Close chat if open
+		$("#co-card").remove();																		
+		$("#co-sched").remove();																	
+		$("#co-people").remove();																	
+		$("#co-iframe").remove(); 																	
+	}
 
 	ShowAttendees()																				// SHOW THE ATTENDEES
 	{
 		let i,selects=[];
-		$("#co-chat").remove();																		// Close chat if open
-		$("#co-card").remove();																		// Close 
-		$("#co-sched").remove();																	// Close
-		$("#co-people").remove();																	// Close
+		this.CloseAll();																			// Close all open dialogs
 		this.curChat=-1;																			// Not chatting with anyone
-	
 		let x=$("#co-attendees").offset().left-133;													// Left
 		let y=$("#co-attendees").offset().top-50-this.by/2											// Top
+//			<img style="float:right;cursor:pointer;margin-top:5px" src="/img/closedot.png" onclick="$('#co-people').remove()">
 
 		let str=`<div id="co-people" class="co-people" style="left:${x}px;top:${y}px;background-color:#eee">
-			<img style="float:right;cursor:pointer;margin-top:5px" src="/img/closedot.png" onclick="$('#co-people').remove()">
 			<div style='text-align:center;font-size:18px'><b>Attendees</b></div><br>
-			<div id="co-spp"style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 140px);margin-bottom:12px;background-color:#fff;border:1px solid #999">`;
-		str+=`</div><table>
+			<div id="co-spp"style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 140px);margin-bottom:12px;background-color:#fff;border:1px solid #999">
+			</div><table>
 			<tr><td>Sort by </td><td><select class="co-is" id="co-sps" style="width:148px">
 			<option>None</option><option>Name</option><option>Organization</option></select></td></tr>
 			<tr><td>In </td><td><select class="co-is" id="co-spr" style="width:148px"></select></td></tr>	
 			<tr><td>Find </td><td><input class="co-is" id="co-spf" style="width:130px;height:21px;" placeholder="Type here"></td></tr></table>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-		$("#co-people").draggable();
 		$("#co-spr").append("<option>Any area</option><option>Hallway</option><option>Coffee bar</option>");
 		fillPeople();
 		for (i=1;i<this.rooms.length;++i)	$("#co-spr").append("<option>"+this.rooms[i].title+"</option>");
@@ -454,9 +455,7 @@ class App  {
 	ShowQueue()																					// SHOW QUEUE DOT
 	{
 		let i,flip=false;
-		$("#co-chat").remove();																		// Close chat if open
-		$("#co-card").remove();																		// Close card if open
-		$("#co-sched").remove();																	// Remove old one
+		this.CloseAll();																			// Close all open dialogs
 		this.curChat=-1;																			// Not chatting with anyone
 		let x=$("#co-AvMe").css("left").replace("px","")-150+avSize/2;								// Get my pos x
 		let y=$("#co-AvMe").css("top").replace("px","")-326-12;										// Y
@@ -503,9 +502,7 @@ class App  {
 	{
 		let x=$("#co-Ap-"+id).offset().left-175+avSize/2;;											// Center X on avatar 
 		let y=$("#co-Ap-"+id).offset().top-200-12;													// Y atop avatar
-		$("#co-card").remove();																		// Close card if open
-		$("#co-chat").remove();																		// Close chat if open
-		$("#co-sched").remove();																	// Close schedule if open
+		this.CloseAll();																			// Close all open dialogs
 		this.curChat=-1;																			// Not chatting with anyone
 		let flip=false;																				// Position above avatar
 		if (y< 12) flip=true,y=(y-0+avSize+224);													// Flip to bottom
@@ -539,6 +536,7 @@ class App  {
 	Chat(id, infoDesk)																			// CHAT CLIENT
 	{
 		let i,flip=false;
+		this.CloseAll();																			// Close all open dialogs
 		let ox=$("#co-Ap-"+id).offset().left;														// Avatar left
 		let oy=$("#co-Ap-"+id).offset().top;														// Top
 		if (infoDesk) {																				// If an info desk query
@@ -553,10 +551,7 @@ class App  {
 
 		let o=this.people[id];																		// Point at person
 		this.curChat=id;																			// Set curChat
-		$("#co-card").remove();																		// Remove old one
-		$("#co-chat").remove();																		// Remove old one
-		$("#co-sched").remove();																	// Remove old one
-			let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
+		let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr style="margin:8px 32px">
 			Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
 			<div id="co-textDiv" style="height:222px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
@@ -608,26 +603,32 @@ class App  {
 	
 	ShowSchedule()																				// SHOW EVENT SCHEDULE
 	{
-		let i;
+		let i,j=0;
 		let mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
 		let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-		$("#co-sched").remove(); 																	// Remove old schedule
-		let b=$("#co-schedule").offset();															// Get offset
+		this.CloseAll();																			// Close all open dialogs
 		let str=`<div id="co-sched" class="co-sched" style=";
 			left:${$("#co-hall").offset().left}px;
-			width:${$("#co-hall").width()-48}px; height:${b.top-110}px">
+			width:${$("#co-hall").width()-48}px; height:${$("#co-hall").height()-48}px">
 			<b style="'font-size:30px">Event schedule</b>
 			<img style="float:right;cursor:pointer" src="/img/closedot.png" onclick="$('#co-sched').remove()"><br><br>
 			<div style="height:calc(100% - 50px);width:100%;overflow-y:auto;text-align:left">`;
-			str+=`<div style="background-color:#bbb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
+			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
 			str+=this.schedule[0][0].start+" to "+this.schedule[0][0].end+"</b><hr>";
 			for (i=1;i<this.rooms.length;++i)
-				str+=`${this.schedule[i][0].desc}
-				<span style="float:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i][0].title}</span><br>`
+				str+=`<input type="checkbox" id="co-Sc-${i}-${j}" ${this.schedule[i][j].going ? " checked" : ""}> ${this.schedule[i][j].desc}
+				<span style="float:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i][j].title}</span><br>`
 		str+="</div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
+		
 		$("#co-sched").show("slide",{ direction:"down" });											// Slide up
+		$("[id^=co-Sc-]").on("click", (e)=>{ 														// ON CHECK CLICK
+			let v=e.currentTarget.id.substr(6).split("-");											// Get indices
+			this.schedule[v[0]][v[1]].going=$("#"+e.currentTarget.id).prop("checked");				// Store checked status
+			}); 			
+
+
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -671,12 +672,12 @@ class App  {
 			<div style="float:right;margin:18px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:32px;cursor:pointer;margin-right:12px">
 				<img src="img/people.png" 	id="co-attendees" style="height:28px;cursor:pointer;margin-right:12px">
-				<img src="img/info.png"  	id="co-infoDesk"  style="height:32px;cursor:pointer">;
+				<img src="img/info.png"  	id="co-infoDesk"  style="height:32px;cursor:pointer">
 			</div></div>`
 
 		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
 		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway });
-		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren Leynote",
+		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote",
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
