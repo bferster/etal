@@ -27,6 +27,8 @@
 					border:1px solid white; cursor:pointer; margin:-14px 0 0 calc(var(--avSize) - 4px); width:12px; height:12px; display:none; }
 	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:4px;
 					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
+	.co-sched 	{	position:absolute;  background-color:#fff; padding:24px; text-align:center;	font-size:14px; top:8px; 
+					background-color:#e4e7ef; display:none; line-height:1.5; border:.5px solid #999; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
 	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:12px;
@@ -143,16 +145,16 @@ class App  {
 		this.meetingId=""+meetingId;																// Meeting id
 		this.myId="";																				// My unique id
 		this.curFloor="A";																			// Current floor
-		this.venue="";																				// Venue frame
 		this.people=[];																				// Holds attendees
 		this.rooms=[];																				// Holds rooms
 		this.chats=[];																				// Holds chats
-		this.schedule="{}";																			// Holds schedule
+		this.schedule=[];																			// Holds schedule
 		this.queue=[];																				// Contact queue
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
 		this.infoDeskId=6;																			// Id of info desk person
 		this.curChat=-1;																			// Who I'm chatting with																			
+		this.meetingStart=new Date();																// Meeting start
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -226,7 +228,7 @@ class App  {
 		$("#co-sched").remove();																	// Remove old one
 	
 		if (targetId.match(/co-Jo-/)) {																// Join a room
-			let link=this.rooms[targetId.substr(6)].zoom;											// Get zoom link
+			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
 			if (!link)	return;																		// Quit if no link set
 			this.StartZoom(link);																	// Start a zoom
 			this.status="R"+targetId.substr(6);														// Status with room number	
@@ -274,7 +276,8 @@ class App  {
 	StartZoom(link)																				// INITIATE ZOOM
 	{
 		if (link && link.match(/zoom/i)) {
-			if (window.location.host == "localhost") {
+	//		this.ShowWebRTC(link)
+				if (window.location.host == "localhost") {
 				Popup("Zooming!")
 				return;
 				}
@@ -283,14 +286,28 @@ class App  {
 			}
 		else{
 			$("#co-iframe").remove(); 																// Remove old iframe
-			let str=`<div id="co-iframe" class="co-card"' style="top:12px;padding:0;background-color:#ccc;
+			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;
 			left:${$("#co-hall").offset().left+12}px;top:150px;
 			width:${$("#co-hall").width()-24}px; height:${($("#co-hall").width()-30)*.5625}px">
-			<img style="float:right;margin:8px;cursor:pointer" src="/img/closedot.png" onclick="$('#co-iframe').remove()">
-			<br><iframe style="width:100%;height:100%" src="${link}" frameborder="0" allowfullscreen></iframe>`;
+			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
+			<img style="cursor:pointer;padding:1px 0 0 0" src="/img/closedot.png" onclick="$('#co-iframe').remove()"></div>
+			<iframe style="width:100%;height:100%" src="${link}" frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
-			$("#co-iframe").draggable();
 			}
+	}
+
+	ShowWebRTC(link)																			// WEBRTC DEMO
+	{
+		let id="bferster"+Math.floor(Math.random()*10000+45);									// Random ID
+		link=`https://appr.tc/r/${id}?hd=true`;
+		$("#co-iframe").remove(); 																// Remove old iframe
+		let str=`<div id="co-iframe" class="co-card"' style="top:12px;padding:0;background-color:#ccc;
+		left:${$("#co-hall").offset().left+12}px;top:150px;
+		width:${$("#co-hall").width()-24}px; height:${($("#co-hall").width()-30)*.5625}px">
+		<img style="float:right;margin:8px;cursor:pointer" src="/img/closedot.png" onclick="$('#co-iframe').remove()">
+		<br><iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone;frameborder="0" allowfullscreen></iframe>`;
+		$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
+		$("#co-iframe").draggable();
 	}
 
 	ArrangePeople()																				// ARRANGE COFFEE BAR / ROOM MEMBERS
@@ -591,16 +608,24 @@ class App  {
 	
 	ShowSchedule()																				// SHOW EVENT SCHEDULE
 	{
+		let i;
+		let mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
+		let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 		$("#co-sched").remove(); 																	// Remove old schedule
 		let b=$("#co-schedule").offset();															// Get offset
-		let str=`<div id="co-sched" class="co-card"' style="top:12px; display:none;
-			left:${$("#co-hall").offset().left+12}px;
-			width:${$("#co-hall").width()-68}px; height:${b.top-110}px">
+		let str=`<div id="co-sched" class="co-sched" style=";
+			left:${$("#co-hall").offset().left}px;
+			width:${$("#co-hall").width()-48}px; height:${b.top-110}px">
 			<b style="'font-size:30px">Event schedule</b>
-			<img style="float:right;cursor:pointer" src="/img/closedot.png" onclick="$('#co-sched').remove()">
-			<hr><br>
-			<br>Events listed here, along with button to add them to attendee's personal schedule.
-			</div>`;
+			<img style="float:right;cursor:pointer" src="/img/closedot.png" onclick="$('#co-sched').remove()"><br><br>
+			<div style="height:calc(100% - 50px);width:100%;overflow-y:auto;text-align:left">`;
+			str+=`<div style="background-color:#bbb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
+				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
+			str+=this.schedule[0][0].start+" to "+this.schedule[0][0].end+"</b><hr>";
+			for (i=1;i<this.rooms.length;++i)
+				str+=`${this.schedule[i][0].desc}
+				<span style="float:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i][0].title}</span><br>`
+		str+="</div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
 		$("#co-sched").show("slide",{ direction:"down" });											// Slide up
 	}
@@ -638,15 +663,9 @@ class App  {
 		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
 	}
 
-	InitProject(meetingId, myId)																	// INIT PROJECT DATA
+	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		let i,j,o,row,n,w,h,x,y;
-		this.meetingId=""+meetingId;																	// Project id
-		this.myId=myId;																					// My id
-		let nCols=4,nRows=4;																			// Venue shape																	
-		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-	
-		let hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
+		let i,hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
 			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:8px" src="img/coffeebar.png">
 			<div style="float:right;margin:18px 8px 0 0">			
@@ -654,66 +673,85 @@ class App  {
 				<img src="img/people.png" 	id="co-attendees" style="height:28px;cursor:pointer;margin-right:12px">
 				<img src="img/info.png"  	id="co-infoDesk"  style="height:32px;cursor:pointer">;
 			</div></div>`
-		
-		this.rooms=[
-			{ rug:"#d8c4ae", zoom:"", title:"<br><img src='img/wlogo.png' style='width:30%'>", cs:2, ce:3, rs:1, re:4, content:hallway, use:"hall", floor:"1",  },
-			{ rug:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room", cs:1, ce:1, rs:1, re:3, use:"room", floor:"1",
-				content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none; ">
-				Please join SITE president<br><b>Elizabeth Langren</b><br><br>
-				<img src="liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
-				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ rug:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room", floor:"1",
-				 content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` },
-			{ rug:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room", floor:"1",
-				content:`<div class="co-roomTitle"><b>GIS in the Class</b><br>Thomas Hammond</div>` },
-			{ rug:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room", floor:"1",
-				content:`<div class="co-roomTitle"><b>Graphing Calculators</b></Graphing><br>Joe Garofalo</div>` },
-			{ rug:"#a2733f", zoom:"https://www.youtube.com/embed/YVbkexkMwag", title:"Movie Theater", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
-				 content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div><br>` }
-				 	];
 
+		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
+		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway });
+		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren Leynote",
+					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
+							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
+							<img src="liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
+							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
+		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull",
+					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+					content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` });
+		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"GIS in the Classroom withThomas Hammond",
+					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+					content:`<div class="co-roomTitle"><b>GIS in the Classroom</b><br>Thomas Hammond</div>`});
+		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Graphing Calculators with Joe Garofalo",
+					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+					content:`<div class="co-roomTitle"<b>Graphing Calculators<br>Joe Garofalo</div>`});
+		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon",
+					link:"https://www.youtube.com/embed/YVbkexkMwag",
+					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div</div>`});
+		
 		if (this.meetingId.toLowerCase() == "aims") {
-			this.rooms=[
-			{ rug:"#d8c4ae", zoom:"", title:"<img src='misc/aimslogo.jpg' style='width:100%'>", cs:2, ce:2, rs:1, re:4, content:hallway, use:"hall"  },
-			{ rug:"#cc4c39", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Main room",  cs:1, ce:1, rs:1, re:3, use:"room",
-				content:`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
+			this.schedule[0][0].title=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
+			this.schedule[1][0].content=`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
 				Please join GVG chairman<br><b>Micheal Cronk</b><br><br>
 				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:50%;border-radius:300px"><br>
-				for the keynote speech<br> in <b></b>15</b></15> minutes</div>` },
-			{ rug:"#58aab4", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room A", cs:1, ce:1, rs:3, re:3, use:"room",
-				 content:`<div class="co-roomTitle">Panel discussion:<br>Standards-based IP adoption</div>` },
-			{ rug:"#6e9456", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room B", cs:3, ce:3, rs:1, re:1, use:"room",
-				content:`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>` },
-			{ rug:"#5b66cb", zoom:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09", title:"Room C", cs:3, ce:3, rs:2, re:2, use:"room",
-				content:`<div class="co-roomTitle">AMWA NMOS<br>Technology stack</div>` },
-			{ rug:"#a2733f", zoom:"https://www.youtube.com/embed/YVbkexkMwag", title:"Movie Theater", cs:3, ce:3, rs:3, re:3, use:"room", floor:"1",
-				 content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div><br>` }
-			];
+				for the keynote speech<br> in <b></b>15</b></15> minutes</div>`;
+			this.schedule[1][0].desc="Keynote by Micheal Cronk";
+			this.schedule[2][0].content=`<div class="co-roomTitle">Panel discussion:<br>Standards-based IP adoption</div>`;
+			this.schedule[2][0].desc="Panel discussion: Standards-based IP adoption";
+			this.schedule[3][0].content=`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>`;
+			this.schedule[3][0].desc="SMPTE ST 2110 suite of standards";
+			this.schedule[4][0].content=`<div class="co-roomTitle">AMWA NMOS<br>Technology stack</div>`;
+			this.schedule[4][0].desc="AMWA NMOS Technology stack";
+			}
 		}
 
-		this.venue=`<div id="co-grid" class="co-venue">`;
-		o=this.rooms[0];
-
-		this.venue+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
+	InitProject(meetingId, myId)																	// INIT PROJECT DATA
+	{
+		let i,j,o,row,n,w,h,x,y,sc;
+		this.meetingId=""+meetingId;																	// Project id
+		this.myId=myId;																					// My id
+		let nCols=4,nRows=4;																			// Venue shape																	
+		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
+	
+		this.rooms=[
+			{ rug:"#d8c4ae", cs:2, ce:3, rs:1, re:4, floor:"1", link:"" },
+			{ rug:"#cc4c39", cs:1, ce:1, rs:1, re:3, floor:"1", link:"" },
+			{ rug:"#58aab4", cs:1, ce:1, rs:3, re:3, floor:"1", link:"" },
+			{ rug:"#6e9456", cs:3, ce:3, rs:1, re:1, floor:"1", link:"" },
+			{ rug:"#5b66cb", cs:3, ce:3, rs:2, re:2, floor:"1", link:"" },
+			{ rug:"#a2733f", cs:3, ce:3, rs:3, re:3, floor:"1", link:"" }
+		 	];
+		this.AddSchedule();																		// Add schedule
+		let str=`<div id="co-grid" class="co-venue">`;
+		o=this.rooms[0];																		// Point at room
+		sc=this.schedule[0][0];																	// Point at schedule for room
+		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
-		${o.title}${o.content}</div>`;
+		${sc.title}${sc.content}</div>`;
 		for (i=1;i<this.rooms.length;++i) {														// For each room
-			o=this.rooms[i];																	// Point at it
+			o=this.rooms[i];																	// Point at room
+			sc=this.schedule[i][0];																// Point at schedule for room
+			this.rooms[i].link=sc.link;															// Set room link
 			w=this.bx/nCols*(o.ce-o.cs+1);														// Room width
 			h=this.by/nRows*(o.re-o.rs+1)-26;													// Height
 			y=(o.rs > 1) ? this.by/nRows*o.rs : 0												// Set top
 			if (!o.rug)		o.rug=this.rooms[i-1].rug;											// Use flooring from room above if not set
-				this.venue+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
+				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
-				<div class="co-roomHdr">${o.title}
-				<div id="co-Jo-${i}" class="co-bs" style="${o.zoom ? "" : "visibility:hidden;"}float:right">
-				${(o.zoom && o.zoom.match(/zoom/i)) ? "Join" : "View"}</div>
-				</div>${o.content}</div></div>`;
+				<div class="co-roomHdr">${sc.title}
+				<div id="co-Jo-${i}" class="co-bs" style="${sc.link ? "" : "visibility:hidden;"}float:right">
+				${(sc.link && sc.link.match(/zoom/i)) ? "Join" : "View"}</div>
+				</div>${sc.content}</div></div>`;
 			}
-		this.venue+=`</div></div>`;
-		$("#co-main").append(this.venue.replace(/\t|\n|\r/g,""));										// Add venue
-	
+		str+=`</div></div>`;
+		$("#co-main").append(str.replace(/\t|\n|\r/g,""));										// Add venue
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
 		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 			// ON JOIN CLICK
 		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON JOIN
