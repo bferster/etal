@@ -274,8 +274,7 @@ class App  {
 	{
 		this.CloseAll();																			// Close all open dialogs
 		if (link && link.match(/zoom/i)) {
-	//		this.ShowWebRTC(link)
-				if (window.location.host == "localhost") {
+			if (window.location.host == "localhost") {
 				Popup("Zooming!")
 				return;
 				}
@@ -284,27 +283,13 @@ class App  {
 			}
 		else{
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;
-			left:${$("#co-hall").offset().left+12}px;top:150px;
-			width:${$("#co-hall").width()-24}px; height:${($("#co-hall").width()-30)*.5625}px">
+			left:${$("#co-hall").offset().left}px;top:8px;
+			width:${$("#co-hall").width()}px; height:${($("#co-hall").width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
 			<img style="cursor:pointer;padding:1px 0 0 0" src="/img/closedot.png" onclick="$('#co-iframe').remove()"></div>
-			<iframe style="width:100%;height:100%" src="${link}" frameborder="0" allowfullscreen></iframe>`;
+			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
 			}
-	}
-
-	ShowWebRTC(link)																			// WEBRTC DEMO
-	{
-		this.CloseAll();																			// Close all open dialogs
-		let id="bferster"+Math.floor(Math.random()*10000+45);									// Random ID
-		link=`https://appr.tc/r/${id}?hd=true`;
-		let str=`<div id="co-iframe" class="co-card"' style="top:12px;padding:0;background-color:#ccc;
-		left:${$("#co-hall").offset().left+12}px;top:150px;
-		width:${$("#co-hall").width()-24}px; height:${($("#co-hall").width()-30)*.5625}px">
-		<img style="float:right;margin:8px;cursor:pointer" src="/img/closedot.png" onclick="$('#co-iframe').remove()">
-		<br><iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone;frameborder="0" allowfullscreen></iframe>`;
-		$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
-		$("#co-iframe").draggable();
 	}
 
 	ArrangePeople()																				// ARRANGE COFFEE BAR / ROOM MEMBERS
@@ -582,8 +567,11 @@ class App  {
 		$("#revText").on("change",   ()=>{ sendChat(); });											// ON TEXT ENTER
 		$("#revTextBut").on("click", ()=>{ sendChat(); });											// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON ZOOM BUT CLICK
+//			let id=this.people[this.myId].firstName+"-"+Math.floor(Math.random()*100000+45);		// Name with random ID
+//			let link=`https://appr.tc/r/${id}?hd=true`;
+			let link=this.people[this.myId].zoom;
 			let str=`Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"
-			onclick="app.StartZoom('${app.people[app.myId].zoom}')"> to join`;
+			onclick="app.StartZoom('${link}')"> to join`;
 			sendChat(str)
 			})					
 	
@@ -615,11 +603,14 @@ class App  {
 			<div style="height:calc(100% - 50px);width:100%;overflow-y:auto;text-align:left">`;
 			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
-			str+=this.schedule[0][0].start+" to "+this.schedule[0][0].end+"</b><hr>";
+			str+=this.schedule[0][0].start+" to "+this.schedule[0][0].end+"</b><table style='width:100%'>";
 			for (i=1;i<this.rooms.length;++i)
-				str+=`<input type="checkbox" id="co-Sc-${i}-${j}" ${this.schedule[i][j].going ? " checked" : ""}> ${this.schedule[i][j].desc}
-				<span style="float:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i][j].title}</span><br>`
-		str+="</div></div>";
+				str+=`<tr style="vertical-align:top">
+				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}-${j}" ${this.schedule[i][j].going ? " checked" : ""}></td>
+				<td>${this.schedule[i][j].desc}</td>
+				<td style="text-align:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i][j].title}</td>
+				</tr>`
+		str+="</table></div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
 		
 		$("#co-sched").show("slide",{ direction:"down" });											// Slide up
