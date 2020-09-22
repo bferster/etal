@@ -22,7 +22,8 @@
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; 
 					user-select:none; -webkit-user-select:none; }
-	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); }
+	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); 
+					user-select:none; -webkit-user-select:none; }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
 					border:1px solid white; cursor:pointer; margin:-14px 0 0 calc(var(--avSize) - 4px); width:12px; height:12px; display:none; }
 	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:4px;
@@ -59,7 +60,7 @@
 <body>
 
 	<div id="co-top" class="co-top">
-		<div id="co-main"></div>
+		<div id="co-main" style="width:100%;height:100%"></div>
 	</div>
 	<div id="splashDiv" class="co-splash">
 		<img src="img/logo.png" alt="" style="width: 20%"><br><br>
@@ -81,7 +82,7 @@
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
-	window.addEventListener("beforeunload",  ()=>{ app.ReportLocation(.5,.5, "Q") });				// Close me out from server
+	window.addEventListener("beforeunload",  ()=>{ app.ReportLocation(.5,.5, "Q"); });				// Close me out from server
 		
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
@@ -281,6 +282,9 @@ class App  {
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
+		else if (link && link.match(/meet.jit.si/i)) {
+			window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");				// Open jitsi
+			}
 		else{
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;
 			left:${$("#co-hall").offset().left}px;top:8px;
@@ -318,7 +322,6 @@ class App  {
 		for (i=0;i<this.rooms.length;++i)	rms.push([]);											// Make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i].stats;																	// Point at stats
-			if (o.charAt(0) == "R") rms[o.substr(1)].push(i);										// If in a room, add person to it
 			}
 		for (j=1;j<rms.length;++j) {																// For each room
 			ox=$("#co-Rm-"+j).offset().left+4;														// Left side
@@ -352,10 +355,7 @@ class App  {
 	Draw() 																						// REDRAW
 	{
 		this.bx=$("body").width(),		this.by=$("body").height();									// Body size
-		let x=this.bx*this.scale, y=this.by*this.scale;												// Max
-		$("#co-main").width(x);		$("#co-main").height(y);										// Scale div
-		let p=$("#co-main").offset();																// Get offset
-		$("#co-main").css({ left:Math.max(this.bx-x,p.left), top:Math.max(this.by-y,p.top) });		// Cap to max
+		$("#co-main").width(this.bx);	$("#co-main").height(this.by);								// Set div
 		this.ArrangePeople();																		// Arrange people				
 	}
 
@@ -567,9 +567,9 @@ class App  {
 		$("#revText").on("change",   ()=>{ sendChat(); });											// ON TEXT ENTER
 		$("#revTextBut").on("click", ()=>{ sendChat(); });											// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON ZOOM BUT CLICK
-//			let id=this.people[this.myId].firstName+"-"+Math.floor(Math.random()*100000+45);		// Name with random ID
-//			let link=`https://appr.tc/r/${id}?hd=true`;
-			let link=this.people[this.myId].zoom;
+			let id=this.people[this.myId].firstName+"-"+Math.floor(Math.random()*1000+45);			// Name with random ID
+			let link="https://meet.jit.si/"+id;
+//			let link=this.people[this.myId].zoom;
 			let str=`Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"
 			onclick="app.StartZoom('${link}')"> to join`;
 			sendChat(str)
@@ -705,7 +705,7 @@ class App  {
 
 	InitProject(meetingId, myId)																	// INIT PROJECT DATA
 	{
-		let i,j,o,row,n,w,h,x,y,sc;
+		let i,j,o,row,n,x,sc;
 		this.meetingId=""+meetingId;																	// Project id
 		this.myId=myId;																					// My id
 		let nCols=4,nRows=4;																			// Venue shape																	
@@ -730,9 +730,6 @@ class App  {
 			o=this.rooms[i];																	// Point at room
 			sc=this.schedule[i][0];																// Point at schedule for room
 			this.rooms[i].link=sc.link;															// Set room link
-			w=this.bx/nCols*(o.ce-o.cs+1);														// Room width
-			h=this.by/nRows*(o.re-o.rs+1)-26;													// Height
-			y=(o.rs > 1) ? this.by/nRows*o.rs : 0												// Set top
 			if (!o.rug)		o.rug=this.rooms[i-1].rug;											// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
@@ -800,7 +797,7 @@ class App  {
 	function trace2(msg, p1, p2, p3, p4)										// CONSOLE 
 	{
 		trace(msg);
-		$("#co-Rm-0").text(">"+msg+"<")
+		$("#co-Rm-2").html(">"+msg+"<")
 	}
 
 </script>
