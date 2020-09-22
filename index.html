@@ -32,8 +32,8 @@
 					background-color:#e4e7ef; display:none; line-height:1.5; border:.5px solid #999; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
-	.co-chat	{	position:absolute; width:250px; height:320px; background-color:#fff; border-radius:12px;
-					border:1px solid #666; padding:24px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
+	.co-chat	{	position:absolute; width:200px; height:320px; background-color:#fff; border-radius:12px;
+					border:1px solid #666; padding:12px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
 	.co-textR 	{	background-color:#dddddd; border-radius:16px; padding:4px 8px; width:fit-content; max-width: 66%; margin:4px 6px; clear:both; float:left;  text-align:left; }
@@ -156,6 +156,7 @@ class App  {
 		this.infoDeskId=1;																			// Id of info desk person
 		this.curChat=-1;																			// Who I'm chatting with																			
 		this.meetingStart=new Date();																// Meeting start
+		this.videoWin=null;																			// Video window
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -274,6 +275,7 @@ class App  {
 	StartZoom(link)																				// INITIATE ZOOM
 	{
 		this.CloseAll();																			// Close all open dialogs
+		if (this.videoWin)	this.videoWin.close();													// Close open video window
 		if (link && link.match(/zoom/i)) {
 			if (window.location.host == "localhost") {
 				Popup("Zooming!")
@@ -282,9 +284,8 @@ class App  {
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
-		else if (link && link.match(/meet.jit.si/i)) {
-			window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");				// Open jitsi
-			}
+		else if (link && link.match(/meet.jit.si/i))												// If jitsi
+			this.videoWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no"); // Open video window
 		else{
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;
 			left:${$("#co-hall").offset().left}px;top:8px;
@@ -528,9 +529,9 @@ class App  {
 			ox=$("#co-infoDesk").offset().left-7;													// Desk left
 			oy=$("#co-infoDesk").offset().top-4														// Top
 			}		
-		let x=ox-150+avSize/2;																		// Center X on avatar 
-		let y=oy-370-12;																			// Y atop avatar
-		if (y < 12) flip=true,y=(y-0+avSize+394);													// Flip it
+		let x=ox-122+avSize/2;																		// Center X on avatar 
+		let y=oy-360;																			// Y atop avatar
+		if (y < 12) flip=true,y=(y-0+avSize+370);														// Flip it
 		if (x < 12)	x=12;																			// Too far left
 		if (x > this.bx-312)	x=this.bx-312;														// Too far right
 
@@ -539,12 +540,12 @@ class App  {
 		let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<b>Chat with ${this.people[id].firstName}</b><hr style="margin:8px 32px">
 			Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
-			<div id="co-textDiv" style="height:222px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
-			<div style="position:absolute;top:330px;left:24px">
-				<input  id="revText" placeholder="Type here..." class='co-is' style='width:202px;'>			
+			<div id="co-textDiv" style="height:218px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
+			<div style="position:absolute;top:312px;left:12px">
+				<input  id="revText" placeholder="Type here..." class='co-is' style='width:152px;'>			
 				<img id='revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:5px;cursor:pointer'>
 				</div>	
-			<div style="position:absolute;left:141px; top:${flip ? "-10" : "365"}px; width:0;height:0; 
+			<div style="position:absolute;left:112px; top:${flip ? "-10" : "343"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};
 				border-style:solid; border-width: 14px 8px 0 8px;
     			border-color: #fff transparent transparent transparent;"></div>
