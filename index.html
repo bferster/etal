@@ -153,7 +153,7 @@ class App  {
 		this.queue=[];																				// Contact queue
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
-		this.infoDeskId=6;																			// Id of info desk person
+		this.infoDeskId=1;																			// Id of info desk person
 		this.curChat=-1;																			// Who I'm chatting with																			
 		this.meetingStart=new Date();																// Meeting start
 		this.coffeeZoom="https://virginia.zoom.us/j/94170536877?pwd=OEhXcHZJenhWLzVvNUVvNXBwbXk1dz09";
@@ -667,23 +667,23 @@ class App  {
 			</div></div>`
 
 		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
-		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway });
-		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote",
+		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, use:"hallway" });
+		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", use:"room",
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 							<img src="liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
 							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
-		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull",
+		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", use:"room"
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` });
-		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"GIS in the Classroom withThomas Hammond",
+		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"GIS in the Classroom withThomas Hammond", use:"room"
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"><b>GIS in the Classroom</b><br>Thomas Hammond</div>`});
-		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Graphing Calculators with Joe Garofalo",
+		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Graphing Calculators with Joe Garofalo", use:"room"
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"<b>Graphing Calculators<br>Joe Garofalo</div>`});
-		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon",
+		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room"
 					link:"https://www.youtube.com/embed/YVbkexkMwag",
 					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div</div>`});
 		
