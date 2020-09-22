@@ -302,7 +302,7 @@ class App  {
 		let x=$("#co-coffee").offset().left;														// left side of bar
 		let w=$("#co-coffee").width()-avSize;														// Width of space
 		let x2=$("#co-coffee").offset().left+w;														// Last stool
-		let y=this.by-$("#co-coffee").height()-avSize+22;											// On top of bar area
+		let y=this.by-$("#co-coffee").height()-avSize+4;											// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
 		let inc=avSize+2;																			// Spacing between barmates
 		if (bar.length > 1)	inc=Math.min(inc,w/(bar.length-1));										// Squeeze them in?
@@ -659,11 +659,11 @@ class App  {
 	{
 		let i,hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
-			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:8px" src="img/coffeebar.png">
-			<div style="float:right;margin:18px 8px 0 0">			
-				<img src="img/schedule.png" id="co-schedule"  style="height:32px;cursor:pointer;margin-right:12px">
-				<img src="img/people.png" 	id="co-attendees" style="height:28px;cursor:pointer;margin-right:12px">
-				<img src="img/info.png"  	id="co-infoDesk"  style="height:32px;cursor:pointer">
+			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:4px;width:200px" src="img/coffeebar.png">
+			<div style="float:right;margin:16px 8px 0 0">			
+				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
+				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">
+				<img src="img/info.png"  	id="co-infoDesk"  style="height:36px;cursor:pointer">
 			</div></div>`
 
 		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
@@ -674,16 +674,16 @@ class App  {
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 							<img src="liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
 							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
-		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", use:"room"
+		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", use:"room",
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` });
-		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"GIS in the Classroom withThomas Hammond", use:"room"
+		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"GIS in the Classroom withThomas Hammond", use:"room",
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"><b>GIS in the Classroom</b><br>Thomas Hammond</div>`});
-		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Graphing Calculators with Joe Garofalo", use:"room"
+		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Graphing Calculators with Joe Garofalo", use:"room",
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"<b>Graphing Calculators<br>Joe Garofalo</div>`});
-		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room"
+		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room",
 					link:"https://www.youtube.com/embed/YVbkexkMwag",
 					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div</div>`});
 		
