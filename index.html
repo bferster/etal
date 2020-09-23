@@ -296,11 +296,10 @@ class App  {
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
 		else if (link && link.match(/meet.jit.si/i)) {												// If jitsi
-			let params=`scrollbars=no,toolbar=no,status=no,menubar=no;location=no,				
+			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
 						width=${this.bx/2-16},height=${this.by/2}, 
 					 	left=${this.bx/4+8},top=${this.by/4}`;			
-			this.videoWin=window.open(link,"_blank",params);										// Open video window
-			this.videoWin.onload=()=>{ trace("open") }
+			this.videoWin=window.open(link,"_blank",params.replace(/\t|\n|\r/g,""));				// Open video window
 			this.videoWin.onbeforeunload=()=>{ trace("close") }
 			window.onfocus=()=>{ 																	// If main is back in focus
 				if (this.videoWin) {																// If video still on
@@ -330,7 +329,7 @@ class App  {
 		let x=$("#co-coffee").offset().left;														// left side of bar
 		let w=$("#co-coffee").width()-avSize;														// Width of space
 		let x2=$("#co-coffee").offset().left+w;														// Last stool
-		let y=this.by-$("#co-coffee").height()-avSize+14;											// On top of bar area
+		let y=this.by-$("#co-coffee").height()-avSize+10;											// On top of bar area
 		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
 		let inc=avSize+2;																			// Spacing between barmates
 		if (bar.length > 1)	inc=Math.min(inc,w/(bar.length-1));										// Squeeze them in?
@@ -560,8 +559,8 @@ class App  {
 			oy=$("#co-infoDesk").offset().top-4														// Top
 			}		
 		let x=ox-122+avSize/2;																		// Center X on avatar 
-		let y=oy-360;																			// Y atop avatar
-		if (y < 12) flip=true,y=(y-0+avSize+370);														// Flip it
+		let y=oy-360;																				// Y atop avatar
+		if (y < 12) flip=true,y=(y-0+avSize+370);													// Flip it
 		if (x < 12)	x=12;																			// Too far left
 		if (x > this.bx-312)	x=this.bx-312;														// Too far right
 
@@ -689,7 +688,7 @@ class App  {
 	{
 		let i,hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
-			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:6px;width:200px" src="img/coffeebar.png">
+			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">
