@@ -32,7 +32,7 @@
 					background-color:#e4e7ef; display:none; line-height:1.5; border:.5px solid #999; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
-	.co-chat	{	position:absolute; width:200px; height:320px; background-color:#fff; border-radius:12px;
+	.co-chat	{	position:absolute; width:230px; height:320px; background-color:#fff; border-radius:12px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
@@ -42,16 +42,16 @@
 					border:1px solid #666; padding:12px; font-size:12px; box-shadow:3px 3px 6px #666; }
 	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
 					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
-					.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
+	.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
 	.co-logon 	{	border-radius:16px; padding:0 8px; width:200px; height: 24px; border:1px solid #999; font-size: 13px; text-align:center; }
-	
+	.co-confirm {	position: absolute;  width: 300px; padding: 16px; left: calc(50% - 300px); top: calc(50% - 150px); user-select: none;	
+					border-radius: 8px; background-color: #fff; border: 1px solid #999; }
 	.co-alert	{	position:absolute; color:#fff; font-size:12px; text-align:center; cursor:pointer; padding:4px; top:8px; }
 	.co-is 		{	border-radius:16px; padding:0 8px; height: 24px; border:1px solid #999; font-size: 13px; }
 	.co-bs 		{	display:inline-block; border-radius:16px; padding:0 8px; border:1px solid #eee; font-size: 13px; 
 					cursor:pointer; z-index:2; padding-bottom:1px; color:#fff}
-	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
-					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
-					font-size: 14px; text-align:center; display: none; max-width:33%; min-width:20%; }
+	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
+					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
 	body ::-webkit-scrollbar-track { background: transparent; }
@@ -129,9 +129,11 @@
 		}
 
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
-			if ((e.which == 84) && e.altKey && e.ctrlKey)	{										// Test key (Ctrl+Alt+T)
-				app.ws.send(`U|${app.meetingId}`);													// Request people data	
-			}
+			if ((e.which == 66) && e.altKey && e.ctrlKey) {											// Broadcast key (Ctrl+Alt+B)
+				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|`+s)});	// Broadcast
+				}
+			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
+				}
 			});
 	});	
  
@@ -159,6 +161,7 @@ class App  {
 		this.curChat=-1;																			// Who I'm chatting with																			
 		this.meetingStart=new Date();																// Meeting start
 		this.videoWin=null;																			// Video window
+		this.curZoom="";																			// Current zoom link
 		this.coffeeVideo="https://meet.jit.si/coffebar";						
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -171,6 +174,12 @@ class App  {
 				<b>Please contact you meeting's host for help.<b></p>`;
 				$("#co-splash2").html(str); 
 			};
+		
+		this.VoiceInit((s)=> { 																		// INIT TTS
+			let v=$("#co-revText").val();															// Get current input value
+			if (v) v+=" ";																			// Add a space if something there
+			$("#co-revText").val(v+s)
+			});				
 
 		this.ws.onopen=()=> { 																		// ON OPEN
 			app.ws.send(`P|${app.meetingId}`);														// Request people data	
@@ -183,6 +192,7 @@ class App  {
 				$("#co-videoBar").remove();															// Remove alertbar
 				}
 			},1000)
+	
 		}
 
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
@@ -206,8 +216,10 @@ class App  {
 				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
 				$("#co-queue").show();																// Show dot
 				let o=this.people[id];																// Point at person
-				let str=`New message from<hr><img class="co-avatar" src="${o.pic}">
-				<b>${o.firstName} ${o.lastName}</b><br>${o.org}<hr>${v[3]}`;		
+				let str=`<b>New message from</b>
+				<p><img style="width:40px;height:40px;border-radius:50px" src="${o.pic}"></p>
+				<b>${o.firstName} ${o.lastName}</b><br>${o.org}<p><hr></p>
+				<div style="color:#0000ff">${v[3]}</div><br>`;		
 				Popup(str,5000);																	// Show popup
 				}
 			Sound("ding");																			// Ring the bell
@@ -230,6 +242,14 @@ class App  {
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
+		else if (v[0] == "B") {	
+			Popup(`<b style="color:#990000">A message<br>from your meeting host</b><hr><br>${v[3]}<br><br>`,6000);	// Alert them
+			this.queue.push({ id:this.infoDeskId, msg:v[3] });										// Add to queue
+			if ($("#co-qv-0").length) this.ShowQueue();												// Show the message queue, if open	
+			$("#co-queue").text(app.queue.length); 													// Reset queue dot length
+			$("#co-queue").show();																	// Show dot
+			Sound("ding");																			// Ding
+			}
 	}
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
@@ -286,12 +306,24 @@ class App  {
 	{
 		this.CloseAll();																			// Close all open dialogs
 		if (this.videoWin)	this.videoWin.close();													// Close open video window
-		$("#co-videoBar").remove();
-		if (link && link.match(/zoom/i)) {
-			if (window.location.host == "localhost") {
-				Popup("Zooming!")
-				return;
+		$("#co-videoBar").remove();																	// Remove video bar
+		if (link && link.match(/zoom/i)) {															// If Zoom
+			if (window.location.host == "localhost") {												// If testing
+				Popup("Zooming!");																	// Show popup
+				return;																				// Quit
 				}
+			this.curZoom=link;																		// Save link
+			window.onfocus=()=>{ 																	// If main is back in focus
+				let str=`<div id="co-videoBar" class="co-alert" 
+				style="left:${this.bx/4+16}px;width:${this.bx/2-24}px;background-color:#5b66cb">
+				Click here to return to last Zoom room</div>`;
+				$("body").append(str.replace(/\t|\n|\r/g,""));										// Add return bar
+				$("#co-videoBar").on("click",()=>{
+					let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
+					setTimeout(function(){ myWin.close(); },10000);									// Close after 10 secs
+					});						
+				}
+			window.onblur=()=>{ $("#co-videoBar").remove();	}										// If main is out, remove bar
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
@@ -301,6 +333,7 @@ class App  {
 					 	left=${this.bx/4+8},top=${this.by/4}`;			
 			this.videoWin=window.open(link,"_blank",params.replace(/\t|\n|\r/g,""));				// Open video window
 			this.videoWin.onbeforeunload=()=>{ trace("close") }
+			if (isMobile)	setTimeout(function(){ myWin.close(); },10000);							// Close after 10 secs on mobile
 			window.onfocus=()=>{ 																	// If main is back in focus
 				if (this.videoWin) {																// If video still on
 					let str=`<div id="co-videoBar" class="co-alert" 
@@ -398,7 +431,6 @@ class App  {
 		$("#co-sched").remove();																	
 		$("#co-people").remove();																	
 		$("#co-iframe").remove(); 																	
-//		$("#co-videoBar").remove();
 	}
 
 	ShowAttendees()																				// SHOW THE ATTENDEES
@@ -453,9 +485,10 @@ class App  {
 			for (i=0;i<selects.length;++i) {													// For each selected person
 				let o=app.people[selects[i].index];												// Point at person
 				str+=`<div style="vertical-align:top"><div style="float:left;text-align:left;width:100%">
-				<img id="co-spi-${selects[i].index}" style="cursor:pointer;float:left;width:40px;height:40px;margin:0 8px 16px 4px;
-				border:1px solid #333;border-radius:64px;width:${avSize}px" 
-				src="${o.pic}"><b>${o.firstName} ${o.lastName}</b><br>${o.title}<br>${o.org}</div></div>`;
+				<div style="float:left;width:40px;height:40px;overflow:hidden;border-radius:64px;margin:0 8px 16px 4px;border:1px solid #999">
+				<img id="co-spi-${selects[i].index}" style="cursor:pointer;width:40px;" 
+				src="${o.pic}"></div>
+				<b>${o.firstName} ${o.lastName}</b><br>${o.title}<br>${o.org}</div></div>`;
 				}
 			$("#co-spp").html(str);																// Add to listing
 			$("[id^=co-spi-]").on("click",(e)=>{												// ON PIC CLICK
@@ -482,8 +515,8 @@ class App  {
 			for (i=0;i<this.queue.length;++i) {
 				str+=`<div id="co-qv-${i}" style="vertical-align:top">
 				<div style="float:left;text-align:left;width:100%">
-					<img id="co-qi-${i}" style="float:left;width:40px;margin:0 8px 8px 4px;border:1px solid #333;border-radius:64px;width:${avSize}px" 
-					src="${this.people[this.queue[i].id].pic}">
+					<div style="float:left;width:40px;height:40px;overflow:hidden;border-radius:64px;margin:0 8px 16px 4px;border:1px solid #999">
+					<img id="co-qi-${i}" style="width:40px"	src="${this.people[this.queue[i].id].pic}"></div>
 					<b>${this.people[this.queue[i].id].firstName} ${this.people[this.queue[i].id].lastName}</b></br>
 					<i>${this.queue[i].msg}</i>
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
@@ -533,7 +566,7 @@ class App  {
 				o.li=o.li.replace(/https:\/\//,"");
 				o.li=o.li.replace(/linkedin.com\//,"");
 				o.li=o.li.replace(/in\//,"");
-				str+=`<a href="https://link		if (x < 12)	x=12;																			// Too faredin.com/in/${o.li}" target="_blank">
+				str+=`<a href="https://linkedin.com/in/${o.li}" target="_blank">
 					<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
 				}
 			str+=`</p><div id="co-chatBut" style="position:absolute; left:154px; bottom:10px; cursor:pointer;
@@ -558,7 +591,7 @@ class App  {
 			ox=$("#co-infoDesk").offset().left-7;													// Desk left
 			oy=$("#co-infoDesk").offset().top-4														// Top
 			}		
-		let x=ox-122+avSize/2;																		// Center X on avatar 
+		let x=ox-119+avSize/2;																		// Center X on avatar 
 		let y=oy-360;																				// Y atop avatar
 		if (y < 12) flip=true,y=(y-0+avSize+370);													// Flip it
 		if (x < 12)	x=12;																			// Too far left
@@ -572,8 +605,9 @@ class App  {
 			Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
 			<div id="co-textDiv" style="height:218px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
 			<div style="position:absolute;top:312px;left:12px">
-				<input  id="revText" placeholder="Type here..." class='co-is' style='width:152px;'>			
-				<img id='revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:5px;cursor:pointer'>
+				<input  id="co-revText" placeholder="Type here..." class='co-is' style='width:182px;'>			
+				<img id='co-talkBut'src='img/talkbut.png' style='vertical-align:-7px;margin-left:-16px;cursor:pointer'>
+				<img id='co-revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:12px;cursor:pointer'>
 				</div>	
 			<div style="position:absolute;left:112px; top:${flip ? "-10" : "343"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};
@@ -587,6 +621,7 @@ class App  {
 				$("#co-textDiv").append(`<div class="co-text${this.chats[i].dir ? "S" : "R"}">${this.chats[i].msg}</div><br>`);	// Add message
 			}
 		$("#co-textDiv").scrollTop(10000);															// Scroll to bottom
+		$("#co-talkBut").on("click", ()=>{this.Listen()});											// Start STT
 		
 		for (i=0;i<this.queue.length;++i) {															// For item in message box
 			if (this.queue[i].id == id) 															// If it's whom I'm chatting with
@@ -595,8 +630,8 @@ class App  {
 			else 							$("#co-queue").hide();									// Remove	
 			}
 	
-		$("#revText").on("change",   ()=>{ sendChat(); });											// ON TEXT ENTER
-		$("#revTextBut").on("click", ()=>{ sendChat(); });											// ON SEND CLICK 
+		$("#co-revText").on("change",   ()=>{ sendChat(); });										// ON TEXT ENTER
+		$("#co-revTextBut").on("click", ()=>{ sendChat(); });										// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON ZOOM BUT CLICK
 			let link="https://meet.jit.si/"+this.people[this.myId].firstName+"-"+this.myId;			// Jitsi link
 			let str=`Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"
@@ -605,7 +640,7 @@ class App  {
 			})					
 	
 		function sendChat(msg) {																	// TEXT CHATTING
-			let s=msg ? msg : $("#revText").val();													// Get text fron msg or textbox
+			let s=msg ? msg : $("#co-revText").val();													// Get text fron msg or textbox
 			if (s) {																				// If something there
 				$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");						// Add to display 
 				let fid=app.people[app.myId].id;													// From id (me)
@@ -614,7 +649,7 @@ class App  {
 				app.chats.push({ dir:1, id:id, msg:s});												// Archive
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
-			$("#revText").val("");																	// Clear input
+			$("#co-revText").val("");																	// Clear input
 			}	
 		}
 	
@@ -651,11 +686,46 @@ class App  {
 
 	}
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// VOICE INPUT
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	VoiceInit(callback)
+	{	
+		let i;
+		try {																							// Try
+			var SpeechRecognition=SpeechRecognition || webkitSpeechRecognition;							// Browser compatibility
+			this.recognition=new SpeechRecognition();													// Init STT
+			this.recognition.continuous=false;															// Continual recognition off
+			this.recognition.lang="en-US";																// US English
+			this.recognition.interimResults=true
+			this.recognition.onend=(e)=> { $("#co-talkBut").prop("src","img/talkbut.png"); this.listening=false; };	// On end, restore button
+			this.hasRecognition=true;																	// Has speechrecognition capabilities														
+
+			this.recognition.onresult=(e)=> { 															// On some speech recognized
+				for (i=e.resultIndex;i<e.results.length;++i) {											// For each result
+					if (e.results[i].isFinal)															// If final
+						callback(e.results[i][0].transcript);											// Send text to callback
+					}
+				};
+		} catch(e) { trace("Voice error",e) };															// On error
+	}
+
+	Listen()																						// TURN ON SPEECH RECOGNITIOM
+	{
+		if (this.listening)	return;																		// Quit if already started
+		try { this.recognition.start(); this.listening=true; } catch(e) { trace("Voice error",e) };		// Start recognition
+		$("#co-talkBut").prop("src","img/intalkbut.png");												// Talking but
+	}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	AddPeople(people, show)																				// ADD PEOPLE TO MEETING
+	AddPeople(people, show)																			// ADD PEOPLE TO MEETING
 	{
 		let i,o,str="";
 		this.people=people;																				// Set data
@@ -668,7 +738,8 @@ class App  {
 			o.y=Math.max(0,Math.min(o.y,95));															// Cap x to screen
 			if (!this.people[i].pic)	this.people[i].pic="avyou.png";									// Use generic pic
 			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
-			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize-2}px;height:${avSize}px;border-radius:64px;"><br>
+			<div style="width:${avSize}px;height:${avSize}px;overflow:hidden;border-radius:64px;display:inline-block">
+			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize}px"></div>
 			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
@@ -797,6 +868,28 @@ class App  {
 			console.log(msg);
 	}
 
+
+	function GetTextBox(title, content, def, callback, x, y)										// GET TEXT LINE BOX
+	{
+		$("#confirmBoxDiv").remove();																	// Remove 
+		$("body").append("<div class='co-confirm' id='confirmBoxDiv' style='text-align:center'></div>");	// Add box								
+		if (x != undefined)		$("#confirmBoxDiv").css({ left:x+"px", top:y+"px" });					// Position if set
+		let str="<img src='../img/logo.png' width='64'/><br>";											// Logo					
+		str+="<p style='font-size:14px; color:#666'><b>"+title+"</b></p>";
+		str+="<p>"+content+"<p>";
+		str+="<p><input class='co-is' style='width:95%' type='text' id='co-revText' value='"+def+"'>";
+		str+="<img id='co-talkBut'src='img/talkbut.png' style='vertical-align:-7px;margin-left:-20px;cursor:pointer'></p>";
+		str+="<div id='dialogOK' class='co-bs' style='background-color:#009900'>OK</div>";
+		str+="<div id='dialogCancel' class='co-bs' style='margin-left:8px;background-color:#999'>Cancel</div></div>";
+		$("#confirmBoxDiv").html(str);																	// Add to div
+		$("#co-revText").focus();																		// Focus on button
+		$("#co-talkBut").on("click", ()=>{app.Listen()});												// Start STT
+		$("#co-revText").on("change", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ONE ENTER
+		$("#dialogOK").on("click", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ON OK 
+		$("#dialogCancel").on("click", function() {	$("#confirmBoxDiv").remove(); });								// ON CANCEL
+		}
+
+
 	function Sound(sound, mute)																		// PLAY SOUND
 	{
 		let snd=new Audio();																			// Init audio object
@@ -828,6 +921,7 @@ class App  {
 		trace(msg);
 		$("#co-Rm-2").html(">"+msg+"<")
 	}
+
 
 </script>
 </body>
