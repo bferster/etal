@@ -682,11 +682,7 @@ class App  {
 			let v=e.currentTarget.id.substr(6).split("-");											// Get indices
 			this.schedule[v[0]][v[1]].going=$("#"+e.currentTarget.id).prop("checked");				// Store checked status
 			}); 			
-
-
 	}
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VOICE INPUT
@@ -720,7 +716,6 @@ class App  {
 		$("#co-talkBut").prop("src","img/intalkbut.png");												// Talking but
 	}
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -739,7 +734,7 @@ class App  {
 			if (!this.people[i].pic)	this.people[i].pic="avyou.png";									// Use generic pic
 			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
 			<div style="width:${avSize}px;height:${avSize}px;overflow:hidden;border-radius:64px;display:inline-block">
-			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize}px"></div>
+			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize}px;min-height:${avSize}px"></div>
 			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
 		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
@@ -868,7 +863,6 @@ class App  {
 			console.log(msg);
 	}
 
-
 	function GetTextBox(title, content, def, callback, x, y)										// GET TEXT LINE BOX
 	{
 		$("#confirmBoxDiv").remove();																	// Remove 
@@ -888,7 +882,6 @@ class App  {
 		$("#dialogOK").on("click", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ON OK 
 		$("#dialogCancel").on("click", function() {	$("#confirmBoxDiv").remove(); });								// ON CANCEL
 		}
-
 
 	function Sound(sound, mute)																		// PLAY SOUND
 	{
