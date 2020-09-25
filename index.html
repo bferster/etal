@@ -12,7 +12,7 @@
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px; --avSize:45px}
-	body 		{ 	font-family:Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:8px; }
+	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:8px; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - 16px - var(--mobileOff)); z-index:0;}
 	.co-venue 	{	display:grid; grid-template-columns: 25% calc(50% - 16px) 25%;  text-align:center; height:100%; grid-gap:8px;
@@ -84,8 +84,12 @@
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
-	window.addEventListener("beforeunload",  ()=>{ app.ReportLocation(.5,.5, "Q"); });				// Close me out from server
-		
+
+	window.addEventListener("beforeunload",  ()=>{ 													// ON CLOSE
+		if (app.videoWin)	app.videoWin.close();													// Close video window if open
+		app.ReportLocation(.5,.5, "Q"); 															// Close me out from server
+		});
+
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		document.documentElement.style.setProperty("--avSize",avSize+"px");							// Set CSS var for avatar size
@@ -202,7 +206,7 @@ class App  {
 		let id,meeting="";
 		if (v[1]) meeting=v[1].split("~")[0];
 		
-		if (v[0] == "C") {																			// If chat
+		if (v[0] == "C") {																			// CHAT
 			if (meeting != this.meetingId)	return;													// Not this meeting
 			id=this.pIndex[v[2]];																	// Get index from id			
 			this.chats.push({ dir:0, id:id, msg:v[3] });											// Archive
@@ -224,8 +228,7 @@ class App  {
 				}
 			Sound("ding");																			// Ring the bell
 			}
-		else if (v[0] == "L")	{
-			($("#co-top").css("opacity"))
+		else if (v[0] == "L")	{																	// MOVE
 			if (meeting != this.meetingId)	return;													// Not this meeting
 			let x=v[2]/100*(this.bx-12);															// Calc x from %
 			let y=v[3]/100*(this.by-12);															// Y
@@ -242,7 +245,7 @@ class App  {
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
-		else if (v[0] == "B") {	
+		else if (v[0] == "B") {																		// BROADCAST
 			Popup(`<b style="color:#990000">A message<br>from your meeting host</b><hr><br>${v[3]}<br><br>`,6000);	// Alert them
 			this.queue.push({ id:this.infoDeskId, msg:v[3] });										// Add to queue
 			if ($("#co-qv-0").length) this.ShowQueue();												// Show the message queue, if open	
@@ -256,6 +259,8 @@ class App  {
 	{
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		this.CloseAll();																			// Close all open dialogs
+		if (this.videoWin) { this.videoWin.close();	Popup("Video chat closed",1000); }				// Close open video window
+	
 		if (targetId.match(/co-Jo-/)) {																// Join a room
 			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
 			if (!link)	return;																		// Quit if no link set
@@ -271,10 +276,6 @@ class App  {
 			this.ShowSchedule();																	// Show schedule
 			return;																					// Quit
 			}
-		else if (targetId.match(/co-Av-/)) {														// ON A PERSON
-			this.ShowCard(targetId.substr(6));														// Show card
-			return;																					// Quit
-			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
 			x=$("#co-quiet").offset().left+4;														// Center x
 			y=$("#co-quiet").offset().top+4;														// Y
@@ -285,7 +286,7 @@ class App  {
 			this.people[this.myId].stats="B";														// Update me
 			this.StartZoom(this.coffeeVideo);														// Go to the coffee bar zoom	
 			}
-		else this.status="A";																		// Not in quiet mode
+		else this.status="A";																		// In active mode
 		x=Math.max(0,Math.min(this.bx-avSize,x));													// Cap x to screen
 		y=Math.max(0,Math.min(this.by-avSize,y));													// Y
 		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
@@ -310,7 +311,7 @@ class App  {
 		if (link && link.match(/zoom/i)) {															// If Zoom
 			if (window.location.host == "localhost") {												// If testing
 				Popup("Zooming!");																	// Show popup
-				return;																				// Quit
+//				return;																				// Quit
 				}
 			this.curZoom=link;																		// Save link
 			window.onfocus=()=>{ 																	// If main is back in focus
@@ -328,22 +329,12 @@ class App  {
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
 		else if (link && link.match(/meet.jit.si/i)) {												// If jitsi
+			let x=this.bx/4+16+window.screenX;
+			let y=this.by/4+window.screenY;
 			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
-						width=${this.bx/2-16},height=${this.by/2}, 
-					 	left=${this.bx/4+8},top=${this.by/4}`;			
+						width=${this.bx/2-16},height=${this.by/2},left=${x},top=${y}`;			
 			this.videoWin=window.open(link,"_blank",params.replace(/\t|\n|\r/g,""));				// Open video window
-			this.videoWin.onbeforeunload=()=>{ trace("close") }
 			if (isMobile)	setTimeout(function(){ myWin.close(); },10000);							// Close after 10 secs on mobile
-			window.onfocus=()=>{ 																	// If main is back in focus
-				if (this.videoWin) {																// If video still on
-					let str=`<div id="co-videoBar" class="co-alert" 
-					style="left:${this.bx/4+16}px;width:${this.bx/2-24}px;background-color:#5b66cb">
-					Click here to return to video chat</div>`;
-					$("body").append(str.replace(/\t|\n|\r/g,""));									// Add return bar
-					$("#co-videoBar").on("click",()=>{ this.videoWin.focus(); });					// Show video if clicked 
-					}
-				}
-			window.onblur=()=>{ $("#co-videoBar").remove();	}										// If main is out, remove bar
 			}
 		else{
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;
@@ -417,6 +408,7 @@ class App  {
 	{
 		this.bx=$("body").width(),		this.by=$("body").height();									// Body size
 		$("#co-main").width(this.bx);	$("#co-main").height(this.by);								// Set div
+		this.CloseAll();																			// Close open windows
 		this.ArrangePeople();																		// Arrange people				
 	}
 
@@ -431,6 +423,7 @@ class App  {
 		$("#co-sched").remove();																	
 		$("#co-people").remove();																	
 		$("#co-iframe").remove(); 																	
+		if (this.videoWin) { this.videoWin.close();	Popup("Video chat closed",1000); }				// Close open video window
 	}
 
 	ShowAttendees()																				// SHOW THE ATTENDEES
@@ -605,7 +598,7 @@ class App  {
 			Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
 			<div id="co-textDiv" style="height:218px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
 			<div style="position:absolute;top:312px;left:12px">
-				<input  id="co-revText" placeholder="Type here..." class='co-is' style='width:182px;'>			
+				<input  id="co-revText" placeholder="Type here or speak" class='co-is' style='width:182px;'>			
 				<img id='co-talkBut'src='img/talkbut.png' style='vertical-align:-7px;margin-left:-16px;cursor:pointer'>
 				<img id='co-revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:12px;cursor:pointer'>
 				</div>	
@@ -762,7 +755,7 @@ class App  {
 			</div></div>`
 
 		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
-		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, use:"hallway" });
+		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, use:"hallway" });
 		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", use:"room",
 					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
