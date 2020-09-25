@@ -193,7 +193,9 @@ class App  {
 		this.pollTimer= window.setInterval( ()=>{													// Init polling timer
 			if (this.videoWin && (this.videoWin.closed !== false)) {								// Check if window was closed
 				this.videoWin=null;  																// Null 
-				$("#co-videoBar").remove();															// Remove alertbar
+				$("#co-videoBar").remove();															// Remove alert bar
+				this.ReportLocation(.5,.5,"A");														// Report my move
+				$("#co-AvMe").animate({ left:this.bx/2, top:this.by/2 });							// Animate me there		
 				}
 			},1000)
 	
@@ -261,14 +263,12 @@ class App  {
 		this.CloseAll();																			// Close all open dialogs
 		if (this.videoWin) { this.videoWin.close();	Popup("Video chat closed",1000); }				// Close open video window
 	
-		if (targetId.match(/co-Jo-/)) {																// Join a room
+		if (targetId.match(/co-Rm-/)) {																// In a room
+			this.status="R"+targetId.substr(6);														// Status with room number
 			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
 			if (!link)	return;																		// Quit if no link set
 			this.StartZoom(link);																	// Start a zoom
 			this.status="R"+targetId.substr(6);														// Status with room number	
-			}
-		else if (targetId.match(/co-Rm-/)) {														// In a room
-			this.status="R"+targetId.substr(6);														// Status with room number
 			}
 		else if (targetId == "co-infoDesk")  { this.Chat(this.infoDeskId,true); return; }			// ON INFO DESK BUTTON
 		else if (targetId == "co-attendees") { this.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
@@ -319,6 +319,8 @@ class App  {
 				style="left:${this.bx/4+16}px;width:${this.bx/2-24}px;background-color:#5b66cb">
 				Click here to return to last Zoom room</div>`;
 				$("body").append(str.replace(/\t|\n|\r/g,""));										// Add return bar
+				this.ReportLocation(.5,.5,"A");														// Report my move
+				$("#co-AvMe").animate({ left:this.bx/2, top:this.by/2 });							// Animate me there	
 				$("#co-videoBar").on("click",()=>{
 					let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 					setTimeout(function(){ myWin.close(); },10000);									// Close after 10 secs
@@ -329,7 +331,7 @@ class App  {
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
 		else if (link && link.match(/meet.jit.si/i)) {												// If jitsi
-			let x=this.bx/4+16+window.screenX;
+			let x=this.bx/4+16+window.screenX-8;
 			let y=this.by/4+window.screenY;
 			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
 						width=${this.bx/2-16},height=${this.by/2},left=${x},top=${y}`;			
@@ -341,9 +343,17 @@ class App  {
 			left:${$("#co-hall").offset().left}px;top:8px;
 			width:${$("#co-hall").width()}px; height:${($("#co-hall").width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
-			<img style="cursor:pointer;padding:1px 0 0 0" src="/img/closedot.png" onclick="$('#co-iframe').remove()"></div>
+			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="/img/closedot.png"></div>
 			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
+			
+			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
+				$("#co-iframe").remove();															// Close window
+				this.ReportLocation(.5,.5,"A");														// Report my move
+				$("#co-AvMe").animate({ left:this.bx/2, top:this.by/2 });							// Animate me there	
+				});	
+
+	
 			}
 	}
 
@@ -563,7 +573,7 @@ class App  {
 					<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
 				}
 			str+=`</p><div id="co-chatBut" style="position:absolute; left:154px; bottom:10px; cursor:pointer;
-				border-radius:30px;width:36px;background-color:#2d6ab3; color:#fff; height:26px; padding-top:10px; font-size:12px">
+				border-radius:30px;width:36px;background-color:#2d6ab3; color:#fff; height:28px; padding-top:8px; font-size:13px">
 				chat</div> &nbsp;&nbsp
 				<div style="position:absolute;left:166px; top:${flip ? "-10" : "171"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};
@@ -823,15 +833,11 @@ class App  {
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
 				<div class="co-roomHdr">${sc.title}
-				<div id="co-Jo-${i}" class="co-bs" style="${sc.link ? "" : "visibility:hidden;"}float:right">
-				${(sc.link && sc.link.match(/zoom/i)) ? "Join" : "View"}</div>
 				</div>${sc.content}</div></div>`;
-			}
+				}
 		str+=`</div></div>`;
 		$("#co-main").append(str.replace(/\t|\n|\r/g,""));										// Add venue
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
-		$("[id^=co-Jo-]").on("click", (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 			// ON JOIN CLICK
-		$("[id^=co-Jo-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON JOIN
 		$("[id^=co-Rm-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON ROOM
 		$("#co-quiet").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 			// ON DROP ON QUIET AREA
 		$("#co-coffee").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON COFFEE BAR
