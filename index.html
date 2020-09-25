@@ -311,7 +311,7 @@ class App  {
 		if (link && link.match(/zoom/i)) {															// If Zoom
 			if (window.location.host == "localhost") {												// If testing
 				Popup("Zooming!");																	// Show popup
-//				return;																				// Quit
+				return;																				// Quit
 				}
 			this.curZoom=link;																		// Save link
 			window.onfocus=()=>{ 																	// If main is back in focus
