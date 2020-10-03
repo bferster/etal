@@ -18,7 +18,7 @@
 	.co-venue 	{	display:grid; grid-template-columns: 25% calc(50% - 16px) 25%;  text-align:center; height:100%; grid-gap:8px;
 					color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-repeat:repeat; border: 1px solid #999; border-radius:0px; }
-	.co-roomHdr	{	width:calc(100% - 24px); text-align:left; color:#fff; padding:12px; font-size:16px; }
+	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; }
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; 
 					user-select:none; -webkit-user-select:none; }
@@ -117,21 +117,6 @@
 			if (pid.toLowerCase() == "demo") Demo();												// Run demo
 		});
 	
-		function Demo()	{																			// DEMO MODE
-			this.demoNum=1;
-			setInterval(()=>{
-				let i=Math.floor(Math.random()*app.people.length);									// Random person
-				let x=Math.floor(Math.random()*70)+26;												// Random x 
-				let y=Math.floor(Math.random()*80)+10;												// Random y 
-				app.ws.send(`L|${app.meetingId}~${i}|${x}|${y}|A`); 								// Send location message
-				++this.demoNum;
-				if (!(this.demoNum%6)) {
-					$("#co-queue").show();
-					app.queue.push({ id:i, msg:"Got a minute to talk?" });
-					$("#co-queue").text(app.queue.length); 	$("#co-queue").show();	
-					}},15000);																		// Every 15 seconds																				
-		}
-
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 66) && e.altKey && e.ctrlKey) {											// Broadcast key (Ctrl+Alt+B)
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|`+s)});	// Broadcast
@@ -161,12 +146,12 @@ class App  {
 		this.queue=[];																				// Contact queue
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
-		this.infoDeskId=1;																			// Id of info desk person
+		this.infoDeskId=null;																		// Id of info desk person
 		this.curChat=-1;																			// Who I'm chatting with																			
 		this.meetingStart=new Date();																// Meeting start
 		this.videoWin=null;																			// Video window
 		this.curZoom="";																			// Current zoom link
-		this.coffeeVideo="https://meet.jit.si/coffebar";						
+		this.coffeeVideo="https://meet.jit.si/~"+meetingId+"~coffebar-0";  							// Main coffee bar
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -207,7 +192,6 @@ class App  {
 		let v=event.data.split("|");																// Split message
 		let id,meeting="";
 		if (v[1]) meeting=v[1].split("~")[0];
-		
 		if (v[0] == "C") {																			// CHAT
 			if (meeting != this.meetingId)	return;													// Not this meeting
 			id=this.pIndex[v[2]];																	// Get index from id			
@@ -241,9 +225,10 @@ class App  {
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
 			if (v[4].charAt(0) == "Q")					$("#co-Av-"+id).css("display","none");		// Hide this person if quiet
 			else if ($("#co-top").css("opacity") > 0)	$("#co-Av-"+id).css("display","block");		// Show them, if initted
-			if (v[4].match(/^[B|R]/))	this.ArrangePeople(v[4]);									// Arrange people at bar and rooms
+			if (v[4].match(/^[B|R]/))	this.ArrangePeople();										// Arrange people at bar and rooms
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
 			$("#co-At-"+id).css("display",v[4].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
+		
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
@@ -262,7 +247,6 @@ class App  {
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		this.CloseAll();																			// Close all open dialogs
 		if (this.videoWin) { this.videoWin.close();	Popup("Video chat closed",1000); }				// Close open video window
-	
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			this.status="R"+targetId.substr(6);														// Status with room number
 			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
@@ -282,9 +266,10 @@ class App  {
 			this.status="Q";																		// In quiet mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
-			this.status="B";																		// In coffee bar
-			this.people[this.myId].stats="B";														// Update me
-			this.StartZoom(this.coffeeVideo);														// Go to the coffee bar zoom	
+			let id=targetId.substr(10);                                                             // Which one?
+            this.status="B"+id;                                                  					// Update me
+            this.StartZoom(this.coffeeVideo+"-"+id);                                                // Go to the coffee bar 
+//			for (let i=0;i<this.people.length;++i) this.people[i].stats="B1"													
 			}
 		else this.status="A";																		// In active mode
 		x=Math.max(0,Math.min(this.bx-avSize,x));													// Cap x to screen
@@ -311,7 +296,7 @@ class App  {
 		if (link && link.match(/zoom/i)) {															// If Zoom
 			if (window.location.host == "localhost") {												// If testing
 				Popup("Zooming!");																	// Show popup
-				return;																				// Quit
+//				return;																				// Quit
 				}
 			this.curZoom=link;																		// Save link
 			window.onfocus=()=>{ 																	// If main is back in focus
@@ -331,7 +316,7 @@ class App  {
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
 		else if (link && link.match(/meet.jit.si/i)) {												// If jitsi
-			let x=this.bx/4+16+window.screenX-8;
+            let x=$("#co-hall").position().left+window.screenX;               						// Center in hall
 			let y=this.by/4+window.screenY;
 			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
 						width=${this.bx/2-16},height=${this.by/2},left=${x},top=${y}`;			
@@ -344,7 +329,7 @@ class App  {
 			width:${$("#co-hall").width()}px; height:${($("#co-hall").width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="/img/closedot.png"></div>
-			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone frameborder="0" allowfullscreen></iframe>`;
+			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
 			
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
@@ -352,34 +337,35 @@ class App  {
 				this.ReportLocation(.5,.5,"A");														// Report my move
 				$("#co-AvMe").animate({ left:this.bx/2, top:this.by/2 });							// Animate me there	
 				});	
-
-	
 			}
 	}
 
-	ArrangePeople()																				// ARRANGE COFFEE BAR / ROOM MEMBERS
-	{
-		let i,bar=[];
-		let x=$("#co-coffee").offset().left;														// left side of bar
-		let w=$("#co-coffee").width()-avSize;														// Width of space
-		let x2=$("#co-coffee").offset().left+w;														// Last stool
-		let y=this.by-$("#co-coffee").height()-avSize+10;											// On top of bar area
-		for (i=0;i<this.people.length;++i) 	if (this.people[i].stats.charAt(0) == "B") bar.push(i);	// Make people array
-		let inc=avSize+2;																			// Spacing between barmates
-		if (bar.length > 1)	inc=Math.min(inc,w/(bar.length-1));										// Squeeze them in?
-			
-		for (i=0;i<bar.length;++i) {																// For each barmate
-			if (bar[i] == this.myId)	continue;													// Skip me
-			$("#co-Av-"+bar[i]).animate({ left:x, top:y},0);										// Move there
-			$("#co-At-"+bar[i]).css("display","none");												// Hide me tag
-			x+=inc;																					// Advance
-			}
-		if (bar.length) {
-			if (this.people[this.myId].stats.charAt(0) == "B") $("#co-AvMe").animate({ left:x, top:y},0); // If I'm at the bar, move me
-			else if (bar.length > 1) $("#co-Av-"+(bar[bar.length-1])).animate({ left:x, top:y},0);	// Move last one
-			}
-	
-		let o,j,n,ox,y2,rms=[];
+	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
+    {
+        let h,i,j,x2,inc,bar=[];
+        let x=$("#co-coffee-0").offset().left;                                                      // left side of bar
+        let w=$("#co-coffee-0").width()-avSize;                                                     // Width of space
+        let y=this.by-$("#co-coffee-0").height()-avSize+8;                                          // On top of bar area
+
+        for (j=0;j<this.rooms.length;++j) {                                                         // For each room
+            bar=[];                                                                                 // New array
+            for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+j)  bar.push(i); 	// Make people array
+            if (bar.length && j) {																	// If not main hall
+                x=$("#co-coffee-"+j).offset().left-15;                                              // Left
+                y=$("#co-coffee-"+j).offset().top+18;                                               // top      
+                w=$("#co-Rm-"+j).height()-avSize-34;                                                // Get size                                             
+                }
+            inc=avSize+2;                                                                           // Spacing between barmates
+            if (bar.length > 1) inc=Math.min(inc,w/(bar.length-1));                                 // Squeeze them in?
+            for (i=0;i<bar.length;++i) {                                                            // For each barmate
+                if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  // Move me
+              	else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           // Move them
+                $("#co-At-"+bar[i]).css("display","none");                                          // Hide me tag
+                if (j)  y+=inc;    else x+=inc;                                                  	 // Advance
+                }
+   			}
+
+		let o,n,ox,y2,rms=[];
 		for (i=0;i<this.rooms.length;++i)	rms.push([]);											// Make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i].stats;																	// Point at stats
@@ -394,7 +380,7 @@ class App  {
 			y2=$("#co-Rm-"+j).offset().top+50;														// Top
 			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-8;							// Bottom
 			w=Math.min(Math.sqrt(((x2-ox)*(y-y2)/n)),avSize+2);										// Set avatar spacing
-			if (this.people[this.myId].stats.substr(1) == j)										// If I'm in this room		
+			if (this.people[this.myId].stats == "R"+j)												// If I'm in this room		
 				$("#co-AvMe").animate({ left:x, top:y},0),x+=w; 									// Move me in
 			for (i=0;i<n;++i) {																		// For person in room
 				if (rms[j][i] == this.myId)	continue;												// Skip me
@@ -414,27 +400,27 @@ class App  {
 		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${x}|${y}|${status}`); 				// Send Location message
 	}
 	
-	Draw() 																						// REDRAW
-	{
-		this.bx=$("body").width(),		this.by=$("body").height();									// Body size
-		$("#co-main").width(this.bx);	$("#co-main").height(this.by);								// Set div
-		this.CloseAll();																			// Close open windows
-		this.ArrangePeople();																		// Arrange people				
+	Draw(mask)                                                                                      // REDRAW
+    {
+        this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
+        $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
+        this.CloseAll(mask);                                                                            // Close open windows
+        this.ArrangePeople();                                                                       // Arrange people               
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DIALOGS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	CloseAll()																					// CLOSE ALL OPEN DIALOGS
-	{
-		$("#co-chat").remove();																		// Close chat if open
-		$("#co-card").remove();																		
-		$("#co-sched").remove();																	
-		$("#co-people").remove();																	
-		$("#co-iframe").remove(); 																	
-		if (this.videoWin) { this.videoWin.close();	Popup("Video chat closed",1000); }				// Close open video window
-	}
+ 	CloseAll(mask)                                                                                 // CLOSE ALL OPEN DIALOGS
+    {
+        $("#co-chat").remove();                                                                     // Close chat if open
+        $("#co-card").remove();                                                                     
+        $("#co-sched").remove();                                                                    
+        $("#co-people").remove();                                                                   
+        if (!mask&1) $("#co-iframe").remove();                                                                   
+        if (this.videoWin) { this.videoWin.close(); Popup("Video chat closed",1000); }              // Close open video window
+    }
 
 	ShowAttendees()																				// SHOW THE ATTENDEES
 	{
@@ -530,7 +516,7 @@ class App  {
 				border-color: #fff transparent transparent transparent"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-	
+
 		$("[id^=co-qd-]").on("click",(e)=>{															// ON DELETE CLICK
 			let i=e.target.id.substr(6)-0;															// Get index
 			let targetId="co-Av-"+i;																// Recreate id
@@ -586,14 +572,16 @@ class App  {
 
 	Chat(id, infoDesk)																			// CHAT CLIENT
 	{
-		let i,flip=false;
+		let i,ox,oy,flip=false;
 		this.CloseAll();																			// Close all open dialogs
-		let ox=$("#co-Ap-"+id).offset().left;														// Avatar left
-		let oy=$("#co-Ap-"+id).offset().top;														// Top
 		if (infoDesk) {																				// If an info desk query
 			ox=$("#co-infoDesk").offset().left-7;													// Desk left
 			oy=$("#co-infoDesk").offset().top-4														// Top
-			}		
+			}
+		else{																						// Normal chat		
+			ox=$("#co-Ap-"+id).offset().left;														// Avatar left
+			oy=$("#co-Ap-"+id).offset().top;														// Top
+			}
 		let x=ox-119+avSize/2;																		// Center X on avatar 
 		let y=oy-360;																				// Y atop avatar
 		if (y < 12) flip=true,y=(y-0+avSize+370);													// Flip it
@@ -605,13 +593,18 @@ class App  {
 		let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<img style="float:right;cursor:pointer" src="/img/closedot.png" onclick="$('#co-chat').remove()">
 			<b>Chat with ${this.people[id].firstName}</b><hr style="margin:8px 32px">
-			Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
+			<div style="text-align:left">
+                Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
+                <select id="co-canned" class="co-is" style="float:right;width:90px">
+                    <option>Canned</option>
+                    <option>Sure</option>
+                    <option>I'll get back with you</option>
+                    <option>Maybe later</option>
+                    <option>Do you want to video chat?</option>
+                    <option>My email is ${this.people[this.myId].email}</option>                
+                </select>
+            </div>  
 			<div id="co-textDiv" style="height:218px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
-			<div style="position:absolute;top:312px;left:12px">
-				<input  id="co-revText" placeholder="Type here or speak" class='co-is' style='width:182px;'>			
-				<img id='co-talkBut'src='img/talkbut.png' style='vertical-align:-7px;margin-left:-16px;cursor:pointer'>
-				<img id='co-revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:12px;cursor:pointer'>
-				</div>	
 			<div style="position:absolute;left:112px; top:${flip ? "-10" : "343"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};
 				border-style:solid; border-width: 14px 8px 0 8px;
@@ -619,6 +612,14 @@ class App  {
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add chatbox
 	
+		$("#co-canned").on("change", ()=>{                                                          // ON CANNED RESPONSE
+            sendChat($("#co-canned").val())                                                         // Send reponse
+            $("#co-canned").prop("selectedIndex",0);                                                // Reset select
+            });
+
+        this.infoDeskId=null;                                                                          // Id of info desk person
+
+
 		for (i=0;i<this.chats.length;++i) {															// For each chat in archive
 			if (this.chats[i].id == id) 															// If it's whom I'm chatting with
 				$("#co-textDiv").append(`<div class="co-text${this.chats[i].dir ? "S" : "R"}">${this.chats[i].msg}</div><br>`);	// Add message
@@ -636,7 +637,7 @@ class App  {
 		$("#co-revText").on("change",   ()=>{ sendChat(); });										// ON TEXT ENTER
 		$("#co-revTextBut").on("click", ()=>{ sendChat(); });										// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON ZOOM BUT CLICK
-			let link="https://meet.jit.si/"+this.people[this.myId].firstName+"-"+this.myId;			// Jitsi link
+			let link="https://meet.jit.si/~"+this.meetingId+"~"+this.people[this.myId].firstName+"-"+this.myId;  // Jitsi link
 			let str=`Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"
 			onclick="app.StartZoom('${link}')"> to join`;
 			sendChat(str)
@@ -731,20 +732,20 @@ class App  {
 		for (i=0;i<people.length;++i) {																	// For each person
 			let id=people[i].id.split("~")[1];															// Split id out
 			o=this.people[i];																			// Point at them
+			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
 			this.pIndex[people[i].id]=i;																// Save index by full id
 			o.x=Math.max(0,Math.min(o.x,95));															// Cap x to screen
 			o.y=Math.max(0,Math.min(o.y,95));															// Cap x to screen
-			if (!this.people[i].pic)	this.people[i].pic="avyou.png";									// Use generic pic
+			if (!this.people[i].pic)	this.people[i].pic="img/avyou.png";								// Use generic pic
 			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
 			<div style="width:${avSize}px;height:${avSize}px;overflow:hidden;border-radius:64px;display:inline-block">
 			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize}px;min-height:${avSize}px"></div>
 			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
-		str+=`<div class="co-me" id="co-AvMe"><img src="avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
+		str+=`<div class="co-me" id="co-AvMe"><img src="img/avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
 		$("body").append(str);																			// Add to body
-	
+
 		if (show) this.ShowPeople()																		// If updating, show people
-		this.infoDeskId=this.pIndex[this.meetingId+"~"+this.infoDeskId];								// Convert info id to index
 		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
 		$("#co-AvMe").draggable({ containment:"window", stop:(e,ui)=>{ 
@@ -757,31 +758,31 @@ class App  {
 	{
 		let i,hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
-			<img id="co-coffee" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
+			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
-				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">
-				<img src="img/info.png"  	id="co-infoDesk"  style="height:36px;cursor:pointer">
-			</div></div>`
-
-		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
+				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">`;
+		if (this.infoDeskId != null) hallway+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
+ 		hallway+=`</div></div>`;
+   
+   		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
 		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, use:"hallway" });
-		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", use:"room",
-					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", use:"room", bar:true, live:true,
+					link:"zoommtg://zoom.us/join?confno=98542348220&pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
-							<img src="liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
+							<img src="misc/liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
 							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
-		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", use:"room",
-					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", use:"room", bar:true,
+					link:"zoommtg://zoom.us/join?confno=98542348220&pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"><b>The Flipped Classroom</b><br>Glen Bull</div>` });
-		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"GIS in the Classroom withThomas Hammond", use:"room",
-					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"GIS in the Classroom withThomas Hammond", use:"room", bar:true,
+					link:"zoommtg://zoom.us/join?confno=98542348220&pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"><b>GIS in the Classroom</b><br>Thomas Hammond</div>`});
-		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Graphing Calculators with Joe Garofalo", use:"room",
-					link:"https://zoom.us/j/98542348220?pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
+		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Graphing Calculators with Joe Garofalo", use:"room", bar:true,
+					link:"zoommtg://zoom.us/join?confno=98542348220&pwd=N3IzWDNKaGRaT3pXcThOQ21wL1NCQT09",
 					content:`<div class="co-roomTitle"<b>Graphing Calculators<br>Joe Garofalo</div>`});
-		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room",
+		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room", bar:true,
 					link:"https://www.youtube.com/embed/YVbkexkMwag",
 					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div</div>`});
 		
@@ -833,14 +834,17 @@ class App  {
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
 				<div class="co-roomHdr">${sc.title}
-				</div>${sc.content}</div></div>`;
-				}
-		str+=`</div></div>`;
+           </div>${sc.content}`;
+           if (sc.bar)     str+=`<img id="co-coffee-${i}" style="position:absolute;cursor:pointer;left:calc(100% - 31px);top:14px;width:16px" src="img/coffeecup.png">`;
+           if (sc.live)    str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
+           str+="</div></div>";		
+			}
+			
 		$("#co-main").append(str.replace(/\t|\n|\r/g,""));										// Add venue
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
 		$("[id^=co-Rm-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON ROOM
 		$("#co-quiet").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 			// ON DROP ON QUIET AREA
-		$("#co-coffee").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON COFFEE BAR
+		$("[id^=co-coffee-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   // ON DROP ON COFFEE BAR
 	
 	}
 
