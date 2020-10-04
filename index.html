@@ -551,13 +551,15 @@ class App  {
 			<p><b>${o.title} | ${o.org}</b></p>
 			<p>Interests: ${o.ints}<p>
 			<p style="position:absolute;left:24px;bottom:0">`;
-			if (o.li) {
-				o.li=o.li.replace(/https:\/\//,"");
-				o.li=o.li.replace(/linkedin.com\//,"");
-				o.li=o.li.replace(/in\//,"");
+			if (o.li) {																				// If a LI site
+				o.li=o.li.replace(/https:\/\//,"");													// Remove http
+				o.li=o.li.replace(/linkedin.com\//,"");												// Domain
+				o.li=o.li.replace(/in\//,"");														// Folder
 				str+=`<a href="https://linkedin.com/in/${o.li}" target="_blank">
 					<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
 				}
+			if (o.web)	str+=`<div style="color:#000099;float:right;margin-top:14px">
+						<a href="${o.web}" target="_blank">Website</a></div>`;
 			str+=`</p><div id="co-chatBut" style="position:absolute; left:154px; bottom:10px; cursor:pointer;
 				border-radius:30px;width:36px;background-color:#2d6ab3; color:#fff; height:28px; padding-top:8px; font-size:13px">
 				chat</div> &nbsp;&nbsp
@@ -922,17 +924,15 @@ class App  {
 		trace(msg);
 		$("#co-Rm-2").html(">"+msg+"<")
 	}
+</script>
 
-	<!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179601831-1"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'UA-179601831-1');
 </script>
 
-</script>
 </body>
 </html>
