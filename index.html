@@ -269,7 +269,7 @@ class App  {
 			let id=targetId.substr(10);                                                             // Which one?
             this.status="B"+id;                                                  					// Update me
             this.StartZoom(this.coffeeVideo+"-"+id);                                                // Go to the coffee bar 
-//			for (let i=0;i<this.people.length;++i) this.people[i].stats="B1"													
+//			for (let i=0;i<this.people.length;++i) this.people[i].stats="B0"													
 			}
 		else this.status="A";																		// In active mode
 		x=Math.max(0,Math.min(this.bx-avSize,x));													// Cap x to screen
@@ -624,10 +624,7 @@ class App  {
             $("#co-canned").prop("selectedIndex",0);                                                // Reset select
             });
 
-        this.infoDeskId=null;                                                                          // Id of info desk person
-
-
-		for (i=0;i<this.chats.length;++i) {															// For each chat in archive
+ 		for (i=0;i<this.chats.length;++i) {															// For each chat in archive
 			if (this.chats[i].id == id) 															// If it's whom I'm chatting with
 				$("#co-textDiv").append(`<div class="co-text${this.chats[i].dir ? "S" : "R"}">${this.chats[i].msg}</div><br>`);	// Add message
 			}
