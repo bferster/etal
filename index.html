@@ -246,7 +246,10 @@ class App  {
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
 		else if (v[0] == "B") {																		// BROADCAST
-			trace(v)
+			if (v[2].charAt() == "*") {																// If TTS
+				v[2]=v[2].substr(1);																// Remove star
+				this.Speak(v[2]);																	// Say it
+				}
 			Popup(`<b style="color:#990000">A message<br>from your meeting host</b><hr><br>${v[2]}<br><br>`,6000);	// Alert them
 			this.queue.push({ id:this.infoDeskId, msg:v[2] });										// Add to queue
 			if ($("#co-qv-0").length) this.ShowQueue();												// Show the message queue, if open	
@@ -746,6 +749,15 @@ class App  {
 		if (this.listening)	return;																		// Quit if already started
 		try { this.recognition.start(); this.listening=true; } catch(e) { trace("Voice error",e) };		// Start recognition
 		$("#co-talkBut").prop("src","img/intalkbut.png");												// Talking but
+	}
+
+	Speak(msg)
+	{
+		try {																							// Try
+			let tts=new SpeechSynthesisUtterance();														// Init TTS
+			tts.text=msg;																				// Set text
+			speechSynthesis.speak(tts);																	// Speak
+			} catch(e) { trace("TTS error",e) };														// On error
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
