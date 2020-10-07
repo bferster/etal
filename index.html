@@ -110,7 +110,7 @@
 				}
 			app.InitProject(meetingId,i);															// Init project		
 			app.Draw();																				// Draw screen
-			app.ReportLocation(.5,.5);																// Report location to set server myId
+			app.GoToCenter();																		// Go to center of room
 			$("#splashDiv").fadeOut();																// Fade out splash
 			$("#co-top").animate({opacity:1},1000,()=>{ app.ArrangePeople() });						// Fade in main, the arrange people
 			app.ShowPeople();																		// Show people																		
@@ -150,6 +150,7 @@ class App  {
 		this.curChat=-1;																			// Who I'm chatting with																			
 		this.meetingStart=new Date();																// Meeting start
 		this.videoWin=null;																			// Video window
+		this.videoRoom=null;																		// Status of video room
 		this.curZoom="";																			// Current zoom link
 		this.coffeeVideo="https://meet.jit.si/~"+meetingId+"~coffebar-0";  							// Main coffee bar
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
@@ -179,12 +180,19 @@ class App  {
 			if (this.videoWin && (this.videoWin.closed !== false)) {								// Check if window was closed
 				this.videoWin=null;  																// Null 
 				$("#co-videoBar").remove();															// Remove alert bar
-				this.ReportLocation(.5,.5,"A");														// Report my move
-				$("#co-AvMe").animate({ left:this.bx/2, top:this.by/2 });							// Animate me there		
+				let s=this.people[this.myId].stats;													// Get stats
+				if ((s == this.videoRoom) && (s.match(/R|B/i)))	this.GoToCenter();					// Go to center if in same room or bar		
 				}
 			},1000)
-	
 		}
+
+	Draw(mask)                                                                                      // REDRAW
+    {
+        this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
+        $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
+        this.CloseAll(mask);                                                                            // Close open windows
+        this.ArrangePeople();                                                                       // Arrange people               
+	}
 
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
@@ -206,7 +214,7 @@ class App  {
 				$("#co-queue").text(app.queue.length); 												// Reset queue dot length
 				$("#co-queue").show();																// Show dot
 				let o=this.people[id];																// Point at person
-				let str=`<b>New message from</b>
+				let str=`<div onclick="app.Chat('${id}')"><b>New message from</b>
 				<p><img style="width:40px;height:40px;border-radius:50px" src="${o.pic}"></p>
 				<b>${o.firstName} ${o.lastName}</b><br>${o.org}<p><hr></p>
 				<div style="color:#0000ff">${v[3]}</div><br>`;		
@@ -246,7 +254,7 @@ class App  {
 	{
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		this.CloseAll();																			// Close all open dialogs
-		if (this.videoWin) { this.videoWin.close();	Popup("Video chat closed",1000); }				// Close open video window
+		if (this.videoWin)  this.videoWin.close();													// Close open video window
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			this.status="R"+targetId.substr(6);														// Status with room number
 			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
@@ -279,15 +287,6 @@ class App  {
 		this.curChat=-1;																			// Not chatting with anyone
 	}
 
-	ShowPeople()																				// SHOW PEOPLE AVATARS
-	{
-		let i;
-		$("[id^=co-Av]").fadeIn(1500) 																// Fade in avatars
-			$("#co-Av-"+this.myId).hide();															// Hide my own
-			for (i=0;i<this.people.length;++i) 														// For each person
-				if (this.people[i].stats == "Q")	$("#co-Av-"+i).hide();							// Hide people who are quiet
-	}
-
 	StartZoom(link)																				// INITIATE ZOOM
 	{
 		this.CloseAll();																			// Close all open dialogs
@@ -304,8 +303,7 @@ class App  {
 				style="left:${this.bx/4+16}px;width:${this.bx/2-24}px;background-color:#5b66cb">
 				Click here to return to last Zoom room</div>`;
 				$("body").append(str.replace(/\t|\n|\r/g,""));										// Add return bar
-				this.ReportLocation(.5,.5,"A");														// Report my move
-				$("#co-AvMe").animate({ left:this.bx/2, top:this.by/2 });							// Animate me there	
+				this.GoToCenter();																	// Got to center of hall
 				$("#co-videoBar").on("click",()=>{
 					let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 					setTimeout(function(){ myWin.close(); },10000);									// Close after 10 secs
@@ -321,6 +319,7 @@ class App  {
 			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
 						width=${this.bx/2-16},height=${this.by/2},left=${x},top=${y}`;			
 			this.videoWin=window.open(link,"_blank",params.replace(/\t|\n|\r/g,""));				// Open video window
+			this.videoRoom=this.status;																// Get room
 			if (isMobile)	setTimeout(function(){ myWin.close(); },10000);							// Close after 10 secs on mobile
 			}
 		else{
@@ -334,10 +333,30 @@ class App  {
 			
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
 				$("#co-iframe").remove();															// Close window
-				this.ReportLocation(.5,.5,"A");														// Report my move
-				$("#co-AvMe").animate({ left:this.bx/2, top:this.by/2 });							// Animate me there	
+				this.GoToCenter();																	// Go to centet
 				});	
 			}
+	}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// AVATAR MOVEMENT
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	GoToCenter()																				// MOVE TO CENTER HALL
+	{
+		let x=(Math.random()*20+40)/100;															// Hover X in center
+		let y=(Math.random()*20+40)/100;															// Y
+		app.ReportLocation(x,y);																	// Report location to set server myId
+		$("#co-AvMe").animate({ left:this.bx*x, top:this.by*y });									// Animate me there	
+	}
+
+	ShowPeople()																				// SHOW PEOPLE AVATARS
+	{
+		let i;
+		$("[id^=co-Av]").fadeIn(1500) 																// Fade in avatars
+			$("#co-Av-"+this.myId).hide();															// Hide my own
+			for (i=0;i<this.people.length;++i) 														// For each person
+				if (this.people[i].stats == "Q")	$("#co-Av-"+i).hide();							// Hide people who are quiet
 	}
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
@@ -400,14 +419,6 @@ class App  {
 		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${x}|${y}|${status}`); 				// Send Location message
 	}
 	
-	Draw(mask)                                                                                      // REDRAW
-    {
-        this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
-        $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
-        this.CloseAll(mask);                                                                            // Close open windows
-        this.ArrangePeople();                                                                       // Arrange people               
-	}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DIALOGS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -418,8 +429,8 @@ class App  {
         $("#co-card").remove();                                                                     
         $("#co-sched").remove();                                                                    
         $("#co-people").remove();                                                                   
-        if (!mask&1) $("#co-iframe").remove();                                                                   
-        if (this.videoWin) { this.videoWin.close(); Popup("Video chat closed",1000); }              // Close open video window
+        if (!mask&1) $("#co-iframe").remove();														// Remove iframe id flag set                                                                   
+        if (this.videoWin) this.videoWin.close();										            // Close open video window
     }
 
 	ShowAttendees()																				// SHOW THE ATTENDEES
@@ -608,7 +619,7 @@ class App  {
             </div>  
 			<div id="co-textDiv" style="height:218px;overflow-x:hidden;overflow-y:auto;margin-top:8px;border:1px solid #999;border-radius:6px;padding:4px 4px"></div>														
 			<div style="position:absolute;top:312px;left:12px">
-				<input  id="co-revText" placeholder="Type here or speak" class='co-is' style='width:182px;'>			
+				<input  id="co-revText" placeholder="Type here or speak" class='co-is' style='width:182px;outline:none;'>			
 				<img id='co-talkBut'src='img/talkbut.png' style='vertical-align:-7px;margin-left:-16px;cursor:pointer'>
 				<img id='co-revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:12px;cursor:pointer'>
 				</div>	
@@ -618,7 +629,9 @@ class App  {
     			border-color: #fff transparent transparent transparent;"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add chatbox
-	
+		
+		$("#co-revText").focus();																	// Focus on input
+
 		$("#co-canned").on("change", ()=>{                                                          // ON CANNED RESPONSE
             sendChat($("#co-canned").val())                                                         // Send reponse
             $("#co-canned").prop("selectedIndex",0);                                                // Reset select
@@ -642,9 +655,10 @@ class App  {
 		$("#co-revTextBut").on("click", ()=>{ sendChat(); });										// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON ZOOM BUT CLICK
 			let link="https://meet.jit.si/~"+this.meetingId+"~"+this.people[this.myId].firstName+"-"+this.myId;  // Jitsi link
-			let str=`Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"
-			onclick="app.StartZoom('${link}')"> to join`;
-			sendChat(str)
+			let str=`<div onclick="app.StartZoom('${link}')">
+			Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> to join`;
+			sendChat(str);																			// Invite
+			this.StartZoom(link);																	// Start chatting
 			})					
 	
 		function sendChat(msg) {																	// TEXT CHATTING
@@ -776,7 +790,7 @@ class App  {
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 							<img src="misc/liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
-							for the keynote speech<br> in <b></b>15</b></15> minutes (Zoom)</div>` });
+							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
 		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", use:"room", bar:true,
 					link:"https://zoom.us/j/92377093582?pwd=aDRzT2xzeFVxNG10VDZuQmt1NkJUdz09",
 					content:`<div class="co-roomTitle">The Flipped Classroom</b><br>Glen Bull (Zoom)</div>` });
@@ -788,8 +802,10 @@ class App  {
 					content:`<div class="co-roomTitle"><b>Dataviz ecologies</b><br>Moritz Stefaner (Vimeo)</div>`});
 		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room", bar:true,
 					link:"https://www.youtube.com/embed/YVbkexkMwag?autoplay=1",
-					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div</div>`});
-		
+					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div>`});
+
+		this.schedule[1][0].link="https://meet.jit.si/~"+this.meetingId+"~etal-Room-0"
+
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.schedule[0][0].title=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
 			this.schedule[1][0].content=`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
@@ -797,12 +813,8 @@ class App  {
 				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:50%;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>`;
 			this.schedule[1][0].desc="Keynote by Micheal Cronk";
-			this.schedule[2][0].content=`<div class="co-roomTitle">Panel discussion:<br>Standards-based IP adoption</div>`;
+			this.schedule[2][0].content=`<div class="co-roomTitle"><b>Panel discussion</b><br>Standards-based IP adoption<br>(Zoom)</div>`;
 			this.schedule[2][0].desc="Panel discussion: Standards-based IP adoption";
-			this.schedule[3][0].content=`<div class="co-roomTitle">SMPTE ST 2110<br>suite of standards</div>`;
-			this.schedule[3][0].desc="SMPTE ST 2110 suite of standards";
-			this.schedule[4][0].content=`<div class="co-roomTitle">AMWA NMOS<br>Technology stack</div>`;
-			this.schedule[4][0].desc="AMWA NMOS Technology stack";
 			}
 		}
 
@@ -899,7 +911,7 @@ class App  {
 			snd.volume=100/100;																			// Set volume
 			snd.play();																					// Play it
 			}
-		}
+	}
 
 	function Popup(msg, time, div)																	// TIMED POPUP
 	{
@@ -916,11 +928,12 @@ class App  {
 		$("#co-popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500)							// Animate in and out		
 	}
 
-	function trace2(msg, p1, p2, p3, p4)										// CONSOLE 
+	function trace2(msg, p1, p2, p3, p4)															// MOBILE CONSOLE 
 	{
 		trace(msg);
 		$("#co-Rm-2").html(">"+msg+"<")
 	}
+
 </script>
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179601831-1"></script>
