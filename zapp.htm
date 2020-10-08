@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<head>
+    <title>Zoom</title>
+    <meta charset="utf-8" />
+    <link type="text/css" rel="stylesheet" href="https://source.zoom.us/1.8.1/css/bootstrap.css" />
+    <link type="text/css" rel="stylesheet" href="https://source.zoom.us/1.8.1/css/react-select.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="origin-trial" content="">
+</head>
+
+<body>
+    <script src="https://source.zoom.us/1.8.1/lib/vendor/react.min.js"></script>
+    <script src="https://source.zoom.us/1.8.1/lib/vendor/react-dom.min.js"></script>
+    <script src="https://source.zoom.us/1.8.1/lib/vendor/redux.min.js"></script>
+    <script src="https://source.zoom.us/1.8.1/lib/vendor/redux-thunk.min.js"></script>
+    <script src="https://source.zoom.us/1.8.1/lib/vendor/jquery.min.js"></script>
+    <script src="https://source.zoom.us/1.8.1/lib/vendor/lodash.min.js"></script>
+    <script src="https://source.zoom.us/zoom-meeting-1.8.1.min.js"></script>
+ 
+<script>
+	ZoomMtg.preLoadWasm(); 
+	var API_KEY = "hVg9IpPVTCOqYaelSmL-cw";
+	var v=window.location.search.substring(1).split("&pwd=");
+	let meetingNumber=v[0];
+	let meetingPW=v[1] ? v[1] : ""; 
+ 	let signature="aFZnOUlwUFZUQ09xWWFlbFNtTC1jdy45MjM3NzA5MzU4Mi4xNjAyMTYxMjU2ODM5LjAubUhZTUhKZTNRZm1tb2lkMnZvVVduTllWYWF3dVh0WkVTa2F5NFkvVUFkTT0";
+
+(function () {
+ 	ZoomMtg.preLoadWasm();
+	ZoomMtg.prepareJssdk();
+	function beginJoin(signature) {
+		ZoomMtg.init({
+      		leaveUrl:"zapp.htm",
+      		success: function () {
+//         		$.i18n.reload("en-US");
+        		ZoomMtg.join({
+			 		meetingNumber: meetingNumber,  passWord: meetingPW,
+          			userName:"èt • al meeting room", userEmail: "",
+          			signature: signature, apiKey: API_KEY,
+            		success: function (res) {}, }); },
+     				error: function (res) { console.log(res); },
+   	 				});
+  				}
+ 		 	beginJoin(signature);
+		})
+();
+
+</script>
+</body></html>
