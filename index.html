@@ -332,7 +332,7 @@ class App  {
 		    let x=$("#co-hall").offset().left-off+window.screenX;               					// Center in hall
 			let y=window.outerHeight-window.innerHeight+off+window.screenY;							// Top of hall
 			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
-						width=${$("#co-hall").width()},height=${this.by/2},left=${x},top=${y}`;			
+						width=${$("#co-hall").width()},height=${$("#co-hall").width()*.5625},left=${x},top=${y}`;			
 			this.videoWin=window.open(link,"_blank",params.replace(/\t|\n|\r/g,""));				// Open video window
 			this.videoRoom=this.status;																// Get room
 			if (isMobile)	setTimeout(function(){ myWin.close(); },10000);							// Close after 10 secs on mobile
