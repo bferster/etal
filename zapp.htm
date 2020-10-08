@@ -30,7 +30,7 @@
 	ZoomMtg.prepareJssdk();
 	function beginJoin(signature) {
 		ZoomMtg.init({
-      		leaveUrl:"zapp.htm",
+      		leaveUrl:"zapp.htm"+window.location.search,
       		success: function () {
 //         		$.i18n.reload("en-US");
         		ZoomMtg.join({
