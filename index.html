@@ -15,7 +15,7 @@
 	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:8px; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - 16px - var(--mobileOff)); z-index:0;}
-	.co-venue 	{	display:grid; grid-template-columns: 25% calc(50% - 16px) 25%;  text-align:center; height:100%; grid-gap:8px;
+	.co-venue 	{	display:grid; text-align:center; height:100%; grid-gap:8px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
 					color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-repeat:repeat; border: 1px solid #999; border-radius:0px; }
 	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; }
@@ -327,16 +327,18 @@ class App  {
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
 		else if (link && link.match(/meet.jit.si/i)) {												// If jitsi
-            let x=$("#co-hall").position().left+window.screenX;               						// Center in hall
-			let y=this.by/4+window.screenY;
+			let off=0;
+			if (($(window).width() == window.screen.width) && navigator.appVersion.match(/chrome/i)) off=7.0;	// Chrome offset
+		    let x=$("#co-hall").offset().left-off+window.screenX;               					// Center in hall
+			let y=window.outerHeight-window.innerHeight+off+window.screenY;							// Top of hall
 			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
-						width=${this.bx/2-16},height=${this.by/2},left=${x},top=${y}`;			
+						width=${$("#co-hall").width()},height=${this.by/2},left=${x},top=${y}`;			
 			this.videoWin=window.open(link,"_blank",params.replace(/\t|\n|\r/g,""));				// Open video window
 			this.videoRoom=this.status;																// Get room
 			if (isMobile)	setTimeout(function(){ myWin.close(); },10000);							// Close after 10 secs on mobile
 			}
 		else{
-			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;
+			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
 			left:${$("#co-hall").offset().left}px;top:8px;
 			width:${$("#co-hall").width()}px; height:${($("#co-hall").width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
@@ -796,8 +798,9 @@ class App  {
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		let i,hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(50% - 36px);padding:0 12px">
-			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin-bottom:8px">
+		let w=(this.rooms[0].ce-this.rooms[0].cs)/10*100;												// Size of hall as %
+		let i,hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(${w}% - 16px)">
+			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin:0 8px 0 12px">
 			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
@@ -849,25 +852,26 @@ class App  {
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
 	
 		this.rooms=[
-			{ rug:"#d8c4ae", cs:2, ce:3, rs:1, re:4, floor:"1", link:"" },
-			{ rug:"#cc4c39", cs:1, ce:1, rs:1, re:3, floor:"1", link:"" },
-			{ rug:"#58aab4", cs:1, ce:1, rs:3, re:3, floor:"1", link:"" },
-			{ rug:"#6e9456", cs:3, ce:3, rs:1, re:1, floor:"1", link:"" },
-			{ rug:"#5b66cb", cs:3, ce:3, rs:2, re:2, floor:"1", link:"" },
-			{ rug:"#a2733f", cs:3, ce:3, rs:3, re:3, floor:"1", link:"" }
+			{ rug:"#d8c4ae", cs:3, ce:9, rs:1, re:4, floor:"1", link:"" },
+			{ rug:"#cc4c39", cs:1, ce:3, rs:1, re:3, floor:"1", link:"" },
+			{ rug:"#58aab4", cs:1, ce:3, rs:3, re:3, floor:"1", link:"" },
+			{ rug:"#6e9456", cs:9, ce:11, rs:1, re:1, floor:"1", link:"" },
+			{ rug:"#5b66cb", cs:9, ce:11, rs:2, re:2, floor:"1", link:"" },
+			{ rug:"#a2733f", cs:9, ce:11, rs:3, re:3, floor:"1", link:"" }
 		 	];
-		this.AddSchedule();																		// Add schedule
-		let str=`<div id="co-grid" class="co-venue">`;
-		o=this.rooms[0];																		// Point at room
-		sc=this.schedule[0][0];																	// Point at schedule for room
+		
+		this.AddSchedule();																				// Add schedule
+		let str=`<div id="co-grid" class="co-venue"">`;													// Add room grid
+		o=this.rooms[0];																				// Point at room
+		sc=this.schedule[0][0];																			// Point at schedule for room
 		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 		${sc.title}${sc.content}</div>`;
-		for (i=1;i<this.rooms.length;++i) {														// For each room
-			o=this.rooms[i];																	// Point at room
-			sc=this.schedule[i][0];																// Point at schedule for room
-			this.rooms[i].link=sc.link;															// Set room link
-			if (!o.rug)		o.rug=this.rooms[i-1].rug;											// Use flooring from room above if not set
+		for (i=1;i<this.rooms.length;++i) {																// For each room
+			o=this.rooms[i];																			// Point at room
+			sc=this.schedule[i][0];																		// Point at schedule for room
+			this.rooms[i].link=sc.link;																	// Set room link
+			if (!o.rug)		o.rug=this.rooms[i-1].rug;													// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
@@ -878,7 +882,7 @@ class App  {
            str+="</div></div>";		
 			}
 			
-		$("#co-main").append(str.replace(/\t|\n|\r/g,""));										// Add venue
+		$("#co-main").append(str.replace(/\t|\n|\r/g,""));												// Add venue
 		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
 		$("[id^=co-Rm-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON ROOM
 		$("#co-quiet").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 			// ON DROP ON QUIET AREA
