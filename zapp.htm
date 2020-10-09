@@ -37,21 +37,18 @@
 	
 	function Join(signature)
 	{
-		function beginJoin(signature) {
-			ZoomMtg.init({
-				disableInvite: true,
-				leaveUrl:"zapp.htm"+window.location.search,
-				success: function () {
-	//         		$.i18n.reload("en-US");
-					ZoomMtg.join({
-						meetingNumber: meetingNumber,  passWord: meetingPW,
-						userName:"èt • al meeting room", userEmail: "",
-						signature: signature, apiKey: API_KEY,
-						success: function (res) {}, }); },
-						error: function (res) { console.log(res); },
-						});
-					}
-				beginJoin(signature);
+		ZoomMtg.init({
+			disableInvite: true,
+			leaveUrl:"zapp.htm"+window.location.search,
+			success: function () {
+//         		$.i18n.reload("en-US");
+				ZoomMtg.join({
+					meetingNumber: meetingNumber,  passWord: meetingPW,
+					userName:"èt • al meeting room", userEmail: "",
+					signature: signature, apiKey: API_KEY,
+					success: function (res) { }, }); },
+					error: function (res) { console.log(res); },
+					});
 	}
 
 </script>
