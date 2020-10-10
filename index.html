@@ -79,7 +79,7 @@
 <script>
 
 	let app=null;																					// Holds app
-	let	avSize=45;																					// Avatar size
+	let	avSize=36;																					// Avatar size
 	let butCol="#5b66cb"																			// Color  of vutton and ui
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 
@@ -195,7 +195,7 @@ class App  {
     {
         this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
-	    this.CloseAll(1);                                                                           // Close open windows
+	    this.CloseAll(3);                                                                           // Close open windows
         this.ArrangePeople();                                                                       // Arrange people               
 	}
 
@@ -267,7 +267,6 @@ class App  {
 	{
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		this.CloseAll();																			// Close all open dialogs
-		if (this.videoWin && !this.demoMode)  this.videoWin.close();								// Close open video window
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			this.status="R"+targetId.substr(6);														// Status with room number
 			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
@@ -282,19 +281,19 @@ class App  {
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
-			x=$("#co-quiet").offset().left+4;														// Center x
-			y=$("#co-quiet").offset().top+4;														// Y
+			x=$("#co-quiet").offset().left+(avSize/2)+4;											// Center x
+			y=$("#co-quiet").offset().top+(avSize/2)+4;												// Y
 			this.status="Q";																		// In quiet mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
             this.status="B"+id;                                                  					// Update me
             this.StartZoom(this.coffeeVideo+"-"+id);                                                // Go to the coffee bar 
-//			for (let i=0;i<this.people.length;++i) this.people[i].stats="B0"													
+//			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else this.status="A";																		// In active mode
-		x=Math.max(0,Math.min(this.bx-avSize,x));													// Cap x to screen
-		y=Math.max(0,Math.min(this.by-avSize,y));													// Y
+		x=Math.max(0,Math.min(this.bx,x-avSize/2));													// Cap x to screen
+		y=Math.max(0,Math.min(this.by,y-avSize/2));													// Y
 		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
 		this.ReportLocation(x/(this.bx-12),y/(this.by-12),this.status);								// Report my move
 		this.curChat=-1;																			// Not chatting with anyone
@@ -302,8 +301,7 @@ class App  {
 
 	StartZoom(link)																				// INITIATE ZOOM
 	{
-		this.CloseAll();																			// Close all open dialogs
-		if (this.videoWin)	this.videoWin.close();													// Close open video window
+		this.CloseAll(3);																			// Close all open dialogs except video/iframes
 		$("#co-videoBar").remove();																	// Remove video bar
 		if (link && link.match(/!zoom/i)) {															// If Zoom
 			if (window.location.host == "localhost") {												// If testing
@@ -379,13 +377,13 @@ class App  {
         let h,i,j,x2,inc,bar=[];
         let x=$("#co-coffee-0").offset().left;                                                      // left side of bar
         let w=$("#co-coffee-0").width()-avSize;                                                     // Width of space
-        let y=this.by-$("#co-coffee-0").height()-avSize+8;                                          // On top of bar area
+        let y=this.by-$("#co-coffee-0").height()-avSize+4;                                          // On top of bar area
 
         for (j=0;j<this.rooms.length;++j) {                                                         // For each room
             bar=[];                                                                                 // New array
             for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+j)  bar.push(i); 	// Make people array
             if (bar.length && j) {																	// If not main hall
-                x=$("#co-coffee-"+j).offset().left-15;                                              // Left
+                x=$("#co-coffee-"+j).offset().left-avSize/2+8; 	                                    // Left
                 y=$("#co-coffee-"+j).offset().top+18;                                               // top      
                 w=$("#co-Rm-"+j).height()-avSize-34;                                                // Get size                                             
                 }
@@ -438,14 +436,15 @@ class App  {
 // DIALOGS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
- 	CloseAll(mask)                                                                                 // CLOSE ALL OPEN DIALOGS
+ 	CloseAll(mask=0)                                                                                 // CLOSE ALL OPEN DIALOGS
     {
         $("#co-chat").remove();                                                                     // Close chat if open
-        $("#co-card").remove();                                                                     
-        $("#co-sched").remove();                                                                    
-        $("#co-people").remove();                                                                   
-		if (!mask&1) $("#co-iframe").remove();														// Remove iframe id flag set                                                                   
-		if (this.videoWin && !this.demoMode)  this.videoWin.close();								// Close open video window
+        $("#co-card").remove();     																// Card                                                                
+        $("#co-sched").remove();   																	// Schedule                                                                 
+        $("#co-people").remove();        															// People                                                           
+		if (mask&1)	$("#co-iframe").remove();														// Remove iframe if flag set                                                                   
+		if (mask&2 && this.videoWin && !this.demoMode)  this.videoWin.close();						// Close open video window
+		else if (this.videoWin)							this.videoWin.focus();						// Put it on front
     }
 
 	ShowAttendees()																				// SHOW THE ATTENDEES
@@ -603,7 +602,7 @@ class App  {
 		let i,ox,oy,flip=false;
 		this.CloseAll();																			// Close all open dialogs
 		if (infoDesk) {																				// If an info desk query
-			ox=$("#co-infoDesk").offset().left-7;													// Desk left
+			ox=$("#co-infoDesk").offset().left-2;													// Desk left
 			oy=$("#co-infoDesk").offset().top-4														// Top
 			}
 		else{																						// Normal chat		
@@ -790,17 +789,15 @@ class App  {
 		if (show) this.ShowPeople()																		// If updating, show people
 		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
-		$("#co-AvMe").draggable({ containment:"window", stop:(e,ui)=>{ 
-			this.ReportLocation(ui.position.left/(this.bx-12),ui.position.top/(this.by-12));			// Report my move
-			}})
+		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
 		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
 	}
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
 		let w=(this.rooms[0].ce-this.rooms[0].cs)/10*100;												// Size of hall as %
-		let i,hallway=`<div style="position:absolute;top:calc(100vh - 66px - var(--mobileOff));width:calc(${w}% - 16px)">
-			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;float:left;margin:0 8px 0 12px">
+		let i,hallway=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
+			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
 			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
@@ -876,17 +873,18 @@ class App  {
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
 				<div class="co-roomHdr">${sc.title}
            </div>${sc.content}`;
-           if (sc.bar)     str+=`<img id="co-coffee-${i}" style="position:absolute;cursor:pointer;left:calc(100% - 31px);top:14px;width:16px" src="img/coffeecup.png">`;
+           if (sc.bar)     str+=`<img id="co-coffee-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            if (sc.live)    str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
            str+="</div></div>";		
 			}
 			
 		$("#co-main").append(str.replace(/\t|\n|\r/g,""));												// Add venue
-		$("#co-grid").on("click", 	  (e)=>{ this.OnMeMove(e.pageX-30,e.pageY-30,e.target.id) }); 		// ON GRID CLICK
-		$("[id^=co-Rm-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 		// ON DROP ON ROOM
-		$("#co-quiet").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 			// ON DROP ON QUIET AREA
-		$("[id^=co-coffee-]").droppable({ drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   // ON DROP ON COFFEE BAR
-	
+		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 					// ON DROP ON PERSON
+		$("#co-grid").on("click", (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 					 // ON GRID CLICK
+		$("#co-grid").droppable({     		drop: (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON GRID 
+		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 					// ON DROP ON ROOM
+		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 					// ON DROP ON QUIET AREA
+		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   					// ON DROP ON COFFEE BAR
 	}
 
 } // APP CLASS CLOSURE
