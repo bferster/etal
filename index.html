@@ -157,7 +157,6 @@ class App  {
 		this.videoRoom=null;																		// Status of video room
 		this.curZoom="";																			// Current zoom link
 		this.demoMode=0;																			// For my demos
-		this.coffeeVideo="https://meet.jit.si/~"+meetingId+"~coffebar-0";  							// Main coffee bar
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -288,7 +287,8 @@ class App  {
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
             this.status="B"+id;                                                  					// Update me
-            this.StartZoom(this.coffeeVideo+"-"+id);                                                // Go to the coffee bar 
+ 	    	trace("japp.htm?/~"+this.meetingId+"~coffebar"+id+"&"+this.people[this.myId].firstName)
+			this.StartZoom("japp.htm?/~"+this.meetingId+"~coffebar"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else this.status="A";																		// In active mode
@@ -667,8 +667,8 @@ class App  {
 	
 		$("#co-revText").on("change",   ()=>{ sendChat(); });										// ON TEXT ENTER
 		$("#co-revTextBut").on("click", ()=>{ sendChat(); });										// ON SEND CLICK 
-		$("#co-zoomBut").on("click", ()=>{ 															// ON ZOOM BUT CLICK
-			let link="https://meet.jit.si/~"+this.meetingId+"~"+this.people[this.myId].firstName+"-"+this.myId;  // Jitsi link
+		$("#co-zoomBut").on("click", ()=>{ 															// ON VIDEO CHAT BUT CLICK
+			let link=`japp.htm?/~${this.meetingId}~${this.people[this.myId].firstName}${this.myId}&${this.people[this.myId].firstName}&${this.people[this.myId].firstName}`;
 			let str=`<div onclick="app.StartZoom('${link}')">
 			Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> to join`;
 			sendChat(str);																			// Invite
@@ -826,7 +826,7 @@ class App  {
 					link:"https://www.youtube.com/embed/YVbkexkMwag?autoplay=1",
 					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div>`});
 
-		this.schedule[1][0].link="https://meet.jit.si/~"+this.meetingId+"~etal-Room-0"
+		this.schedule[1][0].link="japp.htm?/~"+this.meetingId+"~etal-Room-0&"+this.people[this.myId].firstName;
 
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.schedule[0][0].title=`<img src='misc/aimslogo.jpg' style='width:100%'>`;

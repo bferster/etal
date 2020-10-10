@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Jitsi</title>
+	<meta charset="utf-8" />
+	<script src='https://meet.jit.si/external_api.js'></script>
+	<style>
+		body { 	font-family:Segoe UI,Verdana,Geneva,sans-serif; padding:0; margin:0; overflow:hidden }
+	</style>
+	
+</head>
+<body>
+<script>
+
+	let v=window.location.search.substring(1).split("&");
+	const domain = 'meet.jit.si';
+	const options = {
+		roomName: v[0],
+		width: "100%",height:window.innerHeight,
+		interfaceConfigOverwrite:{ "TOOLBAR_BUTTONS": [
+        							'microphone', 'camera', 'desktop', 'fullscreen',
+        							'hangup','settings', 'raisehand',
+        							'videoquality', 'filmstrip', 'tileview' ],
+									"VIDEO_QUALITY_LABEL_DISABLED": true,
+									"SHOW_CHROME_EXTENSION_BANNER": false
+								},
+		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false},
+
+		parentNode: document.querySelector('body'),
+		
+		};
+	const api = new JitsiMeetExternalAPI(domain, options);
+	api.executeCommand('displayName',v[1] ? v[1] :"");
+	window.addEventListener("beforeunload",  ()=>{ api.displose();	});
+
+</script>
+</body>
+</html>
+
