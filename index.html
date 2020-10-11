@@ -141,9 +141,9 @@ class App  {
 		this.scale=1;																				// Scale
 		this.meetingId=""+meetingId;																// Meeting id
 		this.myId="";																				// My unique id
-		this.curFloor="A";																			// Current floor
+		this.curFloor="0";																			// Current floor
+		this.floors=[];																				// Holds floors
 		this.people=[];																				// Holds attendees
-		this.rooms=[];																				// Holds rooms
 		this.chats=[];																				// Holds chats
 		this.schedule=[];																			// Holds schedule
 		this.queue=[];																				// Contact queue
@@ -268,7 +268,7 @@ class App  {
 		this.CloseAll();																			// Close all open dialogs
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			this.status="R"+targetId.substr(6);														// Status with room number
-			let link=this.rooms[targetId.substr(6)].link;											// Get zoom link
+			let link=this.floors[this.curFloor].rooms[targetId.substr(6)].link;						// Get zoom link
 			if (!link)	return;																		// Quit if no link set
 			this.StartZoom(link);																	// Start a zoom
 			this.status="R"+targetId.substr(6);														// Status with room number	
@@ -369,7 +369,7 @@ class App  {
         let w=$("#co-coffee-0").width()-avSize;                                                     // Width of space
         let y=this.by-$("#co-coffee-0").height()-avSize+4;                                          // On top of bar area
 
-        for (j=0;j<this.rooms.length;++j) {                                                         // For each room
+        for (j=0;j<this.floors[this.curFloor].rooms.length;++j) {                                   // For each room
             bar=[];                                                                                 // New array
             for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+j)  bar.push(i); 	// Make people array
             if (bar.length && j) {																	// If not main hall
@@ -388,7 +388,7 @@ class App  {
    			}
 
 		let o,n,ox,y2,rms=[];
-		for (i=0;i<this.rooms.length;++i)	rms.push([]);											// Make room arrays
+		for (i=0;i<this.floors[this.curFloor].rooms.length;++i)	rms.push([]);						// Make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i].stats;																	// Point at stats
 			if (o.charAt(0) == "R") rms[o.substr(1)].push(i);										// If in a room, add person to it
@@ -454,9 +454,9 @@ class App  {
 			<tr><td>In </td><td><select class="co-is" id="co-spr" style="width:148px"></select></td></tr>	
 			<tr><td>Find </td><td><input class="co-is" id="co-spf" style="width:130px;height:21px;" placeholder="Type here"></td></tr></table>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-		$("#co-spr").append("<option>Any area</option><option>Hallway</option><option>Coffee bar</option>");
+		$("#co-spr").append("<option>Any area</option><option>Hallway");
 		fillPeople();
-		for (i=1;i<this.rooms.length;++i)	$("#co-spr").append("<option>"+this.rooms[i].title+"</option>");
+		for (i=1;i<this.floors[this.curFloor].rooms.length;++i)	$("#co-spr").append("<option>"+this.floors[this.curFloor].rooms[i].title+"</option>");
 		
 		$("#co-spr").on("change",()=>{ fillPeople() });
 		$("#co-sps").on("change",()=>{ fillPeople() });
@@ -478,8 +478,7 @@ class App  {
 					}	
 				if (room) {																		// If filtering by zoom
 					if ((room == 1) && (o.stats != "A"))				continue;				// Only active people in hallway
-					else if ((room == 2) && (o.stats != "B"))			continue;				// Only barmates people in the coffeebar
-					else if ((room > 2) && ("R"+(room-2) != o.stats))	continue;				// Show only people in the room
+					else if ((room > 1) && ("R"+(room-1) != o.stats))	continue;				// Show only people in the room
 					}
 				selects.push({index:i, org:o.org, name:o.lastName });							// Add to selects
 				}
@@ -681,7 +680,7 @@ class App  {
 	
 	ShowSchedule()																				// SHOW EVENT SCHEDULE
 	{
-		let i,j=0;
+		let i,j=0,r;
 		let mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
 		let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 		this.CloseAll();																			// Close all open dialogs
@@ -694,12 +693,14 @@ class App  {
 			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
 			str+=this.schedule[0].start+" to "+this.schedule[0].end+"</b><table style='width:100%'>";
-			for (i=1;i<this.schedule.length;++i)
+			for (i=1;i<this.schedule.length;++i) {
+				r=this.schedule[i].room;
 				str+=`<tr style="vertical-align:top">
 				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${this.schedule[i].going ? " checked" : ""}></td>
 				<td>${this.schedule[i].desc}</td>
-				<td style="text-align:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i].title}</td>
+				<td style="text-align:right;font-weight:bold;color:${this.floors[this.curFloor].rooms[r].rug}">${this.floors[this.curFloor].rooms[r].title}</td>
 				</tr>`
+				}
 		str+="</table></div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
 		
@@ -785,8 +786,11 @@ class App  {
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		let w=(this.rooms[0].ce-this.rooms[0].cs)/10*100;												// Size of hall as %
-		let i,hallway=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
+		let i,hallway;
+		let w=(this.floors[this.curFloor].rooms[0].ce-this.floors[this.curFloor].rooms[0].cs)/10*100;												// Size of hall as %
+		if (this.meetingId.toLowerCase() == "aims") hallway=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
+		else										hallway=`<br><br><img src='img/wlogo.png' style='width:30%'>`;
+		hallway+=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
 			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
@@ -795,28 +799,27 @@ class App  {
 		if (this.infoDeskId != null) hallway+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
  		hallway+=`</div></div>`;
    
-		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"<br><br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, room:0 });
-		this.schedule.push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", room:1, bar:true, live:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", room:0, link:"", content:hallway, room:0 });
+		this.schedule.push({ start:"9:00 am", end:"10:15am", room:1, desc:"Liz Langren keynote", room:1, bar:true, live:true,
 					link:"japp.htm?/~"+this.meetingId+"~etal-Room-0&"+this.people[this.myId].firstName,
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 							<img src="misc/liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
 							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
-		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", room:2, bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", room:2, desc:"The Flipped Classroom with Glen Bull", room:2, bar:true,
 					link:"zapp.htm?92377093582&pwd=aDRzT2xzeFVxNG10VDZuQmt1NkJUdz09",
 					content:`<div class="co-roomTitle">The Flipped Classroom</b><br>Glen Bull (Zoom)</div>` });
-		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"SIGGRAPH", room:3, bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", room:3, desc:"SIGGRAPH", room:3, bar:true,
 					link:"https://www.youtube.com/embed/EhDr3Rs5fTU?autoplay=1",
 					content:`<div class="co-roomTitle"><b>SIGGRAPH</b><br>Technical papers (YouTube)</div>` });
-		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Dataviz ecologies with Moritz Stefaner", room:4, bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", room:4, desc:"Dataviz ecologies with Moritz Stefaner", room:4, bar:true,
 					link:"https://player.vimeo.com/video/354276657?autoplay=1",
 					content:`<div class="co-roomTitle"><b>Dataviz ecologies</b><br>Moritz Stefaner (Vimeo)</div>`});
-		this.schedule.push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", room:5, bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:15am",room:5, desc:"Skinner's Project Pigeon", room:5, bar:true,
 					link:"https://www.youtube.com/embed/YVbkexkMwag?autoplay=1",
 					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div>`});
 
 		if (this.meetingId.toLowerCase() == "aims") {
-			this.schedule[0].title=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
 			this.schedule[1].content=`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
 				Please join GVG chairman<br><b>Micheal Cronk</b><br><br>
 				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:50%;border-radius:300px"><br>
@@ -842,34 +845,34 @@ class App  {
 		this.meetingId=""+meetingId;																	// Project id
 		this.myId=myId;																					// My id
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-	
-		this.rooms=[
-			{ rug:"#d8c4ae", cs:3, ce:9, rs:1, re:4, floor:"1", link:"", params:{ gap:8, rows:3, cols:10 } },
-			{ rug:"#cc4c39", cs:1, ce:3, rs:1, re:3, floor:"1", link:"", params:{} },
-			{ rug:"#58aab4", cs:1, ce:3, rs:3, re:3, floor:"1", link:"", params:{} },
-			{ rug:"#6e9456", cs:9, ce:11, rs:1, re:1, floor:"1", link:"", params:{} },
-			{ rug:"#5b66cb", cs:9, ce:11, rs:2, re:2, floor:"1", link:"", params:{} },
-			{ rug:"#a2733f", cs:9, ce:11, rs:3, re:3, floor:"1", link:"", params:{} }
-		 	];
+
+		this.floors[0]={ rooms:[
+			{ rug:"#d8c4ae", cs:3, ce:9, rs:1, re:4,  link:"", title:"Hallway", params:{ gap:8, rows:3, cols:10 } },
+			{ rug:"#cc4c39", cs:1, ce:3, rs:1, re:3,  link:"", title:"Main room", params:{} },
+			{ rug:"#58aab4", cs:1, ce:3, rs:3, re:3,  link:"", title:"Room A", params:{} },
+			{ rug:"#6e9456", cs:9, ce:11, rs:1, re:1, link:"", title:"Room B", params:{} },
+			{ rug:"#5b66cb", cs:9, ce:11, rs:2, re:2, link:"", title:"Room C", params:{} },
+			{ rug:"#a2733f", cs:9, ce:11, rs:3, re:3, link:"", title:"Movie Theater", params:{} }
+		 	]};
 		
 		this.AddSchedule();																				// Add schedule
 		sc=this.GetScheduleByRoom(this.now, 0);															// Point at schedule for hall;																			
-		o=this.rooms[0];																				// Point at room
+		o=this.floors[this.curFloor].rooms[0];															// Point at room
 		let str=`<div id="co-grid" class="co-venue" style="
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
 			grid-gap:${o.params.gap}px;background-color:${o.params.bg}">`
 		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
-		${sc.title}${sc.content}</div>`;
-		for (i=1;i<this.rooms.length;++i) {																// For each room
-			o=this.rooms[i];																			// Point at room
+		${sc.content}</div>`;
+		for (i=1;i<this.floors[this.curFloor].rooms.length;++i) {										// For each room
+			o=this.floors[this.curFloor].rooms[i];														// Point at room
 			sc=this.GetScheduleByRoom(this.now,i)														// Point at schedule room																		
-			this.rooms[i].link=sc.link;																	// Set room link
-			if (!o.rug)		o.rug=this.rooms[i-1].rug;													// Use flooring from room above if not set
+			this.floors[this.curFloor].rooms[i].link=sc.link;											// Set room link
+			if (!o.rug)		o.rug=this.floors[this.curFloor].rooms[i-1].rug;							// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
-				<div class="co-roomHdr">${sc.title}
+				<div class="co-roomHdr">${o.title}
            </div>${sc.content}`;
            if (sc.bar)     str+=`<img id="co-coffee-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            if (sc.live)    str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
