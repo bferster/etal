@@ -15,9 +15,8 @@
 	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:8px; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - 16px - var(--mobileOff)); z-index:0;}
-	.co-venue 	{	display:grid; text-align:center; height:100%; grid-gap:8px; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-					color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-repeat:repeat; border: 1px solid #999; border-radius:0px; }
+	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+	.co-room 	{	background-repeat:repeat; border-radius:0px; }
 	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; }
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; 
@@ -157,6 +156,7 @@ class App  {
 		this.videoRoom=null;																		// Status of video room
 		this.curZoom="";																			// Current zoom link
 		this.demoMode=0;																			// For my demos
+		this.now=0;																					// Now for meeting
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -693,20 +693,20 @@ class App  {
 			<div style="height:calc(100% - 50px);width:100%;overflow-y:auto;text-align:left">`;
 			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
-			str+=this.schedule[0][0].start+" to "+this.schedule[0][0].end+"</b><table style='width:100%'>";
-			for (i=1;i<this.rooms.length;++i)
+			str+=this.schedule[0].start+" to "+this.schedule[0].end+"</b><table style='width:100%'>";
+			for (i=1;i<this.schedule.length;++i)
 				str+=`<tr style="vertical-align:top">
-				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}-${j}" ${this.schedule[i][j].going ? " checked" : ""}></td>
-				<td>${this.schedule[i][j].desc}</td>
-				<td style="text-align:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i][j].title}</td>
+				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${this.schedule[i].going ? " checked" : ""}></td>
+				<td>${this.schedule[i].desc}</td>
+				<td style="text-align:right;font-weight:bold;color:${this.rooms[i].rug}">${this.schedule[i].title}</td>
 				</tr>`
 		str+="</table></div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
 		
 		$("#co-sched").show("slide",{ direction:"down" });											// Slide up
 		$("[id^=co-Sc-]").on("click", (e)=>{ 														// ON CHECK CLICK
-			let v=e.currentTarget.id.substr(6).split("-");											// Get indices
-			this.schedule[v[0]][v[1]].going=$("#"+e.currentTarget.id).prop("checked");				// Store checked status
+			let id=e.currentTarget.id.substr(6);													// Get id
+			this.schedule[id].going=$("#"+e.currentTarget.id).prop("checked");						// Store checked status
 			}); 			
 	}
 
@@ -795,38 +795,46 @@ class App  {
 		if (this.infoDeskId != null) hallway+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
  		hallway+=`</div></div>`;
    
-   		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
-		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, use:"hallway" });
-		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", use:"room", bar:true, live:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"<br><br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, room:0 });
+		this.schedule.push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", room:1, bar:true, live:true,
 					link:"japp.htm?/~"+this.meetingId+"~etal-Room-0&"+this.people[this.myId].firstName,
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 							<img src="misc/liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
 							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
-		this.schedule[2].push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", use:"room", bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"Room A", desc:"The Flipped Classroom with Glen Bull", room:2, bar:true,
 					link:"zapp.htm?92377093582&pwd=aDRzT2xzeFVxNG10VDZuQmt1NkJUdz09",
 					content:`<div class="co-roomTitle">The Flipped Classroom</b><br>Glen Bull (Zoom)</div>` });
-		this.schedule[3].push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"SIGGRAPH", use:"room", bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"Room B", desc:"SIGGRAPH", room:3, bar:true,
 					link:"https://www.youtube.com/embed/EhDr3Rs5fTU?autoplay=1",
 					content:`<div class="co-roomTitle"><b>SIGGRAPH</b><br>Technical papers (YouTube)</div>` });
-		this.schedule[4].push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Dataviz ecologies with Moritz Stefaner", use:"room", bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:45am", title:"Room C", desc:"Dataviz ecologies with Moritz Stefaner", room:4, bar:true,
 					link:"https://player.vimeo.com/video/354276657?autoplay=1",
 					content:`<div class="co-roomTitle"><b>Dataviz ecologies</b><br>Moritz Stefaner (Vimeo)</div>`});
-		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room", bar:true,
+		this.schedule.push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", room:5, bar:true,
 					link:"https://www.youtube.com/embed/YVbkexkMwag?autoplay=1",
 					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div>`});
 
 		if (this.meetingId.toLowerCase() == "aims") {
-			this.schedule[0][0].title=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
-			this.schedule[1][0].content=`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
+			this.schedule[0].title=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
+			this.schedule[1].content=`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
 				Please join GVG chairman<br><b>Micheal Cronk</b><br><br>
 				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:50%;border-radius:300px"><br>
 				for the keynote speech<br> in <b></b>15</b></15> minutes</div>`;
-			this.schedule[1][0].desc="Keynote by Micheal Cronk";
-			this.schedule[2][0].content=`<div class="co-roomTitle"><b>Panel discussion</b><br>Standards-based IP adoption<br>(Zoom)</div>`;
-			this.schedule[2][0].desc="Panel discussion: Standards-based IP adoption";
+			this.schedule[1].desc="Keynote by Micheal Cronk";
+			this.schedule[2].content=`<div class="co-roomTitle"><b>Panel discussion</b><br>Standards-based IP adoption<br>(Zoom)</div>`;
+			this.schedule[2].desc="Panel discussion: Standards-based IP adoption";
 			}
 		}
+
+	GetScheduleByRoom(time, room)
+	{
+		let i;
+		for (i=0;i<this.schedule.length;++i)
+			if (this.schedule[i].room == room)
+				return this.schedule[i];
+		return { link:"", content:"", title:"", desc:"", room:room };
+	}
 
 	InitProject(meetingId, myId)																	// INIT PROJECT DATA
 	{
@@ -836,24 +844,26 @@ class App  {
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
 	
 		this.rooms=[
-			{ rug:"#d8c4ae", cs:3, ce:9, rs:1, re:4, floor:"1", link:"" },
-			{ rug:"#cc4c39", cs:1, ce:3, rs:1, re:3, floor:"1", link:"" },
-			{ rug:"#58aab4", cs:1, ce:3, rs:3, re:3, floor:"1", link:"" },
-			{ rug:"#6e9456", cs:9, ce:11, rs:1, re:1, floor:"1", link:"" },
-			{ rug:"#5b66cb", cs:9, ce:11, rs:2, re:2, floor:"1", link:"" },
-			{ rug:"#a2733f", cs:9, ce:11, rs:3, re:3, floor:"1", link:"" }
+			{ rug:"#d8c4ae", cs:3, ce:9, rs:1, re:4, floor:"1", link:"", params:{ gap:8, rows:3, cols:10 } },
+			{ rug:"#cc4c39", cs:1, ce:3, rs:1, re:3, floor:"1", link:"", params:{} },
+			{ rug:"#58aab4", cs:1, ce:3, rs:3, re:3, floor:"1", link:"", params:{} },
+			{ rug:"#6e9456", cs:9, ce:11, rs:1, re:1, floor:"1", link:"", params:{} },
+			{ rug:"#5b66cb", cs:9, ce:11, rs:2, re:2, floor:"1", link:"", params:{} },
+			{ rug:"#a2733f", cs:9, ce:11, rs:3, re:3, floor:"1", link:"", params:{} }
 		 	];
 		
 		this.AddSchedule();																				// Add schedule
-		let str=`<div id="co-grid" class="co-venue"">`;													// Add room grid
+		sc=this.GetScheduleByRoom(this.now, 0);															// Point at schedule for hall;																			
 		o=this.rooms[0];																				// Point at room
-		sc=this.schedule[0][0];																			// Point at schedule for room
+		let str=`<div id="co-grid" class="co-venue" style="
+			grid-template-columns:repeat(${o.params.cols}, 1fr);
+			grid-gap:${o.params.gap}px;background-color:${o.params.bg}">`
 		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 		${sc.title}${sc.content}</div>`;
 		for (i=1;i<this.rooms.length;++i) {																// For each room
 			o=this.rooms[i];																			// Point at room
-			sc=this.schedule[i][0];																		// Point at schedule for room
+			sc=this.GetScheduleByRoom(this.now,i)														// Point at schedule room																		
 			this.rooms[i].link=sc.link;																	// Set room link
 			if (!o.rug)		o.rug=this.rooms[i-1].rug;													// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
@@ -865,14 +875,14 @@ class App  {
            if (sc.live)    str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
            str+="</div></div>";		
 			}
-			
 		$("#co-main").append(str.replace(/\t|\n|\r/g,""));												// Add venue
-		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 					// ON DROP ON PERSON
-		$("#co-grid").on("click", (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 					 // ON GRID CLICK
-		$("#co-grid").droppable({     		drop: (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON GRID 
-		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 					// ON DROP ON ROOM
-		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 					// ON DROP ON QUIET AREA
-		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   					// ON DROP ON COFFEE BAR
+
+		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON PERSON
+		$("#co-grid").on("click", 				 (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 		// ON GRID CLICK
+		$("#co-grid").droppable({     		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON GRID 
+		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON ROOM
+		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON QUIET AREA
+		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   	// ON DROP ON COFFEE BAR
 	}
 
 } // APP CLASS CLOSURE
