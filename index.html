@@ -303,11 +303,7 @@ class App  {
 	{
 		this.CloseAll(3);																			// Close all open dialogs except video/iframes
 		$("#co-videoBar").remove();																	// Remove video bar
-		if (link && link.match(/!zoom/i)) {															// If Zoom
-			if (window.location.host == "localhost") {												// If testing
-				Popup("Zooming!");																	// Show popup
-				return;																				// Quit
-				}
+		if (link && link.match(/zoom/i)) {															// If Zoom
 			this.curZoom=link;																		// Save link
 			window.onfocus=()=>{ 																	// If main is back in focus
 				let str=`<div id="co-videoBar" class="co-alert" 
@@ -324,18 +320,12 @@ class App  {
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
-		else if (link && link.match(/meet.jit.si/i)) {												// If jitsi
-			let off=0;
-			if (($(window).width() == window.screen.width) && navigator.appVersion.match(/chrome/i)) off=7.0;	// Chrome offset
-		    let x=$("#co-hall").offset().left-off+window.screenX;               					// Center in hall
-			let y=window.outerHeight-window.innerHeight+off+window.screenY;							// Top of hall
-			let params=`scrollbars=no,toolbar=no,status=no,menubar=no,location=no,				
-						width=${$("#co-hall").width()},height=${$("#co-hall").width()*.5625},left=${x},top=${y}`;			
-			this.videoWin=window.open(link,"_blank",params.replace(/\t|\n|\r/g,""));				// Open video window
-			this.videoRoom=this.status;																// Get room
-			if (isMobile)	setTimeout(function(){ myWin.close(); },10000);							// Close after 10 secs on mobile
-			}
-		else{
+		else{																						// Use iframe
+			if (link && link.match(/zapp/i) && isMobile) {											// If zoom mobile
+				let str="zoomus://zoom.us/join?confno="+link.split("?")[1];							// Make mobile url
+				this.StartZoom(str);																// Open with native app							
+				return;																				// Quit
+				}
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
 			left:${$("#co-hall").offset().left}px;top:8px;
 			width:${$("#co-hall").width()}px; height:${($("#co-hall").width())*.5625}px">
@@ -808,7 +798,7 @@ class App  {
    		for (i=0;i<this.rooms.length;++i)	this.schedule[i]=[];										// Create event arrays
 		this.schedule[0].push({ start:"9:00 am", end:"9:45am", title:"<br><br><img src='img/wlogo.png' style='width:30%'>", link:"",content:hallway, use:"hallway" });
 		this.schedule[1].push({ start:"9:00 am", end:"10:15am", title:"Main room", desc:"Liz Langren keynote", use:"room", bar:true, live:true,
-					link:"https://us04web.zoom.us/j/78360038193?pwd=TnB3WFFPa2t6Q2dhMEFSUzlzZUFnZz09",
+					link:"japp.htm?/~"+this.meetingId+"~etal-Room-0&"+this.people[this.myId].firstName,
 					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
 							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
 							<img src="misc/liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
@@ -825,8 +815,6 @@ class App  {
 		this.schedule[5].push({ start:"9:00 am", end:"9:15am", title:"Movie Theater", desc:"Skinner's Project Pigeon", use:"room", bar:true,
 					link:"https://www.youtube.com/embed/YVbkexkMwag?autoplay=1",
 					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div>`});
-
-		this.schedule[1][0].link="japp.htm?/~"+this.meetingId+"~etal-Room-0&"+this.people[this.myId].firstName;
 
 		if (this.meetingId.toLowerCase() == "aims") {
 			this.schedule[0][0].title=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
