@@ -266,7 +266,7 @@ class App  {
 		this.CloseAll();																			// Close all open dialogs
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			this.status="R"+targetId.substr(6);														// Status with room number
-			let link=this.floors[this.curFloor].rooms[targetId.substr(6)].link;						// Get zoom link
+			let link=this.floors[this.curFloor][targetId.substr(6)].link;							// Get zoom link
 			if (!link)	return;																		// Quit if no link set
 			this.StartZoom(link);																	// Start a zoom
 			this.status="R"+targetId.substr(6);														// Status with room number	
@@ -285,8 +285,7 @@ class App  {
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
             this.status="B"+id;                                                  					// Update me
- 	    	trace("japp.htm?/~"+this.meetingId+"~coffebar"+id+"&"+this.people[this.myId].firstName)
-			this.StartZoom("japp.htm?/~"+this.meetingId+"~coffebar"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
+ 			this.StartZoom("japp.htm?/~"+this.meetingId+"~coffebar"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else this.status="A";																		// In active mode
@@ -367,7 +366,7 @@ class App  {
         let w=$("#co-coffee-0").width()-avSize;                                                     // Width of space
         let y=this.by-$("#co-coffee-0").height()-avSize+4;                                          // On top of bar area
 
-        for (j=0;j<this.floors[this.curFloor].rooms.length;++j) {                                   // For each room
+        for (j=0;j<this.floors[this.curFloor].length;++j) {                             		     // For each room
             bar=[];                                                                                 // New array
             for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+j)  bar.push(i); 	// Make people array
             if (bar.length && j) {																	// If not main hall
@@ -381,12 +380,12 @@ class App  {
                 if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  // Move me
               	else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           // Move them
                 $("#co-At-"+bar[i]).css("display","none");                                          // Hide me tag
-                if (j)  y+=inc;    else x+=inc;                                                  	 // Advance
+                if (j)  y+=inc;    else x+=inc;                                                  	// Advance
                 }
    			}
 
 		let o,n,ox,y2,rms=[];
-		for (i=0;i<this.floors[this.curFloor].rooms.length;++i)	rms.push([]);						// Make room arrays
+		for (i=0;i<this.floors[this.curFloor].length;++i)	rms.push([]);							// Make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i].stats;																	// Point at stats
 			if (o.charAt(0) == "R") rms[o.substr(1)].push(i);										// If in a room, add person to it
@@ -454,7 +453,7 @@ class App  {
 		$("body").append(str.replace(/\t|\n|\r/g,""));
 		$("#co-spr").append("<option>Any area</option><option>Hallway");
 		fillPeople();
-		for (i=1;i<this.floors[this.curFloor].rooms.length;++i)	$("#co-spr").append("<option>"+this.floors[this.curFloor].rooms[i].title+"</option>");
+		for (i=1;i<this.floors[this.curFloor].length;++i)	$("#co-spr").append("<option>"+this.floors[this.curFloor][i].title+"</option>");
 		
 		$("#co-spr").on("change",()=>{ fillPeople() });
 		$("#co-sps").on("change",()=>{ fillPeople() });
@@ -696,7 +695,7 @@ class App  {
 				str+=`<tr style="vertical-align:top">
 				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${this.schedule[i].going ? " checked" : ""}></td>
 				<td>${this.schedule[i].desc}</td>
-				<td style="text-align:right;font-weight:bold;color:${this.floors[this.curFloor].rooms[r].rug}">${this.floors[this.curFloor].rooms[r].title}</td>
+				<td style="text-align:right;font-weight:bold;color:${this.floors[this.curFloor][r].rug}">${this.floors[this.curFloor][r].title}</td>
 				</tr>`
 				}
 		str+="</table></div></div>";
@@ -785,7 +784,7 @@ class App  {
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
 		let i,hallway;
-		let w=(this.floors[this.curFloor].rooms[0].ce-this.floors[this.curFloor].rooms[0].cs)/10*100;												// Size of hall as %
+		let w=(this.floors[this.curFloor][0].ce-this.floors[this.curFloor][0].cs)/10*100;				// Size of hall as %
 		if (this.meetingId.toLowerCase() == "aims") hallway=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
 		else										hallway=`<br><br><img src='img/wlogo.png' style='width:30%'>`;
 		hallway+=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
@@ -831,18 +830,16 @@ class App  {
 	AddVenue(ven)																					// ADD VENUE DATA
 	{
 		let i,o;
-		let floors=[];
-		ven.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });									// Sort by floor
-		for (i=0;i<ven.length;++i) {																// For each room
-			o=ven[i];																				// Point at room
-			if (ven[i].params) 		o.params=JSON.parse(o.params);									// Parse params
-			else					o.params={};													// Add null obj
-			if (!floors[o.floor])	floors[o.floor]=[];												// Create new array if empty
-			floors[o.floor].push(o);																// Add room to floor	
+		this.floors=[];
+		ven.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });										// Sort by floor
+		for (i=0;i<ven.length;++i) {																	// For each room
+			o=ven[i];																					// Point at room
+			if (!this.floors[o.floor])	this.floors[o.floor]=[];										// Create new array if empty
+			this.floors[o.floor].push(o);																// Add room to floor	
 			}
-		for (i=0;i<floors.length;++i) 																// For each floor
-			floors[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
-	}
+		for (i=0;i<this.floors.length;++i) 																// For each floor
+			this.floors[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
+		}
 
 	GetScheduleByRoom(time, room)
 	{
@@ -850,7 +847,7 @@ class App  {
 		for (i=0;i<this.schedule.length;++i)
 			if (this.schedule[i].room == room)
 				return this.schedule[i];
-		return { link:"", content:"", title:"", desc:"",room:room };
+		return { link:"", content:"", title:"", desc:"", room:room };
 	}
 	
 	InitProject(meetingId, myId)																	// INIT PROJECT DATA
@@ -859,30 +856,20 @@ class App  {
 		this.meetingId=""+meetingId;																	// Project id
 		this.myId=myId;																					// My id
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-
-		this.floors[0]={ rooms:[
-			{ rug:"#d8c4ae", cs:3, ce:9, rs:1, re:4,  link:"", title:"Hallway", params:{ gap:8, rows:3, cols:10 } },
-			{ rug:"#cc4c39", cs:1, ce:3, rs:1, re:3,  link:"", title:"Main room", params:{} },
-			{ rug:"#58aab4", cs:1, ce:3, rs:3, re:3,  link:"", title:"Room A", params:{} },
-			{ rug:"#6e9456", cs:9, ce:11, rs:1, re:1, link:"", title:"Room B", params:{} },
-			{ rug:"#5b66cb", cs:9, ce:11, rs:2, re:2, link:"", title:"Room C", params:{} },
-			{ rug:"#a2733f", cs:9, ce:11, rs:3, re:3, link:"", title:"Movie Theater", params:{} }
-		 	]};
-		
 		this.AddSchedule();																				// Add schedule
 		sc=this.GetScheduleByRoom(this.now, 0);															// Point at schedule for hall;																			
-		o=this.floors[this.curFloor].rooms[0];															// Point at room
+		o=this.floors[this.curFloor][0];																// Point at room
 		let str=`<div id="co-grid" class="co-venue" style="
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
-			grid-gap:${o.params.gap}px;background-color:${o.params.bg}">`
+			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`
 		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 		${sc.content}</div>`;
-		for (i=1;i<this.floors[this.curFloor].rooms.length;++i) {										// For each room
-			o=this.floors[this.curFloor].rooms[i];														// Point at room
+		for (i=1;i<this.floors[this.curFloor].length;++i) {												// For each room
+			o=this.floors[this.curFloor][i];															// Point at room
 			sc=this.GetScheduleByRoom(this.now,i)														// Point at schedule room																		
-			this.floors[this.curFloor].rooms[i].link=sc.link;											// Set room link
-			if (!o.rug)		o.rug=this.floors[this.curFloor].rooms[i-1].rug;							// Use flooring from room above if not set
+			this.floors[this.curFloor][i].link=sc.link;													// Set room link
+			if (!o.rug)		o.rug=this.floors[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
