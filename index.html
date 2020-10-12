@@ -67,12 +67,7 @@
 		<img src="img/logo.png" alt="" style="width: 20%"><br><br>
 		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
 		<br><br>
-		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"><br><br><br> 
-			<b style="color:#000">In order to use Zoom, we need to open it as a popup.</b>
-			<p>Most browsers block pop-ups from opening.<br>
-			The address bar will show a red icon on the right.<br>
-			Allow this site to always show popups.</p>
-		</div>
+		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"></div>
 	</div>
 
 <script>
@@ -177,6 +172,7 @@ class App  {
 
 		this.ws.onopen=()=> { 																		// ON OPEN
 			app.ws.send(`P|${app.meetingId}`);														// Request people data	
+			app.ws.send(`V|${app.meetingId}`);														// Request people data	
 			console.log('connected');  
 			};				
 		
@@ -243,6 +239,8 @@ class App  {
 		
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
+//		else if (v[0] == "S") 	this.AddSchedule(JSON.parse(v[1]));									// Add schedule
+		else if (v[0] == "V") 	this.AddVenue(JSON.parse(v[1]));									// Add venue
 		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS
@@ -830,15 +828,31 @@ class App  {
 			}
 		}
 
+	AddVenue(ven)																					// ADD VENUE DATA
+	{
+		let i,o;
+		let floors=[];
+		ven.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });									// Sort by floor
+		for (i=0;i<ven.length;++i) {																// For each room
+			o=ven[i];																				// Point at room
+			if (ven[i].params) 		o.params=JSON.parse(o.params);									// Parse params
+			else					o.params={};													// Add null obj
+			if (!floors[o.floor])	floors[o.floor]=[];												// Create new array if empty
+			floors[o.floor].push(o);																// Add room to floor	
+			}
+		for (i=0;i<floors.length;++i) 																// For each floor
+			floors[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
+	}
+
 	GetScheduleByRoom(time, room)
 	{
 		let i;
 		for (i=0;i<this.schedule.length;++i)
 			if (this.schedule[i].room == room)
 				return this.schedule[i];
-		return { link:"", content:"", title:"", desc:"", room:room };
+		return { link:"", content:"", title:"", desc:"",room:room };
 	}
-
+	
 	InitProject(meetingId, myId)																	// INIT PROJECT DATA
 	{
 		let i,j,o,row,n,x,sc;
