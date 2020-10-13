@@ -76,7 +76,6 @@
 	let	avSize=36;																					// Avatar size
 	let butCol="#5b66cb"																			// Color  of vutton and ui
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
-
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
 
 	window.addEventListener("beforeunload",  ()=>{ 													// ON CLOSE
@@ -102,7 +101,9 @@
 				alert("This email was not found, please try again, or contact your meeting host"); // Alert
 				return;																				// Quit																				
 				}
-			app.InitProject(meetingId,i);															// Init project		
+			app.meetingId=""+meetingId;																// Project id
+			app.myId=i;																				// My id
+			app.DrawVenue();																		// Draw venue		
 			app.Draw();																				// Draw screen
 			app.GoToCenter();																		// Go to center of room
 			$("#splashDiv").fadeOut();																// Fade out splash
@@ -137,7 +138,7 @@ class App  {
 		this.meetingId=""+meetingId;																// Meeting id
 		this.myId="";																				// My unique id
 		this.curFloor="0";																			// Current floor
-		this.floors=[];																				// Holds floors
+		this.venue=[];																				// Holds floors
 		this.people=[];																				// Holds attendees
 		this.chats=[];																				// Holds chats
 		this.schedule=[];																			// Holds schedule
@@ -172,7 +173,7 @@ class App  {
 
 		this.ws.onopen=()=> { 																		// ON OPEN
 			app.ws.send(`P|${app.meetingId}`);														// Request people data	
-			app.ws.send(`V|${app.meetingId}`);														// Request people data	
+			app.ws.send(`V|${app.meetingId}`);														// Request venue data	
 			console.log('connected');  
 			};				
 		
@@ -239,9 +240,12 @@ class App  {
 		
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
-//		else if (v[0] == "S") 	this.AddSchedule(JSON.parse(v[1]));									// Add schedule
-		else if (v[0] == "V") 	this.AddVenue(JSON.parse(v[1]));									// Add venue
+		else if (v[0] == "V") 	{ 																	// Add venue
+			this.AddVenue(JSON.parse(v[1]));														// Set data				
+			app.ws.send(`S|${app.meetingId}`);														// Request schedule data	
+			}
 		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
+		else if (v[0] == "S") 	this.AddSchedule(JSON.parse(v[1]));									// Add schedule
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS
 				v[2]=v[2].substr(1);																// Remove star
@@ -266,7 +270,7 @@ class App  {
 		this.CloseAll();																			// Close all open dialogs
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			this.status="R"+targetId.substr(6);														// Status with room number
-			let link=this.floors[this.curFloor][targetId.substr(6)].link;							// Get zoom link
+			let link=this.venue[this.curFloor][targetId.substr(6)].link;							// Get zoom link
 			if (!link)	return;																		// Quit if no link set
 			this.StartZoom(link);																	// Start a zoom
 			this.status="R"+targetId.substr(6);														// Status with room number	
@@ -366,7 +370,7 @@ class App  {
         let w=$("#co-coffee-0").width()-avSize;                                                     // Width of space
         let y=this.by-$("#co-coffee-0").height()-avSize+4;                                          // On top of bar area
 
-        for (j=0;j<this.floors[this.curFloor].length;++j) {                             		     // For each room
+        for (j=0;j<this.venue[this.curFloor].length;++j) {                             		     // For each room
             bar=[];                                                                                 // New array
             for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+j)  bar.push(i); 	// Make people array
             if (bar.length && j) {																	// If not main hall
@@ -385,7 +389,7 @@ class App  {
    			}
 
 		let o,n,ox,y2,rms=[];
-		for (i=0;i<this.floors[this.curFloor].length;++i)	rms.push([]);							// Make room arrays
+		for (i=0;i<this.venue[this.curFloor].length;++i)	rms.push([]);							// Make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i].stats;																	// Point at stats
 			if (o.charAt(0) == "R") rms[o.substr(1)].push(i);										// If in a room, add person to it
@@ -453,7 +457,7 @@ class App  {
 		$("body").append(str.replace(/\t|\n|\r/g,""));
 		$("#co-spr").append("<option>Any area</option><option>Hallway");
 		fillPeople();
-		for (i=1;i<this.floors[this.curFloor].length;++i)	$("#co-spr").append("<option>"+this.floors[this.curFloor][i].title+"</option>");
+		for (i=1;i<this.venue[this.curFloor].length;++i)	$("#co-spr").append("<option>"+this.venue[this.curFloor][i].title+"</option>");
 		
 		$("#co-spr").on("change",()=>{ fillPeople() });
 		$("#co-sps").on("change",()=>{ fillPeople() });
@@ -695,7 +699,7 @@ class App  {
 				str+=`<tr style="vertical-align:top">
 				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${this.schedule[i].going ? " checked" : ""}></td>
 				<td>${this.schedule[i].desc}</td>
-				<td style="text-align:right;font-weight:bold;color:${this.floors[this.curFloor][r].rug}">${this.floors[this.curFloor][r].title}</td>
+				<td style="text-align:right;font-weight:bold;color:${this.venue[this.curFloor][r].rug}">${this.venue[this.curFloor][r].title}</td>
 				</tr>`
 				}
 		str+="</table></div></div>";
@@ -783,62 +787,22 @@ class App  {
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		let i,hallway;
-		let w=(this.floors[this.curFloor][0].ce-this.floors[this.curFloor][0].cs)/10*100;				// Size of hall as %
-		if (this.meetingId.toLowerCase() == "aims") hallway=`<img src='misc/aimslogo.jpg' style='width:100%'>`;
-		else										hallway=`<br><br><img src='img/wlogo.png' style='width:30%'>`;
-		hallway+=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
-			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
-			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
-			<div style="float:right;margin:16px 8px 0 0">			
-				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
-				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">`;
-		if (this.infoDeskId != null) hallway+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
- 		hallway+=`</div></div>`;
-   
-		this.schedule.push({ start:"9:00 am", end:"9:45am", room:0, link:"", content:hallway, room:0 });
-		this.schedule.push({ start:"9:00 am", end:"10:15am", room:1, desc:"Liz Langren keynote", room:1, bar:true, live:true,
-					link:"japp.htm?/~"+this.meetingId+"~etal-Room-0&"+this.people[this.myId].firstName,
-					content:`<div style="font-size:18px;color:#fff;margin:24px;padding:12px;border-radius:6px;pointer-events:none">
-							Please join SITE president<br><b>Elizabeth Langren</b><br><br>
-							<img src="misc/liz.jpg" style="width:50%;border:2px solid #fff;border-radius:300px"><br>
-							for the keynote speech<br> in <b></b>15</b></15> minutes</div>` });
-		this.schedule.push({ start:"9:00 am", end:"9:45am", room:2, desc:"The Flipped Classroom with Glen Bull", room:2, bar:true,
-					link:"zapp.htm?92377093582&pwd=aDRzT2xzeFVxNG10VDZuQmt1NkJUdz09",
-					content:`<div class="co-roomTitle">The Flipped Classroom</b><br>Glen Bull (Zoom)</div>` });
-		this.schedule.push({ start:"9:00 am", end:"9:45am", room:3, desc:"SIGGRAPH", room:3, bar:true,
-					link:"https://www.youtube.com/embed/EhDr3Rs5fTU?autoplay=1",
-					content:`<div class="co-roomTitle"><b>SIGGRAPH</b><br>Technical papers (YouTube)</div>` });
-		this.schedule.push({ start:"9:00 am", end:"9:45am", room:4, desc:"Dataviz ecologies with Moritz Stefaner", room:4, bar:true,
-					link:"https://player.vimeo.com/video/354276657?autoplay=1",
-					content:`<div class="co-roomTitle"><b>Dataviz ecologies</b><br>Moritz Stefaner (Vimeo)</div>`});
-		this.schedule.push({ start:"9:00 am", end:"9:15am",room:5, desc:"Skinner's Project Pigeon", room:5, bar:true,
-					link:"https://www.youtube.com/embed/YVbkexkMwag?autoplay=1",
-					content:`<div class="co-roomTitle"><b>Now playing</b><br>Skinner's Project Pigeon</div>`});
-
-		if (this.meetingId.toLowerCase() == "aims") {
-			this.schedule[1].content=`<div style="font-size:18px;color:#fff;margin:10%;padding:12px;pointer-events:none">
-				Please join GVG chairman<br><b>Micheal Cronk</b><br><br>
-				<img src="https://aimsalliance.org/wp-content/uploads/2018/03/Cronk2-300x300.jpg" style="width:50%;border-radius:300px"><br>
-				for the keynote speech<br> in <b></b>15</b></15> minutes</div>`;
-			this.schedule[1].desc="Keynote by Micheal Cronk";
-			this.schedule[2].content=`<div class="co-roomTitle"><b>Panel discussion</b><br>Standards-based IP adoption<br>(Zoom)</div>`;
-			this.schedule[2].desc="Panel discussion: Standards-based IP adoption";
-			}
-		}
+		this.schedule=sced
+		this.schedule.sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });								// Sort by room
+	}
 
 	AddVenue(ven)																					// ADD VENUE DATA
 	{
 		let i,o;
-		this.floors=[];
+		this.venue=[];
 		ven.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });										// Sort by floor
 		for (i=0;i<ven.length;++i) {																	// For each room
 			o=ven[i];																					// Point at room
-			if (!this.floors[o.floor])	this.floors[o.floor]=[];										// Create new array if empty
-			this.floors[o.floor].push(o);																// Add room to floor	
+			if (!this.venue[o.floor])	this.venue[o.floor]=[];											// Create new array if empty
+			this.venue[o.floor].push(o);																// Add room to floor	
 			}
-		for (i=0;i<this.floors.length;++i) 																// For each floor
-			this.floors[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
+		for (i=0;i<this.venue.length;++i) 																// For each floor
+			this.venue[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
 		}
 
 	GetScheduleByRoom(time, room)
@@ -850,26 +814,34 @@ class App  {
 		return { link:"", content:"", title:"", desc:"", room:room };
 	}
 	
-	InitProject(meetingId, myId)																	// INIT PROJECT DATA
+	DrawVenue()																						// DRAW VENUE
 	{
 		let i,j,o,row,n,x,sc;
-		this.meetingId=""+meetingId;																	// Project id
-		this.myId=myId;																					// My id
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-		this.AddSchedule();																				// Add schedule
+	
+		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/10*100;				// Size of hall as %
+		let hallway=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
+			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
+			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
+			<div style="float:right;margin:16px 8px 0 0">			
+				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
+				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">`;
+		if (this.infoDeskId != null) hallway+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
+ 		hallway+=`</div></div>`;
+		
 		sc=this.GetScheduleByRoom(this.now, 0);															// Point at schedule for hall;																			
-		o=this.floors[this.curFloor][0];																// Point at room
+		o=this.venue[this.curFloor][0];																	// Point at room
 		let str=`<div id="co-grid" class="co-venue" style="
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
 			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`
 		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
-		${sc.content}</div>`;
-		for (i=1;i<this.floors[this.curFloor].length;++i) {												// For each room
-			o=this.floors[this.curFloor][i];															// Point at room
+		${sc.content+hallway}</div>`;
+		for (i=1;i<this.venue[this.curFloor].length;++i) {												// For each room
+			o=this.venue[this.curFloor][i];																// Point at room
 			sc=this.GetScheduleByRoom(this.now,i)														// Point at schedule room																		
-			this.floors[this.curFloor][i].link=sc.link;													// Set room link
-			if (!o.rug)		o.rug=this.floors[this.curFloor][i-1].rug;									// Use flooring from room above if not set
+			this.venue[this.curFloor][i].link=sc.link;													// Set room link
+			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
 				<div id="co-Rm-${i}" style="position:relative;height:100%">
@@ -912,7 +884,7 @@ class App  {
 		$("#confirmBoxDiv").remove();																	// Remove 
 		$("body").append("<div class='co-confirm' id='confirmBoxDiv' style='text-align:center'></div>");	// Add box								
 		if (x != undefined)		$("#confirmBoxDiv").css({ left:x+"px", top:y+"px" });					// Position if set
-		let str="<img src='img/logo.png' width='64'/><br>";											// Logo					
+		let str="<img src='img/logo.png' width='64'/><br>";												// Logo					
 		str+="<p style='font-size:14px; color:#666'><b>"+title+"</b></p>";
 		str+="<p>"+content+"<p>";
 		str+="<p><input class='co-is' style='width:95%' type='text' id='co-revText' value='"+def+"'>";
