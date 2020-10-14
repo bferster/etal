@@ -330,7 +330,7 @@ class App  {
 				return;																				// Quit
 				}
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
-			left:${$("#co-hall").offset().left}px;top:8px;
+			left:${$("#co-hall").offset().left}px;top:${$("#co-hall").offset().top}px;
 			width:${$("#co-hall").width()}px; height:${($("#co-hall").width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
@@ -821,7 +821,7 @@ class App  {
 		let i,j,o,row,n,x,sc;
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
 	
-		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/10*100;				// Size of hall as %
+		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*100; // Size of hall as %
 		let hallway=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
 			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
@@ -846,9 +846,9 @@ class App  {
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
-				<div id="co-Rm-${i}" style="position:relative;height:100%">
-				<div class="co-roomHdr">${o.title}
-           </div>${sc.content}`;
+				<div id="co-Rm-${i}" style="position:relative;height:100%">`;
+			if (o.title) str+=`<div class="co-roomHdr">${o.title}</div>`;
+			str+=sc.content;
            if (sc.bar)     str+=`<img id="co-coffee-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            if (sc.live)    str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
            str+="</div></div>";		
