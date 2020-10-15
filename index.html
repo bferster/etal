@@ -11,24 +11,22 @@
 	<title>èt•al Meeting</title>
 </head>
 <style>
-	:root 		{ 	--mobileOff:0px; --avSize:45px}
-	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:8px; }
+	:root 		{ 	--mobileOff:0px;}
+	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:0; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
-	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - 16px - var(--mobileOff)); z-index:0;}
+	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-repeat:repeat; border-radius:0px; }
 	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; }
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
- 	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; display:none;	font-size:12px; text-align:center; 
-					user-select:none; -webkit-user-select:none; }
-	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; display:none; width:var(--avSize);  height:var(--avSize); 
-					user-select:none; -webkit-user-select:none; }
+ 	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none; -webkit-user-select:none; }
+	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; user-select:none; -webkit-user-select:none; }
 	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
-					border:1px solid white; cursor:pointer; margin:-14px 0 0 calc(var(--avSize) - 4px); width:12px; height:12px; display:none; }
+					border:1px solid white; cursor:pointer; width:12px; height:12px; display:none; }
 	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:4px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
-	.co-sched 	{	position:absolute;  background-color:#fff; padding:24px; text-align:center;	font-size:14px; top:8px; 
-					background-color:#e4e7ef; display:none; line-height:1.5; border:.5px solid #999; }
+	.co-sched 	{	position:absolute;  background-color:#fff; padding:24px; text-align:center;	font-size:14px; 
+					background-color:#e4e7ef; display:none; line-height:1.5; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
 	.co-chat	{	position:absolute; width:230px; height:320px; background-color:#fff; border-radius:12px;
@@ -87,7 +85,6 @@
 
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
-		document.documentElement.style.setProperty("--avSize",avSize+"px");							// Set CSS var for avatar size
 		if (isMobile) document.documentElement.style.setProperty("--mobileOff","100px"); 			// Set CSS mobile var
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url : 1;																// Set meeting id
@@ -110,7 +107,6 @@
 			app.GoToCenter();																		// Go to center of room
 			$("#splashDiv").fadeOut();																// Fade out splash
 			$("#co-top").animate({opacity:1},1000,()=>{ app.ArrangePeople() });						// Fade in main, the arrange people
-			app.ShowPeople();																		// Show people																		
 			if (pid.toLowerCase() == "demo") Demo();												// Run demo
 		});
 	
@@ -152,6 +148,7 @@ class App  {
 		this.meetingStart=new Date();																// Meeting start
 		this.videoWin=null;																			// Video window
 		this.videoRoom=null;																		// Status of video room
+		this.vr="#co-hall";																			// Assume hallway is video rooom for iframes
 		this.curZoom="";																			// Current zoom link
 		this.demoMode=0;																			// For my demos
 		this.now=0;																					// Now for meeting
@@ -330,8 +327,8 @@ class App  {
 				return;																				// Quit
 				}
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
-			left:${$("#co-hall").offset().left}px;top:${$("#co-hall").offset().top}px;
-			width:${$("#co-hall").width()}px; height:${($("#co-hall").width())*.5625}px">
+			left:${$(this.vr).offset().left}px;top:${$(this.vr).offset().top}px;
+			width:${$(this.vr).width()-1}px; height:${($(this.vr).width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
 			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
@@ -354,15 +351,6 @@ class App  {
 		let y=(Math.random()*20+40)/100;															// Y
 		app.ReportLocation(x,y);																	// Report location to set server myId
 		$("#co-AvMe").animate({ left:this.bx*x, top:this.by*y });									// Animate me there	
-	}
-
-	ShowPeople()																				// SHOW PEOPLE AVATARS
-	{
-		let i;
-		$("[id^=co-Av]").fadeIn(1500) 																// Fade in avatars
-			$("#co-Av-"+this.myId).hide();															// Hide my own
-			for (i=0;i<this.people.length;++i) 														// For each person
-				if (this.people[i].stats == "Q")	$("#co-Av-"+i).hide();							// Hide people who are quiet
 	}
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
@@ -688,11 +676,11 @@ class App  {
 		let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 		this.CloseAll();																			// Close all open dialogs
 		let str=`<div id="co-sched" class="co-sched" style=";
-			left:${$("#co-hall").offset().left}px;
-			width:${$("#co-hall").width()-48}px; height:${$("#co-hall").height()-48}px">
+			left:${$(this.vr).offset().left}px;top:${this.venue[this.curFloor][0].params.gap}px;
+			width:${$(this.vr).width()-48}px; height:${$(this.vr).height()-48}px">
 			<b style="'font-size:30px">Event schedule</b>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-sched').remove()"><br><br>
-			<div style="height:calc(100% - 50px);width:100%;overflow-y:auto;text-align:left">`;
+			<div style="height:calc(100% - 48px);width:100%;overflow-y:auto;text-align:left">`;
 			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
 			str+=this.schedule[0].start+" to "+this.schedule[0].end+"</b><table style='width:100%'>";
@@ -759,39 +747,23 @@ class App  {
 // DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	AddPeople(people, show)																			// ADD PEOPLE TO MEETING
+	AddPeople(people)																				// ADD PEOPLE TO MEETING
 	{
-		let i,o,str="";
+		let i,o;
 		this.people=people;																				// Set data
-		$("[id^=co-Av-]").remove();		$("#co-AvMe").remove();											// Remove existing people
 		for (i=0;i<people.length;++i) {																	// For each person
 			let id=people[i].id.split("~")[1];															// Split id out
 			o=this.people[i];																			// Point at them
 			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
 			this.pIndex[people[i].id]=i;																// Save index by full id
-			o.x=Math.max(0,Math.min(o.x,95));															// Cap x to screen
-			o.y=Math.max(0,Math.min(o.y,95));															// Cap x to screen
-			if (!this.people[i].pic)	this.people[i].pic="img/avyou.png";								// Use generic pic
-			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%"> 
-			<div style="width:${avSize}px;height:${avSize}px;overflow:hidden;border-radius:64px;display:inline-block">
-			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize}px;min-height:${avSize}px"></div>
-			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
 			}
-		str+=`<div class="co-me" id="co-AvMe"><img src="img/avme.png" width="100%"><div id="co-queue" class="co-qNum"></div>`;	// Add me
-		$("body").append(str);																			// Add to body
-
-		if (show) this.ShowPeople()																		// If updating, show people
-		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
-		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
-		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
-		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
 	}
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		this.schedule=sced
+		this.schedule=sced;																				// Set data
 		this.schedule.sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });								// Sort by room
-	}
+		}
 
 	AddVenue(ven)																					// ADD VENUE DATA
 	{
@@ -815,30 +787,63 @@ class App  {
 				return this.schedule[i];
 		return { link:"", content:"", title:"", desc:"", room:room };
 	}
+
+	DrawPeople()																					// ADD PEOPLE TO MEETING
+	{
+		let i,o,str="";
+		$("[id^=co-Av-]").remove();		$("#co-AvMe").remove();											// Remove existing people
+		for (i=0;i<this.people.length;++i) {															// For each person
+			o=this.people[i];																			// Point at them
+			o.x=Math.max(0,Math.min(o.x,95));															// Cap x to screen
+			o.y=Math.max(0,Math.min(o.y,95));															// Cap x to screen
+			if (!this.people[i].pic)	this.people[i].pic="img/avyou.png";								// Use generic pic
+			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%;
+			display:${(o.stats == "Q") ? "none" : "block"}"> 
+			<div style="width:${avSize}px;height:${avSize}px;overflow:hidden;border-radius:64px;display:inline-block">
+			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize}px;min-height:${avSize}px"></div>
+			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
+			}
+		str+=`<div class="co-me" id="co-AvMe" style="width:${avSize}px;height:${avSize}px">
+		<img src="img/avme.png" width="100%">
+		<div id="co-queue" class="co-qNum" style="margin:-14px 0 0 calc(var(${avSize}) - 4px)"></div>`;	// Add me
+		$("body").append(str);																			// Add to body
+
+		$("[id^=co-Av-]").on("click", (e)=>{ this.ShowCard(e.currentTarget.id.substr(6)); }); 			// ON PERSON CLICK
+		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.ShowCard(e.target.id.substr(6)); }}); 			// ON DROP ON PERSON
+		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
+		$("#co-AvMe").on("click", (e)=>{ this.ShowQueue();	}); 										// ON ME CLICK
+	}
 	
 	DrawVenue()																						// DRAW VENUE
 	{
 		let i,j,o,row,n,x,sc;
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-	
-		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*100; // Size of hall as %
-		let hallway=`<div style="position:absolute;top:calc(100vh - 70px - var(--mobileOff));width:calc(${w}% - 16px)">
+		let p=this.venue[this.curFloor][0].params;														// Point at all params
+		if (p.avSize)	avSize=p.avSize;																// Use size if set
+		if (p.vRoom)	this.vr="#co-Rm-"+p.vRoom;														// Use video room if set
+		$("body").css("margin",p.gap+"px");																// Marfgin is based on gap
+		$("#co-top").css("height",`calc(100vh - ${p.gap*2}px - var(--mobileOff))`);						// Height based on gap
+		this.DrawPeople();																				// Draw people avatars
+		
+		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*this.bx; // Size of hall
+		let menu=`<div style="position:absolute;top:calc(100vh - ${60 + p.gap*1}px - var(--mobileOff));width:${w-p.gap*1.6}px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
 			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">`;
-		if (this.infoDeskId != null) hallway+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
- 		hallway+=`</div></div>`;
+		if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
+ 		menu+=`</div></div>`;
 		
 		sc=this.GetScheduleByRoom(this.now, 0);															// Point at schedule for hall;																			
 		o=this.venue[this.curFloor][0];																	// Point at room
+
 		let str=`<div id="co-grid" class="co-venue" style="
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
 			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`
 		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
-		${sc.content+hallway}</div>`;
+		${sc.content+menu}</div>`;
 		for (i=1;i<this.venue[this.curFloor].length;++i) {												// For each room
 			o=this.venue[this.curFloor][i];																// Point at room
 			sc=this.GetScheduleByRoom(this.now,i)														// Point at schedule room																		
