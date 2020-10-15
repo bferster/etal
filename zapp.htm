@@ -20,20 +20,18 @@
 <script>
 
 	var API_KEY="hVg9IpPVTCOqYaelSmL-cw";
-    var API_SECRET="hUyEoq3nznc8szIammrFjgISe776rJzlENVK";
-	var v=window.location.search.substring(1).split("&pwd=");
+ 	var v=window.location.search.substring(1).split("&");
 	let meetingNumber=v[0];
-	let meetingPW=v[1] ? v[1] : ""; 
-
+	let meetingPW=v[1] ? v[1].substr(4) : ""; 
 	ZoomMtg.preLoadWasm();
 	ZoomMtg.prepareJssdk();
 	ZoomMtg.generateSignature({
         meetingNumber: meetingNumber,
         apiKey: API_KEY,
-        apiSecret: API_SECRET,
+        apiSecret: v[2],
         role:0,
         success(res) { Join(res.result); }
-      });
+	     });
 	
 	function Join(signature)
 	{

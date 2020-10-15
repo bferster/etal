@@ -152,6 +152,7 @@ class App  {
 		this.curZoom="";																			// Current zoom link
 		this.demoMode=0;																			// For my demos
 		this.now=0;																					// Now for meeting
+		this.KZ="";																					// Ks
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -173,6 +174,7 @@ class App  {
 		this.ws.onopen=()=> { 																		// ON OPEN
 			app.ws.send(`P|${app.meetingId}`);														// Request people data	
 			app.ws.send(`V|${app.meetingId}`);														// Request venue data	
+			app.ws.send(`KZ|*`);																	// Request zk data	
 			console.log('connected');  
 			};				
 		
@@ -261,7 +263,8 @@ class App  {
 			this.demoMode=(v[2] != 0) ? 1 : 0;														// Set var
 			Popup("Demo mode "+this.demoMode);														// Show
 			}
-	}
+		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
+		}
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
@@ -326,6 +329,7 @@ class App  {
 				this.StartZoom(str);																// Open with native app							
 				return;																				// Quit
 				}
+			if (link && link.match(/zapp/i)) link+="&"+this.KZ										// If zoom app, add k
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
 			left:${$(this.vr).offset().left}px;top:${$(this.vr).offset().top}px;
 			width:${$(this.vr).width()-1}px; height:${($(this.vr).width())*.5625}px">
@@ -821,6 +825,7 @@ class App  {
 		let p=this.venue[this.curFloor][0].params;														// Point at all params
 		if (p.avSize)	avSize=p.avSize;																// Use size if set
 		if (p.vRoom)	this.vr="#co-Rm-"+p.vRoom;														// Use video room if set
+//p.gap=8;
 		$("body").css("margin",p.gap+"px");																// Marfgin is based on gap
 		$("#co-top").css("height",`calc(100vh - ${p.gap*2}px - var(--mobileOff))`);						// Height based on gap
 		this.DrawPeople();																				// Draw people avatars
