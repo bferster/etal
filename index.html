@@ -16,7 +16,7 @@
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-repeat:repeat; border-radius:0px; }
+	.co-room 	{	background-repeat:repeat; border-radius:0px; font-size:18px; color:#fff; }
 	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; }
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none; -webkit-user-select:none; }
@@ -395,7 +395,7 @@ class App  {
 			w=avSize+2;																				// Full size spacing
 			n=rms[j].length;																		// Number of people
 			y2=$("#co-Rm-"+j).offset().top+50;														// Top
-			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-8;							// Bottom
+			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-5;							// Bottom
 			w=Math.min(Math.sqrt(((x2-ox)*(y-y2)/n)),avSize+2);										// Set avatar spacing
 			if (this.people[this.myId].stats == "R"+j)												// If I'm in this room		
 				$("#co-AvMe").animate({ left:x, top:y},0),x+=w; 									// Move me in
@@ -825,7 +825,6 @@ class App  {
 		let p=this.venue[this.curFloor][0].params;														// Point at all params
 		if (p.avSize)	avSize=p.avSize;																// Use size if set
 		if (p.vRoom)	this.vr="#co-Rm-"+p.vRoom;														// Use video room if set
-//p.gap=8;
 		$("body").css("margin",p.gap+"px");																// Marfgin is based on gap
 		$("#co-top").css("height",`calc(100vh - ${p.gap*2}px - var(--mobileOff))`);						// Height based on gap
 		this.DrawPeople();																				// Draw people avatars
