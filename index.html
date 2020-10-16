@@ -107,16 +107,11 @@
 			app.GoToCenter();																		// Go to center of room
 			$("#splashDiv").fadeOut();																// Fade out splash
 			$("#co-top").animate({opacity:1},1000,()=>{ app.ArrangePeople() });						// Fade in main, the arrange people
-			if (pid.toLowerCase() == "demo") Demo();												// Run demo
-		});
+			});
 	
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.which == 66) && e.altKey && e.ctrlKey) {											// Broadcast key (Ctrl+Alt+B)
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s)});	// Broadcast
-				}
-			if ((e.which == 68) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+D)
-				app.demoMode=1-app.demoMode;														// Toggle demo mode
-				app.ws.send(`D|${app.meetingId}|${app.people[app.myId].id}|${app.demoMode}`);		// Set demo mode	
 				}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
 				}
@@ -150,7 +145,6 @@ class App  {
 		this.videoRoom=null;																		// Status of video room
 		this.vr="#co-hall";																			// Assume hallway is video rooom for iframes
 		this.curZoom="";																			// Current zoom link
-		this.demoMode=0;																			// For my demos
 		this.now=0;																					// Now for meeting
 		this.KZ="";																					// Ks
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
@@ -188,11 +182,11 @@ class App  {
 			},1000)
 		}
 
-	Draw()                                                                                      // REDRAW
+	Draw()																						// REDRAW
     {
         this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
-	    this.CloseAll(3);                                                                           // Close open windows
+	    this.CloseAll();                                                                         	// Close open windows
         this.ArrangePeople();                                                                       // Arrange people               
 	}
 
@@ -258,10 +252,6 @@ class App  {
 			$("#co-queue").text(app.queue.length); 													// Reset queue dot length
 			$("#co-queue").show();																	// Show dot
 			Sound("ding");																			// Ding
-			}
-		else if (v[0] == "D") {																		// Demo mode
-			this.demoMode=(v[2] != 0) ? 1 : 0;														// Set var
-			Popup("Demo mode "+this.demoMode);														// Show
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
 		}
@@ -421,15 +411,15 @@ class App  {
 // DIALOGS
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
- 	CloseAll(mask=0)                                                                                 // CLOSE ALL OPEN DIALOGS
+ 	CloseAll(mask=0)                                                                        	// CLOSE ALL OPEN DIALOGS
     {
         $("#co-chat").remove();                                                                     // Close chat if open
         $("#co-card").remove();     																// Card                                                                
         $("#co-sched").remove();   																	// Schedule                                                                 
         $("#co-people").remove();        															// People                                                           
 		if (mask&1)	$("#co-iframe").remove();														// Remove iframe if flag set                                                                   
-		if (mask&2 && this.videoWin && !this.demoMode)  this.videoWin.close();						// Close open video window
-		else if (this.videoWin)							this.videoWin.focus();						// Put it on front
+		if (mask&2 && this.videoWin)  this.videoWin.close();										// Close open video window
+		else if (this.videoWin)		  this.videoWin.focus();										// Put it on front
     }
 
 	ShowAttendees()																				// SHOW THE ATTENDEES
