@@ -280,8 +280,8 @@ class App  {
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
-            this.status="B"+id;                                                  					// Update me
- 			this.StartZoom("japp.htm?/~"+this.meetingId+"~coffebar"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
+   		    this.status="B"+id;                                                  					// Update me
+ 			this.StartZoom("japp.htm?/~"+this.meetingId+"~coffebar-"+this.curFloor+"-"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else this.status="A";																		// In active mode
@@ -349,17 +349,18 @@ class App  {
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-        let h,i,j,x2,inc,bar=[];
-        let x=$("#co-coffee-0").offset().left;                                                      // left side of bar
-        let w=$("#co-coffee-0").width()-avSize;                                                     // Width of space
-        let y=this.by-$("#co-coffee-0").height()-avSize+4;                                          // On top of bar area
-
-        for (j=0;j<this.venue[this.curFloor].length;++j) {                             		     // For each room
+        let x,w,y,h,i,j,x2,inc,bar=[];
+		if ($("#co-coffee-"+this.curFloor+"-0").length) {											// If a main coffee bar
+      		x=$("#co-coffee-"+this.curFloor+"-0").offset().left;                                    // left side of bar
+       		w=$("#co-coffee-"+this.curFloor+"-0").width()-avSize;                                   // Width of space
+       		y=this.by-$("#co-coffee-"+this.curFloor+"-0").height()-avSize+4;                         // On top of bar area
+			}
+        for (j=0;j<this.venue[this.curFloor].length;++j) {                             		   	 	// For each room
             bar=[];                                                                                 // New array
-            for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+j)  bar.push(i); 	// Make people array
+            for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+this.curFloor+"-"+j)  bar.push(i); 	// Make people array
             if (bar.length && j) {																	// If not main hall
-                x=$("#co-coffee-"+j).offset().left-avSize/2+8; 	                                    // Left
-                y=$("#co-coffee-"+j).offset().top+18;                                               // top      
+                x=$("#co-coffee-"+this.curFloor+"-"+j).offset().left-avSize/2+8; 	                // Left
+                y=$("#co-coffee-"+this.curFloor+"-"+j).offset().top+18;                             // top      
                 w=$("#co-Rm-"+j).height()-avSize-34;                                                // Get size                                             
                 }
             inc=avSize+2;                                                                           // Spacing between barmates
@@ -773,9 +774,10 @@ class App  {
 			this.venue[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
 		}
 
-	GetScheduleByRoom(time, room)
+	GetScheduleByRoom(time, floor, room)															// GET SCHEDULE FOR ROOM
 	{
 		let i;
+if (floor > 0) room=100;
 		for (i=0;i<this.schedule.length;++i)
 			if (this.schedule[i].room == room)
 				return this.schedule[i];
@@ -822,14 +824,15 @@ class App  {
 		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*this.bx; // Size of hall
 		let menu=`<div style="position:absolute;top:calc(100vh - ${60 + p.gap*1}px - var(--mobileOff));width:${w-p.gap*1.6}px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
-			<img id="co-coffee-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
+			<img id="co-coffee-${this.curFloor}-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">`;
 		if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
  		menu+=`</div></div>`;
-		
-		sc=this.GetScheduleByRoom(this.now, 0);															// Point at schedule for hall;																			
+		if (this.curFloor > 0)	menu="";																// No menus on upper floor
+
+		sc=this.GetScheduleByRoom(this.now, this.curFloor, 0);											// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
 
 		let str=`<div id="co-grid" class="co-venue" style="
@@ -840,7 +843,7 @@ class App  {
 		${sc.content+menu}</div>`;
 		for (i=1;i<this.venue[this.curFloor].length;++i) {												// For each room
 			o=this.venue[this.curFloor][i];																// Point at room
-			sc=this.GetScheduleByRoom(this.now,i)														// Point at schedule room																		
+			sc=this.GetScheduleByRoom(this.now,this.curFloor,i)											// Point at schedule room																		
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
@@ -848,7 +851,7 @@ class App  {
 				<div id="co-Rm-${i}" style="position:relative;height:100%">`;
 			if (o.title) str+=`<div class="co-roomHdr">${o.title}</div>`;
 			str+=sc.content;
-           if (sc.bar)     str+=`<img id="co-coffee-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
+           if (sc.bar)     str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            if (sc.live)    str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
            str+="</div></div>";		
 			}
