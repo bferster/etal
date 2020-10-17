@@ -103,6 +103,7 @@
 			app.meetingId=""+meetingId;																// Project id
 			app.myId=i;																				// My id
 			app.DrawVenue();																		// Draw venue		
+			app.DrawPeople();																		// Draw people avatars
 			app.Draw();																				// Draw screen
 			app.GoToCenter();																		// Go to center of room
 			$("#splashDiv").fadeOut();																// Fade out splash
@@ -130,7 +131,7 @@ class App  {
 		this.scale=1;																				// Scale
 		this.meetingId=""+meetingId;																// Meeting id
 		this.myId="";																				// My unique id
-		this.curFloor="0";																			// Current floor
+		this.curFloor=0;																			// Current floor
 		this.venue=[];																				// Holds floors
 		this.people=[];																				// Holds attendees
 		this.chats=[];																				// Holds chats
@@ -143,7 +144,7 @@ class App  {
 		this.meetingStart=new Date();																// Meeting start
 		this.videoWin=null;																			// Video window
 		this.videoRoom=null;																		// Status of video room
-		this.vr="#co-hall";																			// Assume hallway is video rooom for iframes
+		this.vr="#co-Rm-0";																			// Assume hallway is video rooom for iframes
 		this.curZoom="";																			// Current zoom link
 		this.now=0;																					// Now for meeting
 		this.KZ="";																					// Ks
@@ -258,14 +259,21 @@ class App  {
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
+		let link;
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		this.CloseAll();																			// Close all open dialogs
 		if (targetId.match(/co-Rm-/)) {																// In a room
+			link=this.venue[this.curFloor][targetId.substr(6)].link;								// Get goto link
+			if (link && link.match(/floor-/i)) {													// If going to a new floor
+				this.CloseAll(3);																	// Close video windows
+				this.curFloor=link.substr(6);														// Get floor index
+				this.DrawVenue();																	// Draw floor
+				app.GoToCenter();																	// Go to center of room
+				return;
+				}
 			this.status="R"+targetId.substr(6);														// Status with room number
-			let link=this.venue[this.curFloor][targetId.substr(6)].link;							// Get zoom link
-			if (!link)	return;																		// Quit if no link set
-			this.StartZoom(link);																	// Start a zoom
-			this.status="R"+targetId.substr(6);														// Status with room number	
+			if (link) this.ShowLink(link);															// Show link id one there
+			else	  this.status="A";																// In active mode
 			}
 		else if (targetId == "co-infoDesk")  { this.Chat(this.infoDeskId,true); return; }			// ON INFO DESK BUTTON
 		else if (targetId == "co-attendees") { this.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
@@ -281,7 +289,7 @@ class App  {
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
    		    this.status="B"+id;                                                  					// Update me
- 			this.StartZoom("japp.htm?/~"+this.meetingId+"~coffebar-"+this.curFloor+"-"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
+ 			this.ShowLink("japp.htm?/~"+this.meetingId+"~coffebar-"+this.curFloor+"-"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else this.status="A";																		// In active mode
@@ -292,7 +300,7 @@ class App  {
 		this.curChat=-1;																			// Not chatting with anyone
 	}
 
-	StartZoom(link)																				// INITIATE ZOOM
+	ShowLink(link)																				// INITIATE ZOOM
 	{
 		this.CloseAll(3);																			// Close all open dialogs except video/iframes
 		$("#co-videoBar").remove();																	// Remove video bar
@@ -316,7 +324,7 @@ class App  {
 		else{																						// Use iframe
 			if (link && link.match(/zapp/i) && isMobile) {											// If zoom mobile
 				let str="zoomus://zoom.us/join?confno="+link.split("?")[1];							// Make mobile url
-				this.StartZoom(str);																// Open with native app							
+				this.ShowLink(str);																	// Open with native app							
 				return;																				// Quit
 				}
 			if (link && link.match(/zapp/i)) link+="&"+this.KZ										// If zoom app, add k
@@ -330,7 +338,7 @@ class App  {
 			
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
 				$("#co-iframe").remove();															// Close window
-				this.GoToCenter();																	// Go to centet
+				this.GoToCenter();																	// Go to center
 				});	
 			}
 	}
@@ -644,10 +652,10 @@ class App  {
 		$("#co-revTextBut").on("click", ()=>{ sendChat(); });										// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON VIDEO CHAT BUT CLICK
 			let link=`japp.htm?/~${this.meetingId}~${this.people[this.myId].firstName}${this.myId}&${this.people[this.myId].firstName}&${this.people[this.myId].firstName}`;
-			let str=`<div onclick="app.StartZoom('${link}')">
+			let str=`<div onclick="app.ShowLink('${link}')">
 			Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> to join`;
 			sendChat(str);																			// Invite
-			this.StartZoom(link);																	// Start chatting
+			this.ShowLink(link);																	// Start chatting
 			})					
 	
 		function sendChat(msg) {																	// TEXT CHATTING
@@ -757,7 +765,7 @@ class App  {
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
 		this.schedule=sced;																				// Set data
-		this.schedule.sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });								// Sort by room
+		this.schedule.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });								// Sort by room
 		}
 
 	AddVenue(ven)																					// ADD VENUE DATA
@@ -777,9 +785,8 @@ class App  {
 	GetScheduleByRoom(time, floor, room)															// GET SCHEDULE FOR ROOM
 	{
 		let i;
-if (floor > 0) room=100;
 		for (i=0;i<this.schedule.length;++i)
-			if (this.schedule[i].room == room)
+			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))
 				return this.schedule[i];
 		return { link:"", content:"", title:"", desc:"", room:room };
 	}
@@ -815,11 +822,10 @@ if (floor > 0) room=100;
 		let i,j,o,row,n,x,sc;
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
 		let p=this.venue[this.curFloor][0].params;														// Point at all params
-		if (p.avSize)	avSize=p.avSize;																// Use size if set
-		if (p.vRoom)	this.vr="#co-Rm-"+p.vRoom;														// Use video room if set
-		$("body").css("margin",p.gap+"px");																// Marfgin is based on gap
+		if (p.avSize)		avSize=p.avSize;															// Use size if set
+		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
+		$("body").css("margin",p.gap+"px");																// Margin is based on gap
 		$("#co-top").css("height",`calc(100vh - ${p.gap*2}px - var(--mobileOff))`);						// Height based on gap
-		this.DrawPeople();																				// Draw people avatars
 		
 		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*this.bx; // Size of hall
 		let menu=`<div style="position:absolute;top:calc(100vh - ${60 + p.gap*1}px - var(--mobileOff));width:${w-p.gap*1.6}px">
@@ -830,7 +836,6 @@ if (floor > 0) room=100;
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">`;
 		if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
  		menu+=`</div></div>`;
-		if (this.curFloor > 0)	menu="";																// No menus on upper floor
 
 		sc=this.GetScheduleByRoom(this.now, this.curFloor, 0);											// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
@@ -838,24 +843,24 @@ if (floor > 0) room=100;
 		let str=`<div id="co-grid" class="co-venue" style="
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
 			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`
-		str+=`<div class="co-room" id="co-hall" style="grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
-		${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
-		${sc.content+menu}</div>`;
-		for (i=1;i<this.venue[this.curFloor].length;++i) {												// For each room
+		
+		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
 			o=this.venue[this.curFloor][i];																// Point at room
 			sc=this.GetScheduleByRoom(this.now,this.curFloor,i)											// Point at schedule room																		
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
-			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}">
-				<div id="co-Rm-${i}" style="position:relative;height:100%">`;
-			if (o.title) str+=`<div class="co-roomHdr">${o.title}</div>`;
-			str+=sc.content;
-           if (sc.bar)     str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
-           if (sc.live)    str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
-           str+="</div></div>";		
+			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
+			${o.link ? ";cursor:pointer" :""}">
+			<div id="co-Rm-${i}" style="position:relative;height:100%">`;
+			if (o.title && i) str+=`<div class="co-roomHdr">${o.title }</div>`;							// Add title to non-hallways
+			str+=sc.content ? "<div style='pointer-events:none'>"+sc.content+"</div>" : "";	 // Add content if any, wrapped in no-event div
+			if (!i && (this.curFloor == 0))	str+=menu;													// Add menu to hallwaton first floor
+           	if (i && (sc.bar > 0))     str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
+           	if (sc.live > 0)    		str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
+           	str+="</div></div>";		
 			}
-		$("#co-main").append(str.replace(/\t|\n|\r/g,""));												// Add venue
+		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 
 		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON PERSON
 		$("#co-grid").on("click", 				 (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 		// ON GRID CLICK
