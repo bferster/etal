@@ -221,19 +221,20 @@ class App  {
 			}
 		else if (v[0] == "L")	{																	// MOVE
 			if (meeting != this.meetingId)	return;													// Not this meeting
-			let x=v[2]/100*(this.bx-12);															// Calc x from %
-			let y=v[3]/100*(this.by-12);															// Y
+			id=this.pIndex[v[1]];																	// Get index from id			
+			if (this.curFloor != v[2])	{ $("#co-Av-"+id).css("display","none"); return; }	 		// We're not on the same floor
+			let f=v[2]-0;																			// Get floor
+			let x=v[3]/100*(this.bx-12);															// Calc x from %
+			let y=v[4]/100*(this.by-12);															// Y
 			x=Math.max(0,Math.min(this.bx-avSize,x));												// Cap x to screen
 			y=Math.max(0,Math.min(this.by-avSize*2,y));												// Y
-			id=this.pIndex[v[1]];																	// Get index from id			
-			this.people[id].x=x;	this.people[id].y=y;	this.people[id].stats=v[4];				// Update people object
+			this.people[id].f=f; this.people[id].x=x; this.people[id].y=y; this.people[id].stats=v[5]; 	// Update people object
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
-			if (v[4].charAt(0) == "Q")					$("#co-Av-"+id).css("display","none");		// Hide this person if quiet
+			if (v[5] == "Q")							$("#co-Av-"+id).css("display","none");		// Hide this person if quiet
 			else if ($("#co-top").css("opacity") > 0)	$("#co-Av-"+id).css("display","block");		// Show them, if initted
-			if (v[4].match(/^[B|R]/))	this.ArrangePeople();										// Arrange people at bar and rooms
+			if (v[5].match(/^[B|R]/))	this.ArrangePeople();										// Arrange people at bar and rooms
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
-			$("#co-At-"+id).css("display",v[4].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
-		
+			$("#co-At-"+id).css("display",v[5].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
 		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
 		else if (v[0] == "V") 	{ 																	// Add venue
@@ -266,9 +267,11 @@ class App  {
 			link=this.venue[this.curFloor][targetId.substr(6)].link;								// Get goto link
 			if (link && link.match(/floor-/i)) {													// If going to a new floor
 				this.CloseAll(3);																	// Close video windows
-				this.curFloor=link.substr(6);														// Get floor index
+				this.curFloor=link.substr(6)-0;														// Get floor index
 				this.DrawVenue();																	// Draw floor
-				app.GoToCenter();																	// Go to center of room
+				this.ArrangePeople();																// Reaarange the
+				this.GoToCenter();																	// Go to center of room
+				this.ReportLocation(x/(this.bx-12),y/(this.by-12));									// Report my move
 				return;
 				}
 			this.status="R"+targetId.substr(6);														// Status with room number
@@ -357,26 +360,34 @@ class App  {
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-        let x,w,y,h,i,j,x2,inc,bar=[];
+		let x,w,y,h,i,j,x2,inc,bar=[];
 		if ($("#co-coffee-"+this.curFloor+"-0").length) {											// If a main coffee bar
       		x=$("#co-coffee-"+this.curFloor+"-0").offset().left;                                    // left side of bar
        		w=$("#co-coffee-"+this.curFloor+"-0").width()-avSize;                                   // Width of space
-       		y=this.by-$("#co-coffee-"+this.curFloor+"-0").height()-avSize+4;                         // On top of bar area
+       		y=this.by-$("#co-coffee-"+this.curFloor+"-0").height()-avSize;                         	// On top of bar area
 			}
-        for (j=0;j<this.venue[this.curFloor].length;++j) {                             		   	 	// For each room
+		for (i=0;i<this.people.length;++i) {														// For each person
+			if (this.curFloor != this.people[i].f) 	$("#co-Av-"+i).css("display","none");			// Hide people not on this floor
+			else if (this.people[i].stats != "Q")	$("#co-Av-"+i).css("display","block")			// Show unless quiet
+			}
+	
+		for (j=0;j<this.venue[this.curFloor].length;++j) {                             		   	 	// For each room
             bar=[];                                                                                 // New array
-            for (i=0;i<this.people.length;++i)  if ((this.people[i].stats) == "B"+this.curFloor+"-"+j)  bar.push(i); 	// Make people array
-            if (bar.length && j) {																	// If not main hall
+			for (i=0;i<this.people.length;++i) {													// For each person
+				if ((this.people[i].stats) == "B"+this.curFloor+"-"+j) 								// In a bar		
+					bar.push(i); 																	// Add to array
+				}
+			if (bar.length && j) {																	// If not main hall
                 x=$("#co-coffee-"+this.curFloor+"-"+j).offset().left-avSize/2+8; 	                // Left
                 y=$("#co-coffee-"+this.curFloor+"-"+j).offset().top+18;                             // top      
                 w=$("#co-Rm-"+j).height()-avSize-34;                                                // Get size                                             
                 }
             inc=avSize+2;                                                                           // Spacing between barmates
             if (bar.length > 1) inc=Math.min(inc,w/(bar.length-1));                                 // Squeeze them in?
-            for (i=0;i<bar.length;++i) {                                                            // For each barmate
+			for (i=0;i<bar.length;++i) {                                                            // For each barmate
                 if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  // Move me
               	else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           // Move them
-                $("#co-At-"+bar[i]).css("display","none");                                          // Hide me tag
+				 $("#co-At-"+bar[i]).css("display","none");                                         // Hide me tag
                 if (j)  y+=inc;    else x+=inc;                                                  	// Advance
                 }
    			}
@@ -391,7 +402,7 @@ class App  {
 			ox=$("#co-Rm-"+j).offset().left+4;														// Left side
 			x=ox;																					// Start pos
 			x2=x+$("#co-Rm-"+j).width()-avSize-8;													// Width of space
-			w=avSize+2;																				// Full size spacing
+			w=avSize+2;																			// Full size spacing
 			n=rms[j].length;																		// Number of people
 			y2=$("#co-Rm-"+j).offset().top+50;														// Top
 			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-5;							// Bottom
@@ -407,13 +418,14 @@ class App  {
 				if (y < y2)	break;																	// Quit if too many
 				}
 			}
-	}
+		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
+		}
 
 	ReportLocation(x, y, status="A")															// REPORT LOCATION TO SERVER
 	{
 		x=(x*100).toFixed(2);																		// Scale x 0-100
 		y=(y*100).toFixed(2);																		// y
-		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${x}|${y}|${status}`); 				// Send Location message
+		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${app.curFloor}|${x}|${y}|${status}`); // Send Location message
 	}
 	
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -674,12 +686,12 @@ class App  {
 	
 	ShowSchedule()																				// SHOW EVENT SCHEDULE
 	{
-		let i,j=0,r;
+		let i,j=0,r,s,sc;
 		let mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
 		let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 		this.CloseAll();																			// Close all open dialogs
 		let str=`<div id="co-sched" class="co-sched" style=";
-			left:${$(this.vr).offset().left}px;top:${this.venue[this.curFloor][0].params.gap}px;
+			left:${$(this.vr).offset().left}px;top:0;
 			width:${$(this.vr).width()-48}px; height:${$(this.vr).height()-48}px">
 			<b style="'font-size:30px">Event schedule</b>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-sched').remove()"><br><br>
@@ -687,12 +699,15 @@ class App  {
 			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
 			str+=this.schedule[0].start+" to "+this.schedule[0].end+"</b><table style='width:100%'>";
-			for (i=1;i<this.schedule.length;++i) {
-				r=this.schedule[i].room;
+			for (i=1;i<this.schedule.length;++i) {													// For each event
+				sc=this.schedule[i];																// Point at schedule
+				if (!sc.desc)	continue;															// Skip those with no desc
+				r=this.schedule[i].room;															// Point at rooom
+				s=this.venue[sc.floor][r].title+(sc.parent ? " in "+sc.parent : "");				// Event location
 				str+=`<tr style="vertical-align:top">
-				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${this.schedule[i].going ? " checked" : ""}></td>
-				<td>${this.schedule[i].desc}</td>
-				<td style="text-align:right;font-weight:bold;color:${this.venue[this.curFloor][r].rug}">${this.venue[this.curFloor][r].title}</td>
+				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${sc.going ? " checked" : ""}></td>
+				<td>${sc.desc}</td>
+				<td style="text-align:right;font-weight:bold;color:${this.venue[sc.floor][r].rug}">${s}</td>
 				</tr>`
 				}
 		str+="</table></div></div>";
@@ -766,6 +781,7 @@ class App  {
 	{
 		this.schedule=sced;																				// Set data
 		this.schedule.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });								// Sort by room
+		
 		}
 
 	AddVenue(ven)																					// ADD VENUE DATA
@@ -822,14 +838,13 @@ class App  {
 		let i,j,o,row,n,x,sc;
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
 		let p=this.venue[this.curFloor][0].params;														// Point at all params
-		if (p.avSize)		avSize=p.avSize;															// Use size if set
+		if (p.avSize)		avSize=p.avSize-0;															// Use size if set
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
-		$("body").css("margin",p.gap+"px");																// Margin is based on gap
-		$("#co-top").css("height",`calc(100vh - ${p.gap*2}px - var(--mobileOff))`);						// Height based on gap
+		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
 		
 		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*this.bx; // Size of hall
-		let menu=`<div style="position:absolute;top:calc(100vh - ${60 + p.gap*1}px - var(--mobileOff));width:${w-p.gap*1.6}px">
-			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize-0+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
+		let menu=`<div style="position:absolute;top:calc(100vh - ${60}px - var(--mobileOff));width:${w}px">
+			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
 			<img id="co-coffee-${this.curFloor}-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
@@ -851,7 +866,7 @@ class App  {
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
-			${o.link ? ";cursor:pointer" :""}">
+			${o.link ? ";cursor:pointer" : ""}">
 			<div id="co-Rm-${i}" style="position:relative;height:100%">`;
 			if (o.title && i) str+=`<div class="co-roomHdr">${o.title }</div>`;							// Add title to non-hallways
 			str+=sc.content ? "<div style='pointer-events:none'>"+sc.content+"</div>" : "";	 // Add content if any, wrapped in no-event div
