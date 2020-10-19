@@ -866,12 +866,12 @@ class App  {
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
-			${o.link ? ";cursor:pointer" : ""}">
+			${o.link ? ";cursor:pointer" : ""}${o.css ? ";"+o.css : ""}">
 			<div id="co-Rm-${i}" style="position:relative;height:100%">`;
 			if (o.title && i) str+=`<div class="co-roomHdr">${o.title }</div>`;							// Add title to non-hallways
 			str+=sc.content ? "<div style='pointer-events:none'>"+sc.content+"</div>" : "";	 // Add content if any, wrapped in no-event div
 			if (!i && (this.curFloor == 0))	str+=menu;													// Add menu to hallwaton first floor
-           	if (i && (sc.bar > 0))     str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
+           	if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            	if (sc.live > 0)    		str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
            	str+="</div></div>";		
 			}
