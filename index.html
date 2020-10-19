@@ -187,7 +187,9 @@ class App  {
     {
         this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
-	    this.CloseAll();                                                                         	// Close open windows
+		let vr=$(app.vr).offset();																	// Point at video room box
+		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()-1+"px",height:$(this.vr).width()*.5625+"px" });
+		this.CloseAll();                                                                         	// Close open windows
         this.ArrangePeople();                                                                       // Arrange people               
 	}
 
@@ -468,7 +470,7 @@ class App  {
 		$("#co-sps").on("change",()=>{ fillPeople() });
 		$("#co-spf").on("change",()=>{ fillPeople() });
 
-		function fillPeople() {																	// FILL PEOPLE TABLE
+		function fillPeople() {																// FILL PEOPLE TABLE
 			let i,o,r,s,str="<br>"
 			selects=[];																			// Start fresh
 			let room=$("#co-spr").prop("selectedIndex");										// Get room index
