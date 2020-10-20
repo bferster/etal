@@ -1,4 +1,4 @@
-class Data  {																					
+class Venue  {																					
 
 	constructor()   																		// CONSTRUCTOR
 	{

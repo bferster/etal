@@ -9,7 +9,7 @@
 	<script src="lib/jquery.ui.touch-punch.min.js"></script>
 	<script src="chat.js"></script>
 	<script src="schedule.js"></script>
-	<script src="data.js"></script>
+	<script src="venue.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
 	<title>èt•al Meeting</title>
 </head>
@@ -131,22 +131,18 @@ class App  {
 	constructor(meetingId)   																	// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
-		this.scale=1;																				// Scale
 		this.meetingId=""+meetingId;																// Meeting id
 		this.myId="";																				// My unique id
 		this.curFloor=0;																			// Current floor
 		this.venue=[];																				// Holds floors
 		this.people=[];																				// Holds attendees
-		this.schedule=[];																			// Holds schedule
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
 		this.infoDeskId=null;																		// Id of info desk person
-		this.meetingStart=new Date();																// Meeting start
 		this.videoWin=null;																			// Video window
 		this.videoRoom=null;																		// Status of video room
 		this.vr="#co-Rm-0";																			// Assume hallway is video rooom for iframes
 		this.curZoom="";																			// Current zoom link
-		this.now=0;																					// Now for meeting
 		this.KZ="";																					// Ks
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -162,7 +158,7 @@ class App  {
 		
 		this.chat=new Chat();																		// Add chat class
 		this.sced=new Schedule();																	// Add schedule class
-		this.data=new Data();																		// Add data class
+		this.venu=new Venue();																		// Add venue class
 	
 		this.ws.onopen=()=> { 																		// ON OPEN
 			app.ws.send(`P|${app.meetingId}`);														// Request people data	
@@ -281,7 +277,7 @@ class App  {
 		else if (targetId == "co-infoDesk")  { this.chat.Chat(this.infoDeskId,true); return; }		// ON INFO DESK BUTTON
 		else if (targetId == "co-attendees") { this.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
 		else if (targetId == "co-schedule") {														// ON SCHEDULE BUTTON
-			this.ShowSchedule();																	// Show schedule
+			this.sced.ShowSchedule();																// Show schedule
 			return;																					// Quit
 			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
@@ -428,10 +424,6 @@ class App  {
 		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${app.curFloor}|${x}|${y}|${status}`); // Send Location message
 	}
 	
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// DIALOGS
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
  	CloseAll(mask=0)                                                                        	// CLOSE ALL OPEN DIALOGS
     {
         $("#co-chat").remove();                                                                     // Close chat if open
@@ -442,106 +434,6 @@ class App  {
 		if (mask&2 && this.videoWin)  this.videoWin.close();										// Close open video window
 		else if (this.videoWin)		  this.videoWin.focus();										// Put it on front
     }
-
-	ShowAttendees()																				// SHOW THE ATTENDEES
-	{
-		let i,selects=[];
-		this.CloseAll();																			// Close all open dialogs
-		this.chat.curChat=-1;																		// Not chatting with anyone
-		let x=$("#co-attendees").offset().left-133;													// Left
-		let y=$("#co-attendees").offset().top-50-this.by/2											// Top
-		let str=`<div id="co-people" class="co-people" style="left:${x}px;top:${y}px;background-color:#eee">
-			<img style="float:right;cursor:pointer;margin-top:5px" src="img/closedot.png" onclick="$('#co-people').remove()">
-			<div style='text-align:center;font-size:18px'><b>Attendees</b></div><br>
-			<div id="co-spp"style="overflow-x:hidden;overflow-y:auto;height:calc(100% - 140px);margin-bottom:12px;background-color:#fff;border:1px solid #999">
-			</div><table>
-			<tr><td>Sort by </td><td><select class="co-is" id="co-sps" style="width:148px">
-			<option>None</option><option>Name</option><option>Organization</option></select></td></tr>
-			<tr><td>In </td><td><select class="co-is" id="co-spr" style="width:148px"></select></td></tr>	
-			<tr><td>Find </td><td><input class="co-is" id="co-spf" style="width:130px;height:21px;" placeholder="Type here"></td></tr></table>`;
-		$("body").append(str.replace(/\t|\n|\r/g,""));
-		$("#co-spr").append("<option>Any area</option><option>Hallway");
-		fillPeople();
-		for (i=1;i<this.venue[this.curFloor].length;++i)	$("#co-spr").append("<option>"+this.venue[this.curFloor][i].title+"</option>");
-		
-		$("#co-spr").on("change",()=>{ fillPeople() });
-		$("#co-sps").on("change",()=>{ fillPeople() });
-		$("#co-spf").on("change",()=>{ fillPeople() });
-
-		function fillPeople() {																// FILL PEOPLE TABLE
-			let i,o,r,s,str="<br>"
-			selects=[];																			// Start fresh
-			let room=$("#co-spr").prop("selectedIndex");										// Get room index
-			let sort=$("#co-sps").prop("selectedIndex");										// Sort
-			let find=$("#co-spf").val();														// Search term
-			for (i=0;i<app.people.length;++i) {													// For each person
-				o=app.people[i];																// Point at person											
-				if (o.stats == "Q")	continue;													// Skip quiet people
-				if (find) {																		// Filtering by search
-					r=RegExp(find,"i");															// Turn into regex
-					s=o.firstName+o.org+o.title+o.ints;											// Search all fields															
-					if (!s.match(r)) continue;													// Skip if not a match
-					}	
-				if (room) {																		// If filtering by zoom
-					if ((room == 1) && (o.stats != "A"))				continue;				// Only active people in hallway
-					else if ((room > 1) && ("R"+(room-1) != o.stats))	continue;				// Show only people in the room
-					}
-				selects.push({index:i, org:o.org, name:o.lastName });							// Add to selects
-				}
-			if (sort == 1)		selects.sort((a,b)=>{ return (a.name > b.name) ? 1 : -1 });		// Sort by name
-			else if (sort == 2)	selects.sort((a,b)=>{ return (a.org > b.org) ? 1 : -1 });		// Sort by org
-
-			for (i=0;i<selects.length;++i) {													// For each selected person
-				let o=app.people[selects[i].index];												// Point at person
-				str+=`<div style="vertical-align:top"><div style="float:left;text-align:left;width:100%">
-				<div style="float:left;width:40px;height:40px;overflow:hidden;border-radius:64px;margin:0 8px 16px 4px;border:1px solid #999">
-				<img id="co-spi-${selects[i].index}" style="cursor:pointer;width:40px;" 
-				src="${o.pic}"></div>
-				<b>${o.firstName} ${o.lastName}</b><br>${o.title}<br>${o.org}</div></div>`;
-				}
-			$("#co-spp").html(str);																// Add to listing
-			$("[id^=co-spi-]").on("click",(e)=>{												// ON PIC CLICK
-				let id=e.target.id.substr(7)-0;													// Get index
-				app.chat.ShowCard(id);															// Show card
-				});
-			}
-	}
-
-	ShowSchedule()																				// SHOW EVENT SCHEDULE
-	{
-		let i,j=0,r,s,sc;
-		let mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
-		let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-		this.CloseAll();																			// Close all open dialogs
-		let str=`<div id="co-sched" class="co-sched" style=";
-			left:${$(this.vr).offset().left}px;top:0;
-			width:${$(this.vr).width()-48}px; height:${$(this.vr).height()-48}px">
-			<b style="'font-size:30px">Event schedule</b>
-			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-sched').remove()"><br><br>
-			<div style="height:calc(100% - 48px);width:100%;overflow-y:auto;text-align:left">`;
-			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
-				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
-			str+=this.schedule[0].start+" to "+this.schedule[0].end+"</b><table style='width:100%'>";
-			for (i=1;i<this.schedule.length;++i) {													// For each event
-				sc=this.schedule[i];																// Point at schedule
-				if (!sc.desc)	continue;															// Skip those with no desc
-				r=this.schedule[i].room;															// Point at rooom
-				s=this.venue[sc.floor][r].title+(sc.parent ? " in "+sc.parent : "");				// Event location
-				str+=`<tr style="vertical-align:top">
-				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${sc.going ? " checked" : ""}></td>
-				<td>${sc.desc}</td>
-				<td style="text-align:right;font-weight:bold;color:${this.venue[sc.floor][r].rug}">${s}</td>
-				</tr>`
-				}
-		str+="</table></div></div>";
-		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
-		
-		$("#co-sched").show("slide",{ direction:"down" });											// Slide up
-		$("[id^=co-Sc-]").on("click", (e)=>{ 														// ON CHECK CLICK
-			let id=e.currentTarget.id.substr(6);													// Get id
-			this.schedule[id].going=$("#"+e.currentTarget.id).prop("checked");						// Store checked status
-			}); 			
-	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATA
@@ -561,8 +453,8 @@ class App  {
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		this.schedule=sced;																				// Set data
-		this.schedule.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });								// Sort by room
+		this.sced.schedule=sced;																		// Set data
+		this.sced.schedule.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });						// Sort by room
 		}
 
 	AddVenue(ven)																					// ADD VENUE DATA
@@ -578,15 +470,6 @@ class App  {
 		for (i=0;i<this.venue.length;++i) 																// For each floor
 			this.venue[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
 		}
-
-	GetScheduleByRoom(time, floor, room)															// GET SCHEDULE FOR ROOM
-	{
-		let i;
-		for (i=0;i<this.schedule.length;++i)
-			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))
-				return this.schedule[i];
-		return { link:"", content:"", title:"", desc:"", room:room };
-	}
 
 	DrawPeople()																					// ADD PEOPLE TO MEETING
 	{
@@ -633,7 +516,7 @@ class App  {
 		if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
  		menu+=`</div></div>`;
 
-		sc=this.GetScheduleByRoom(this.now, this.curFloor, 0);											// Point at schedule for hall																			
+		sc=this.sced.GeEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
 
 		let str=`<div id="co-grid" class="co-venue" style="
@@ -642,7 +525,7 @@ class App  {
 		
 		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
 			o=this.venue[this.curFloor][i];																// Point at room
-			sc=this.GetScheduleByRoom(this.now,this.curFloor,i)											// Point at schedule room																		
+			sc=this.sced.GeEventByRoom(this.curFloor,i)													// Point at schedule room																		
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 				str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
