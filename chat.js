@@ -31,8 +31,8 @@ class Chat  {
 				str+=`<div id="co-qv-${i}" style="vertical-align:top">
 				<div style="float:left;text-align:left;width:100%">
 					<div style="float:left;width:40px;height:40px;overflow:hidden;border-radius:64px;margin:0 8px 16px 4px;border:1px solid #999">
-					<img id="co-qi-${i}" style="width:40px"	src="${app.people[app.queue[i].id].pic}"></div>
-					<b>${app.people[app.queue[i].id].firstName} ${app.people[app.queue[i].id].lastName}</b></br>
+					<img id="co-qi-${i}" style="width:40px"	src="${app.people[this.queue[i].id].pic}"></div>
+					<b>${app.people[this.queue[i].id].firstName} ${app.people[this.queue[i].id].lastName}</b></br>
 					<i>${this.queue[i].msg}</i>
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
 				}
@@ -174,10 +174,10 @@ class Chat  {
 		$("#co-revTextBut").on("click", ()=>{ sendChat(); });										// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON VIDEO CHAT BUT CLICK
 			let link=`japp.htm?/~${app.meetingId}~${app.people[app.myId].firstName}${app.myId}&${app.people[app.myId].firstName}&${app.people[app.myId].firstName}`;
-			let str=`<div onclick="app.ShowLink('${link}')">
+			let str=`<div onclick="app.sced.ShowLink('${link}')">
 			Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> to join`;
 			sendChat(str);																			// Invite
-			app.ShowLink(link);																		// Start chatting
+			app.sced.ShowLink(link);																// Start chatting
 			})					
 	
 		function sendChat(msg) {																	// TEXT CHATTING

@@ -5,9 +5,9 @@ class Schedule  {
 		this.meetingStart=new Date();																// Meeting start
 		this.now=0;																					// Now for meeting
 		this.schedule=[];																			// Holds schedule
+		this.curZoom="";																			// Current zoom link
 	}
 	
-
 	GeEventByRoom(floor, room)																	// GET EVENT FOR A ROOM
 	{
 		let i;
@@ -59,7 +59,7 @@ class Schedule  {
 		app.CloseAll();																				// Close all open dialogs
 		app.chat.curChat=-1;																		// Not chatting with anyone
 		let x=$("#co-attendees").offset().left-133;													// Left
-		let y=$("#co-attendees").offset().top-50-this.by/2											// Top
+		let y=$("#co-attendees").offset().top-50-app.by/2											// Top
 		let str=`<div id="co-people" class="co-people" style="left:${x}px;top:${y}px;background-color:#eee">
 			<img style="float:right;cursor:pointer;margin-top:5px" src="img/closedot.png" onclick="$('#co-people').remove()">
 			<div style='text-align:center;font-size:18px'><b>Attendees</b></div><br>
@@ -73,7 +73,7 @@ class Schedule  {
 		$("#co-spr").append("<option>Any area</option><option>Hallway");
 		fillPeople();
 		
-		for (i=1;i<app.venue[app.curFloor].length;++i)	$("#co-spr").append("<option>"+this.venue[this.curFloor][i].title+"</option>");
+		for (i=1;i<app.venue[app.curFloor].length;++i)	$("#co-spr").append("<option>"+app.venue[app.curFloor][i].title+"</option>");
 		
 		$("#co-spr").on("change",()=>{ fillPeople() });
 		$("#co-sps").on("change",()=>{ fillPeople() });
@@ -93,7 +93,7 @@ class Schedule  {
 					s=o.firstName+o.org+o.title+o.ints;											// Search all fields															
 					if (!s.match(r)) continue;													// Skip if not a match
 					}	
-				if (room) {																		// If filtering by zoom
+				if (room) {																		// If filtering by room
 					if ((room == 1) && (o.stats != "A"))				continue;				// Only active people in hallway
 					else if ((room > 1) && ("R"+(room-1) != o.stats))	continue;				// Show only people in the room
 					}
@@ -118,6 +118,47 @@ class Schedule  {
 			}
 	}
 
-
+	ShowLink(link)																				// SHOW LINK
+	{
+		app.CloseAll(3);																			// Close all open dialogs except video/iframes
+		$("#co-videoBar").remove();																	// Remove video bar
+		if (link && link.match(/zoom/i)) {															// If Zoom
+			this.curZoom=link;																		// Save link
+			window.onfocus=()=>{ 																	// If main is back in focus
+				let str=`<div id="co-videoBar" class="co-alert" 
+				style="left:${app.bx/4+16}px;width:${app.bx/2-24}px;background-color:#5b66cb">
+				Click here to return to last Zoom room</div>`;
+				$("body").append(str.replace(/\t|\n|\r/g,""));										// Add return bar
+				app.GoToCenter();																	// Got to center of hall
+				$("#co-videoBar").on("click",()=>{
+					let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
+					setTimeout(function(){ myWin.close(); },10000);									// Close after 10 secs
+					});						
+				}
+			window.onblur=()=>{ $("#co-videoBar").remove();	}										// If main is out, remove bar
+			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
+			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
+			}
+		else{																						// Use iframe
+			if (link && link.match(/zapp/i) && isMobile) {											// If zoom mobile
+				let str="zoomus://zoom.us/join?confno="+link.split("?")[1];							// Make mobile url
+				this.ShowLink(str);																	// Open with native app							
+				return;																				// Quit
+				}
+			if (link && link.match(/zapp/i)) link+="&"+app.KZ										// If zoom app, add k
+			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
+			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
+			width:${$(app.vr).width()-1}px; height:${($(app.vr).width())*.5625}px">
+			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
+			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
+			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
+			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
+			
+			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
+				$("#co-iframe").remove();															// Close window
+				app.GoToCenter();																	// Go to center
+				});	
+			}
+	}
 
 } // Class closure

@@ -142,7 +142,6 @@ class App  {
 		this.videoWin=null;																			// Video window
 		this.videoRoom=null;																		// Status of video room
 		this.vr="#co-Rm-0";																			// Assume hallway is video rooom for iframes
-		this.curZoom="";																			// Current zoom link
 		this.KZ="";																					// Ks
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -242,7 +241,7 @@ class App  {
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS
 				v[2]=v[2].substr(1);																// Remove star
-				this.Speak(v[2]);																	// Say it
+				this.chat.Speak(v[2]);																// Say it
 				}
 			Popup(`<b style="color:#990000">A message<br>from your meeting host</b><hr><br>${v[2]}<br><br>`,6000);	// Alert them
 			this.chat.queue.push({ id:this.infoDeskId, msg:v[2] });									// Add to queue
@@ -271,11 +270,11 @@ class App  {
 				return;
 				}
 			this.status="R"+targetId.substr(6);														// Status with room number
-			if (link) this.ShowLink(link);															// Show link id one there
+			if (link) this.sced.ShowLink(link);														// Show link id one there
 			else	  this.status="A";																// In active mode
 			}
 		else if (targetId == "co-infoDesk")  { this.chat.Chat(this.infoDeskId,true); return; }		// ON INFO DESK BUTTON
-		else if (targetId == "co-attendees") { this.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
+		else if (targetId == "co-attendees") { this.sced.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
 		else if (targetId == "co-schedule") {														// ON SCHEDULE BUTTON
 			this.sced.ShowSchedule();																// Show schedule
 			return;																					// Quit
@@ -288,7 +287,7 @@ class App  {
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
    		    this.status="B"+id;                                                  					// Update me
- 			this.ShowLink("japp.htm?/~"+this.meetingId+"~coffebar-"+this.curFloor+"-"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
+ 			this.sced.ArrangePeople("japp.htm?/~"+this.meetingId+"~coffebar-"+this.curFloor+"-"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else this.status="A";																		// In active mode
@@ -297,49 +296,6 @@ class App  {
 		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
 		this.ReportLocation(x/(this.bx-12),y/(this.by-12),this.status);								// Report my move
 		this.chat.curChat=-1;																		// Not chatting with anyone
-	}
-
-	ShowLink(link)																				// INITIATE ZOOM
-	{
-		this.CloseAll(3);																			// Close all open dialogs except video/iframes
-		$("#co-videoBar").remove();																	// Remove video bar
-		if (link && link.match(/zoom/i)) {															// If Zoom
-			this.curZoom=link;																		// Save link
-			window.onfocus=()=>{ 																	// If main is back in focus
-				let str=`<div id="co-videoBar" class="co-alert" 
-				style="left:${this.bx/4+16}px;width:${this.bx/2-24}px;background-color:#5b66cb">
-				Click here to return to last Zoom room</div>`;
-				$("body").append(str.replace(/\t|\n|\r/g,""));										// Add return bar
-				this.GoToCenter();																	// Got to center of hall
-				$("#co-videoBar").on("click",()=>{
-					let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
-					setTimeout(function(){ myWin.close(); },10000);									// Close after 10 secs
-					});						
-				}
-			window.onblur=()=>{ $("#co-videoBar").remove();	}										// If main is out, remove bar
-			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
-			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
-			}
-		else{																						// Use iframe
-			if (link && link.match(/zapp/i) && isMobile) {											// If zoom mobile
-				let str="zoomus://zoom.us/join?confno="+link.split("?")[1];							// Make mobile url
-				this.ShowLink(str);																	// Open with native app							
-				return;																				// Quit
-				}
-			if (link && link.match(/zapp/i)) link+="&"+this.KZ										// If zoom app, add k
-			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
-			left:${$(this.vr).offset().left}px;top:${$(this.vr).offset().top}px;
-			width:${$(this.vr).width()-1}px; height:${($(this.vr).width())*.5625}px">
-			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
-			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
-			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
-			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
-			
-			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
-				$("#co-iframe").remove();															// Close window
-				this.GoToCenter();																	// Go to center
-				});	
-			}
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -416,6 +372,10 @@ class App  {
 			}
 		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 		}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// VENUE
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	ReportLocation(x, y, status="A")															// REPORT LOCATION TO SERVER
 	{
@@ -581,7 +541,7 @@ class App  {
 		str+="<div id='dialogCancel' class='co-bs' style='margin-left:8px;background-color:#999'>Cancel</div></div>";
 		$("#confirmBoxDiv").html(str);																	// Add to div
 		$("#co-revText").focus();																		// Focus on button
-		$("#co-talkBut").on("click", ()=>{app.Listen()});												// Start STT
+		$("#co-talkBut").on("click", ()=>{app.chat.Listen()});											// Start STT
 		$("#co-revText").on("change", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ONE ENTER
 		$("#dialogOK").on("click", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ON OK 
 		$("#dialogCancel").on("click", function() {	$("#confirmBoxDiv").remove(); });								// ON CANCEL
