@@ -48,11 +48,11 @@ class Schedule  {
 				if (!sc.desc)	continue;															// Skip those with no desc
 				r=this.schedule[i].room;															// Point at rooom
 				s=app.venue[sc.floor][r].title+(sc.parent ? " in "+sc.parent : "");					// Event location
-				str+=`<tr style="vertical-align:top">
+				str+=`<tr style="vertical-align:top;cursor:pointer">
 				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${sc.going ? " checked" : ""}></td>
-				<td>${sc.desc}</td>
-				<td style="text-align:right;cursor:pointer;font-weight:bold;color:${app.venue[sc.floor][r].rug}"
-				onclick="app.sced.GoToRoom(${sc.floor},${sc.room})">${s}</td></tr>`
+				<td onclick="app.sced.GoToRoom(${sc.floor},${sc.room})" style="cursor:pointer">${sc.desc}</td>
+				<td onclick="app.sced.GoToRoom(${sc.floor},${sc.room})"
+				style="text-align:right;cursor:pointer;font-weight:bold;color:${app.venue[sc.floor][r].rug}">${s}</td></tr>`
 				}
 		str+="</table></div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
