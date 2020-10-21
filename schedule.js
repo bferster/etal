@@ -8,14 +8,25 @@ class Schedule  {
 		this.curZoom="";																			// Current zoom link
 	}
 	
-	GeEventByRoom(floor, room)																	// GET EVENT FOR A ROOM
+	GeEventByRoom(floor, room)																// GET EVENT FOR A ROOM
 	{
 		let i;
-		for (i=0;i<this.schedule.length;++i)
-			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))
-				return this.schedule[i];
-		return { link:"", content:"", title:"", desc:"", room:room };
+		for (i=0;i<this.schedule.length;++i)													// For each event
+			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))			
+				return this.schedule[i];														// Return room event
+		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
 	}
+
+	GoToRoom(floor, room)																	// ENTER A ROOM DIRECTLY
+	{
+		app.CloseAll(3);																		// Close video windows
+		if (floor != app.curFloor) {															// If a different floor
+			app.curFloor=floor-0;																// Get floor index
+			app.DrawVenue();																	// Draw new floor
+			}
+		app.OnMeMove(app.bx/2,app.by/2,"co-Rm-"+room);											// Join room	
+		app.ArrangePeople();																	// Reaarange the people
+		}
 
 	ShowSchedule()																				// SHOW EVENT SCHEDULE
 	{
@@ -40,8 +51,8 @@ class Schedule  {
 				str+=`<tr style="vertical-align:top">
 				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${sc.going ? " checked" : ""}></td>
 				<td>${sc.desc}</td>
-				<td style="text-align:right;font-weight:bold;color:${app.venue[sc.floor][r].rug}">${s}</td>
-				</tr>`
+				<td style="text-align:right;cursor:pointer;font-weight:bold;color:${app.venue[sc.floor][r].rug}"
+				onclick="app.sced.GoToRoom(${sc.floor},${sc.room})">${s}</td></tr>`
 				}
 		str+="</table></div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
