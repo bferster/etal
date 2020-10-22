@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+   <script src="lib/ckeditor/ckeditor.js"></script>
+  <script src="lib/papaparse.min.js"></script>
+  <link REL="SHORTCUT ICON" HREF="img/favicon.ico">
+  <title>èt • al dashboard</title>
+</head> 
+<style>
+	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:12px; padding:0px; margin:16px; box-sizing:content-box; }
+	.co-bar		{	position:absolute; color:#000; text-align:center; width:100%; user-select:none;
+					padding: 12px 0; top:66px; left:0; pointer-events: none; }
+   	.co-dialog 	{	position: absolute; top:16px; left:16px; background-color: #eee; border: 2px solid #aaa;
+					padding:16px; border-radius: 16px; width:600px;	}
+	.co-confirm {	position: absolute;  width: 300px; padding: 16px; left: calc(50% - 300px); top: calc(50% - 150px); user-select: none;	
+					border-radius: 8px; background-color: #fff; border: 1px solid #999; box-shadow: 2px 2px 8px 2px #aaa; }
+	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
+					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
+					font-size: 14px; text-align:center; display: none; }
+	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:84px }
+	.co-bs 		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
+					font-size: 13px; background-color:  #36c936; padding: 2px 8px 2px 8px; }
+	.jsgrid-cell{	overflow:hidden; }
+	.co-venue 	{	display:inline-block; height:calc(100vh - 174px); width:250px; border:1px solid #999; vertical-align:top;
+					padding:12px; margin-right:12px; background-color:#f8f8f8;  user-select:none;}
+	.co-grid 	{	display:grid; height:calc(100vh - 148px); width:100%;  user-select:none;}
+	.co-room 	{	background-repeat:repeat; border:.5px solid #999; text-align:center; 
+					text-shadow:1px 1px #bbb; font-size:9px; }
+	.co-rich 	{	position:absolute; width:calc(100% - 2px); height:calc(100vh - 2px); background-color:#fff; top:0; left:0; display:none; }
+
+	#co-tab	{ background:transparent;  border:none; margin-left:-8px; }
+	#co-tab .ui-widget-header { background:transparent; border:none; background-color: #ccc; } 
+	#co-tab .ui-tabs-nav .ui-state-default { background:transparent; border:none;  }
+	#co-tab .ui-tabs-nav .ui-state-default a { color: #888; font-size:24px; }
+	#co-tab .ui-tabs-nav .ui-state-active a {  color: #fff; font-weight:bold;font-size:24px; outline:none; }
+
+</style>
+
+<body>
+	<img style="float:right;width:80px" src="img/logo.png">
+	<div id="co-meetingName" style="text-align:center;font-size:30px;color:#999;font-weight:bold;margin:-8px 0 4px 0"></div>
+	<div id="co-tab">
+		<ul>
+			<li id="co-tab1"><a href="#jsGrid-people">PEOPLE</a></li>
+			<li id="co-tab2"><a href="#jsGrid-schedule">SCHEDULE</a></li>
+			<li id="co-tab3"><a href="#venueEditor">VENUE</a></li>
+		</ul>
+		<div id="jsGrid-people"></div>
+		<div id="jsGrid-schedule"></div>
+		<div id="venueEditor" style="padding:0";></div>
+	</div>	
+	<input type="file" id="co-filepeople" style="display:none">
+	<input type="file" id="co-fileschedule" style="display:none">
+	<input type="file" id="co-filevenue" style="display:none">
+	<div class="co-bar">
+		<div style="float:right;margin-right:36px; pointer-events:all;">
+			<div class="co-bs" id="co-start">Start meeting</div>			
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			Load from&nbsp;&nbsp;<select id="co-loadpeople" class="co-is">
+			<option>Choose source</option>
+			<option>Meeting server</option>
+			<option>Local CSV file</option>
+			<option>Google docs</option>
+			</select>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			Publish to&nbsp;&nbsp;<select id="co-savepeople" class="co-is">
+				<option>Choose destination</option>
+				<option>Meeting server</option>
+				<option>Local CSV file</option>
+				</select>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="co-bs"  id="co-clearpeople" style="float:right;background-color:#e22908">Clear</div>
+			</div>
+	</div>
+	<div id="editorDiv" class="co-rich">
+		<textarea class="ckeditor" id="editor1" name="editor1" style="width:100%;height:100%"></textarea>
+		<p id='saveRichBut' class='co-bs' style="float:right;margin-right:24px">Save changes</p>
+		<img id="cancelRichBut" style="position:absolute;top:14px;left:calc(100% - 30px);cursor:pointer" src="img/closedot.png">
+	</div>
+
+<script>
+
+	let app=null;
+	let isMobile=false;
+
+	$(document).ready(function() {								           							// ON PAGE LOADED
+		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
+		let url=window.location.search.substring(1);						   						// Get query string
+		url=url ? url : 3;																			// Default meeting if not set
+		$("#co-meetingName").text("MEETING ID: " +url);												// Set title
+		app=new App(url);                                      										// Alloc app
+		$("#co-tab" ).tabs();																		// Init tabs
+		CKEDITOR.on('instanceLoaded', function(e) { e.editor.resize("100%", $("body").height()-54)});	// Resize editor
+		$("#cancelRichBut").on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
+		$("#saveRichBut").on("click", ()=>{ 
+			$("#editorDiv").hide(); 																// Hide rich text editor						
+			let d=$("#jsGrid-schedule").jsGrid("option","data");									// Get data
+			d[app.curRow].content=CKEDITOR.instances.editor1.getData();								// Set new content
+			$("#jsGrid-schedule").jsGrid("option","data",d);										// Put data	
+			});	
+});
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UI																							    http://js-grid.com
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	$("#co-tab1").on("click",()=>{ app.curTable="people" });
+	$("#co-tab2").on("click",()=>{ app.curTable="schedule" });
+	$("#co-tab3").on("click",()=>{ app.curTable="venue"; app.DrawVenue(); });
+
+	$("[id^=co-load]").on("change", function(e) {													// ON LOAD
+		let i=$(this).prop("selectedIndex");														// Get option
+		if (i == 1) 	 	app.GetFromServer(app.curTable);										// From server
+		else if (i == 2) 	$("#co-file"+app.curTable).trigger("click");							// From local CSV file
+		else if (i == 3) 	GetTextBox("Load from Google Sheets",									// From Google
+										"Paste link from Google Sheets",
+										GetCookie(`${app.meetingId}-${app.curTable}-gdoc`), 
+										(s)=>{ 	let d=new Date();	d.setTime(d.getTime()+365*24*60*60*1000);	d=d.toUTCString()	// Cookie expires after a year
+												document.cookie=`${app.meetingId}-${app.curTable}-gdoc=${s}; expires=${d};`;
+												app.GDriveLoad(s, app.curTable); 
+												});
+		$(this).prop("selectedIndex",0);															// Clear
+		});
+
+	$("[id^=co-save]").on("change", function(e) {													// ON SAVE
+		let i=$(this).prop("selectedIndex");														// Get option
+		if (i == 1) 	 	app.SaveToServer(app.curTable);											// Erase and save
+		else if (i == 2) 	app.SaveToCSV(app.curTable);											// Save to csv
+		$(this).prop("selectedIndex",0);															// Clear
+		});
+
+	$("[id^=co-clear]").on("click",(e)=>{															// ON CLEAR
+		ConfirmBox("Are you sure?","",()=>{															// Are we sure?
+			if (app.curTable == "venue") app.EditVenue([]);
+			else $("#jsGrid-"+app.curTable).jsGrid("option", "data", [])
+			}) 
+		});
+
+	$("[id^=co-file]").on("change",(e)=>{															// ON FILE
+		ReadFile(e,"co-"+app.curTable,app.curTable); $("#co-file"+app.curTable).val("");			// Read file
+		});
+
+	$("#co-start").on("click",(e)=>{ app.StartMeeting() });											// ON START MEETING
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// APP
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class App  {																					
+
+	constructor(meetingId)   																	// CONSTRUCTOR
+	{
+		app=this;																					// App global pointer
+		this.meetingId=""+meetingId;																// Meeting id
+		this.people=[];																				// Holds people
+		this.schedule=[];																			// Holds schedule
+		this.venue=[];																				// Holds venue
+		this.curRow=0;																				// Current row I'm editing
+		this.curRoom=0;																				// Current room
+		this.curFloor=0;																			// Current floor
+		this.curTable="people";																		// Current db table
+		this.InitSpreadSheets();																	// Init jsGrid
+		this.GetFromServer("people");																// Get people data
+		this.GetFromServer("schedule");																// Schedule
+		this.GetFromServer("venue");																// Venue
+	}
+
+	InitSpreadSheets()
+	{
+		var RichTextEdit = function(config) { jsGrid.Field.call(this, config); };
+ 		RichTextEdit.prototype = new jsGrid.Field({ align: "center",       
+			editTemplate: function(value,a) {  
+				let s=`<button class="co-bs" style="border:none;outline:none" 
+				onclick="app.RichEdit('${app.curRow}')">Edit</button>`;
+				return this._editPicker=s 
+				}
+			});
+		jsGrid.fields.rich=RichTextEdit;
+
+		this.pFields=[{ name:"firstName", type:"text", width:100, validate:"required" },
+			{ name:"lastName", type:"text", width:100, validate:"required" },
+			{ name:"email", type:"text", width:100, validate:"required"},
+			{ name:"title", type:"text", width:100 },
+			{ name:"org", type:"text",width:100 },
+			{ name:"ints", type:"text",width:100 },
+			{ name:"pic", type:"text",width:100 },
+			{ name:"li", type:"text",width:100 },
+			{ name:"web", type:"text",width:100 },
+			{ name:"role", type:"text",width:100 },
+			{ name:"f", type:"text",width:50 },
+			{ name:"x", type:"text",width:50 },
+			{ name:"y", type:"text",width:50 },
+			{ name:"stats", type:"text",width:50 },
+			{ type: "control" }];
+
+		this.sFields=[{ name:"floor", type:"text", width:30, validate:"required"},
+			{ name:"room", type:"text", width:30, validate:"required"},
+			{ name:"parent", type:"text", width:70 },
+			{ name:"start", type:"text", width:70, validate:"required"},
+			{ name:"end", type:"text", width:80, validate:"required"},
+			{ name:"bar", type:"text", width:30 },
+			{ name:"desc", type:"text",width:150 },
+			{ name:"link", type:"text",width:250 },
+			{ name:"content", type:"rich", width:150},
+			{ type: "control" }];
+
+		$("#jsGrid-people").jsGrid({ width:"100%", height:"calc(100vh - 168px)",
+				inserting:true, editing:true, sorting:true,
+				fields: this.pFields, data:[],
+				onItemEditing: function(args) { app.curRow=args.itemIndex;  }
+				});
+		$("#jsGrid-schedule").jsGrid({ width:"100%", height:"calc(100vh - 168px)",
+				inserting:true, editing:true, sorting:true,
+				fields: this.sFields, data:[],
+				onItemEditing: function(args) { app.curRow=args.itemIndex;  }
+				});
+	
+		$("#jsGrid-people").css("padding",0)		
+		$("#jsGrid-schedule").css("padding",0)		
+	}
+
+	RichEdit(row)																						// USE RICH TEXT EDITOR
+	{
+		$("#editorDiv").show();																				// Show editor
+		let d=$("#jsGrid-schedule").jsGrid("option","data");												// Point at table	
+		CKEDITOR.instances.editor1.setData(d[this.curRow].content);											// Set editor
+	}
+
+	GDriveLoad(id, table) 																				// LOAD SHEET FROM GOOGLE DRIVE
+	{
+		id=id.match(/d\/(.*)\//);																			// Extract id
+		if (id && id[1]) id=id[1];																			// Point to it
+		var str="https://spreadsheets.google.com/feeds/cells/"+id+"/1/public/values?alt=json";				// Make url
+		$.ajax( { url:str, dataType:'jsonp' }).done((data)=>{												// Get data			
+			this.InitFromJSON(data.feed.entry, table);										
+			}).fail((msg)=> { Sound("delete");																// Delete sound
+				PopUp("<p style='color:#990000'><b>Couldn't load Google Doc!</b></p>Make sure that it is<br><b>\"Published to web\"</b><br> in Google",5000); // Popup warning
+				});		
+		}
+
+	InitFromJSON(cells, table)																			// INIT APP DATA FROM GDOCS JSON FILE
+	{
+		let i,col,row,o,fields=[], d=[];
+		for (i=0;i<cells.length;++i) {																		// For each cell
+			o=cells[i];																						// Point at it
+			row=o.gs$cell.row-1;																			// Get cell row
+			if (d[row] == undefined) d[row]={};																// Create row if not already created	
+			if (row) continue;																				// Not the top row			
+			fields[o.gs$cell.col-1]=o.content.$t;															// Get field names 	
+			}
+
+		for (i=0;i<cells.length;++i) {																		// For each cell
+			o=cells[i];																						// Point at it
+			col=o.gs$cell.col-1; 	row=o.gs$cell.row-1;													// Get cell coords
+			if (!row) continue;																				// Not the top row			
+			d[row-1][fields[col]]=o.content.$t;																// Add content
+			}
+		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
+		for (i=0;i<d.length;++i) {																			// For each row
+			if (table == "venue")  {				if (d[i].params)d[i].params=JSON.parse(d[i].params);}		// Objectify if venue params
+			else if (d[i].email || d[i].room)	$("#jsGrid-"+table).jsGrid("insertItem",d[i]);				// Add line to grid
+			}
+		
+		app[table]=d;																						// Copy to app obj
+		if (table == "venue") app.EditVenue(d);																// Redraw table with new data	
+		Sound("ding");																						// Ding
+		}
+
+	SaveToCSV(table)																					// SAVE TO CSV FILE
+	{
+		let i,j,k,str="",f,floors=1;
+		let d=$("#jsGrid-"+table).jsGrid("option","data");													// Get data from spreadsheet
+		if (table == "venue") { floors=this.venue.length; d=this.venue[0]; }								// Set number of floors
+		if (!d.length)		return;																			// Quit if nothing there
+		for (i in d[0])	str+=i+",";																			// Header row
+		str=str.substr(0,str.length-1)+"\n";																// Remove last comma
+
+		for (f=0;f<floors;++f) {																			// For each "floor"
+			if (table == "venue") d=this.venue[f];															// Point at room data if venue
+			for (i=0;i<d.length;++i) {																		// For each row
+				for (j in d[0])	{																			// For each field
+					if (j == "meeting") d[i][j]=this.meetingId;												// Force meeting id
+					if ((j == "params") && d[i][j]) {														// If params set
+						str+="\"{";																			// Quote
+						for (k in d[i][j]) str+=`""${k}"":""${d[i][j][k]}"",`;								// CSV stringify
+						str=str.substr(0,str.length-1);														// Remove last comma
+						str+="}\",";																		// Unquote																			
+						continue;
+						}			
+					if (d[i][j]  == undefined) d[i][j]="";													// Null it out
+					if (d[i][j] && (d[i][j]+"").match(/,/)) d[i][j]="\""+d[i][j]+"\"";						// Escape commas
+					if (d[i][j]) (d[i][j])=(""+d[i][j]).replace(/\t|\n|\r/g,"");							// No CRs, LFs, or tabs
+					str+=d[i][j]+",";																		// Add value
+					}
+				str=str.substr(0,str.length-1)+"\n";														// Remove last comma
+				}
+			}
+		SaveTextAsFile(this.meetingId+"-"+table+".csv",str);												// Write file	
+		Sound("ding");																						// Ding
+	}
+
+	StartMeeting()																						// START MEETING
+	{
+		let i,params;
+		let d=$("#jsGrid-people").jsGrid("option","data");													// Get data
+		for (i=0;i<d.length;++i) {																			// For each person
+			params={ TableName: "people", Key: { id:this.meetingId+"~"+i },									// Make up params
+				UpdateExpression: "set stats = :q",	ExpressionAttributeValues:{ ":q":"Q"} };								
+				this.doc.update(params, (err, data)=> {														// Write to server
+				if (err) 	{ console.error("Unable to write data: ", JSON.stringify(err, null, 2)); }		// If error
+				else 	 	{ console.log("started")};														// Success
+				});
+			}
+		Sound("ding");																						// Ding
+	}
+		
+	GetFromServer(table)																			// LOAD FROM SERVER
+	{
+		Sound("ding");																					// Ding
+	}
+
+	SaveToServer(table)																				// SEND TO SERVER
+	{
+		Sound("ding");																					// Ding
+	}
+
+	EditVenue(data)																						// MAKE VENUE EDITOR
+	{
+		let i;
+		if (data) {																							// If new data
+			this.venue=[];																					// Fresh array
+			data.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });										// Sort by floor
+			for (i=0;i<data.length;++i) {																	// For each room
+				if (!this.venue[data[i].floor])	this.venue[data[i].floor]=[];								// Create new array if empty
+				this.venue[data[i].floor].push(data[i]);													// Add room to floor
+				}	
+			for (i=0;i<this.venue.length;++i) 																// For each floor
+				this.venue[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
+			}
+		if (!this.venue[0]) this.venue.push([{ title:"Hallway", rug:"#ffffff", cs:1, ce:2, rs:1, re:2,room:0, floor:0, params:{ rows:4, cols:4, gap:0, avSize:36 }} ]);	// Init if blank
+		let d=this.venue[this.curFloor][0].params;
+		let r=this.venue[this.curFloor][this.curRoom];
+		let str=`<div style="margin-top:12px">
+			<datalist id="palette">
+			<option value="#ffffff"><option value="#cccccc"><option value="#999999"><option value="#666666"><option value="#000000">
+		    <option value="#d8c4ae"><option value="#a2733f"><option value="#cc4c39"><option value="#58aab4"><option value="#5b66cb">
+			<option value="#6e9456">
+		</datalist>
+		<div class="co-venue">
+				<table>
+				<tr style="vertical-align:top"><td><b>CURRENT FLOOR</b><br><br></td><td><select id="evFloor" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
+				<tr><td>Background color</td><td><input class='co-is' type='color' id='ev-bcol' value='${(d.bcol ? d.bcol : "#ffffff")}' list="palette" style="height:18px;margin:0"></td></tr>	
+				<tr><td>Number of columns&nbsp; </td><td><input class='co-is' type='text' id='ev-cols' value='${(d.cols ? d.cols : 10)}'></td></tr>	
+				<tr><td>Number of rows</td><td><input class='co-is' type='text' id='ev-rows' value='${(d.rows ? d.rows : 3)}'></td></tr>	
+				<tr><td>Grid gap</td><td><input class='co-is' type='text' id='ev-gap' value='${(d.gap ? d.gap : 0)}'></td></tr>	
+				<tr><td>Avatar size</td><td><input class='co-is' type='text' id='ev-avs' value='${(d.avSize ? d.avSize : 36)}'></td></tr>	
+				<tr style="vertical-align:top"><td>Video room<br><br></td><td><select id="evVideo" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
+				<tr><td colspan='2'>&nbsp;</td></tr>	
+				<tr><td><div id='evAddFloor' class='co-bs'>Add floor</div></td><td><img id='evDelFloor' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
+				<tr><td colspan='2'><br><hr><br></td></tr>	
+				<tr style="vertical-align:top"><td><b>CURRENT ROOM</b><br><br></td><td><select id="evRoom" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
+				<tr><td>Room color</td><td><input class='co-is' type='color' id='ev-rug' value='${(r.rug ? r.rug : "#ffffff")}' list='palette' style="height:18px"></td></tr>	
+				<tr><td>Room title</td><td><input class='co-is' type='text' id='ev-title' value='${(r.title ? r.title : "")}'></td></tr>	
+				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
+				<tr><td colspan='2'>&nbsp;</td></tr>	
+				<tr><td><div id='evAddRoom' class='co-bs'>Add room</div></td><td><img id='evDelRoom' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
+				</table>
+			
+		</div>
+		<div id="gridHolder" style="display:inline-block;width:calc(100% - 288px)"></div></div>`;
+		$("#venueEditor").html(str.replace(/\t|\n|\r/g,""));
+
+		d.bcol=$("#ev-bcol").val();																			// Bg color
+		d.cols=$("#ev-cols").val();																			// Get columns value
+		d.rows=$("#ev-rows").val();																			// Rows
+		d.gap=$("#ev-gap").val();																			// Gap
+		d.avSize=$("#ev-avs").val();																		// Avatar size 
+		r.rug=$("#ev-rug").val();																			// Room rug
+		r.css=$("#ev-css").val();																			// Room style
+		r.title=$("#ev-title").val();																		// Room title
+		this.DrawVenue();																					// Draw venue grid
+
+		$("#evAddRoom").on("click",()=>{																	// ON ADD ROOM
+			this.curRoom=this.venue[this.curFloor].length;													// Set new current room
+			let o={ cs:1, ce:2, rs:1, re:2, rug:"#cccccc", title:"Change!", floor: this.curFloor, room:this.curRoom };
+			this.venue[this.curFloor].push(o);																// Add room
+			Sound("ding");																					// Ding
+			this.EditVenue();																				// Redraw
+			});
+
+		$("#evAddFloor").on("click",()=>{																	// ON ADD FLOOR
+			this.curFloor=this.venue.length;																// Set new current floor
+			let o=[{ cs:1, ce:2, rs:1, re:2, rug:"#cccccc", title:"Hallway", floor: this.curFloor, room:this.curRoom, params:{ rows:4, cols:4, gap:8 } }];
+			this.venue.push(o);																				// Add floor
+			Sound("ding");																					// Ding
+			this.EditVenue();																				// Redraw
+			});
+
+		$("#evDelRoom").on("click",()=>{																	// ON DELETE ROOM
+			if (!this.curRoom)	PopUp("You can't delete the hallway!");										// Warn
+			else				ConfirmBox("Are you sure?","",()=>{ 										// Ask if sure
+												this.venue[this.curFloor].splice(this.curRoom,1);			// Kill room
+												Sound("delete");											// Delete sound
+												this.EditVenue();											// Redraw
+												});
+			});
+
+		$("#evDelFloor").on("click",()=>{																	// ON DELETE ROOM
+			if (!this.curRoom)	PopUp("You can't delete the first floor!");									// Warn
+			else				ConfirmBox("Are you sure?","",()=>{ 										// Ask if sure
+												this.venue.splice(this.curFloor,1);							// Kill floor
+												Sound("delete");											// Delete sound
+												this.EditVenue();											// Redraw
+												});
+			});
+
+		$("#evFloor").on("change",()=>{	this.curFloor=$("#evFloor").prop("selectedIndex"); 					// On floor change
+										this.EditVenue(); 
+										$("#evVideo").prop("selectedIndex",0);
+										$("#evRoom").prop("selectedIndex",0)
+										});	
+		$("#evRoom").on("change",()=>{	this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();})// On room change
+		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
+		$("[id^=ev-]").on("change",(e)=>{																	// On param change
+			d.bcol=$("#ev-bcol").val();																		// Background color
+			d.cols=$("#ev-cols").val();																		// Get columns value
+			d.rows=$("#ev-rows").val();																		// Rows
+			d.gap=$("#ev-gap").val();																		// Gap
+			d.avSize=$("#ev-avs").val();																	// Avatar size
+			r.rug=$("#ev-rug").val();																		// Room rug
+			r.css=$("#ev-css").val();																		// Room style
+			r.title=$("#ev-title").val();																	// Room title
+			this.DrawVenue();																				// Draw venue grid
+			});
+	}	
+	
+	DrawVenue()																							// DRAW THE VENUE GRID
+	{
+		let i,j,x,y,o,s;
+		let d=this.venue[this.curFloor][0].params;
+		$("#evRoom").empty();																				// Clear room select
+		$("#evFloor").empty();																				// Clear floor select
+		$("#evVideo").empty();																				// Clear floor select
+		for (i=0;i<app.venue.length;++i)																	// For each floor
+			$("#evFloor").append(`<option>${i+1}</option>`);												// Add to select
+		for (i=0;i<app.venue[app.curFloor].length;++i) {													// For each title
+			s=app.venue[app.curFloor][i].title;																// Get title
+			if (s) s=s.match(/^<*(.*?)>*$/)[1];																// Remove bracket, if there
+			$("#evVideo").append(`<option>${s}</option>`);													// Add to select
+			app.venue[app.curFloor][i].room=i;																// Reset room
+			}
+		for (i=0;i<app.venue[app.curFloor].length;++i) {													// For each title
+			s=app.venue[app.curFloor][i].title;																// Get title
+			if (s) s=s.match(/^<*(.*?)>*$/)[1];																// Remove bracket, if there
+			$("#evRoom").append(`<option>${s}</option>`);													// Add to select
+			}
+		$("#evFloor").prop("selectedIndex",this.curFloor);													// Set floor select	
+		$("#evRoom").prop("selectedIndex",this.curRoom);													// Room	
+		$("#evVideo").prop("selectedIndex",d.vRoom);														// Video room
+		let str=`<div id="co-grid" class="co-grid">`;														// Add grid
+		for (i=1;i<=d.rows;++i)																				// For each row
+				for (j=1;j<=d.cols;++j)																		// For each col
+					str+=`<div id="r${j}-${i}" class="co-room"><br>${i}-${j}</div>`;							// Add div
+		str+=`</div>`;
+		$("#gridHolder").html(str.replace(/\t|\n|\r/g,""));													// Add grid
+		$("#co-grid").css("grid-template-columns","repeat("+d.cols+", 1fr)");								// Columns
+		$("#co-grid").css("grid-gap",d.gap+"px");															// Gap
+		$("#co-grid").css("background-color",d.bcol);														// Bg color
+
+		for (i=0;i<app.venue[app.curFloor].length;++i) {													// For each room
+			o=app.venue[app.curFloor][i];																	// Point at it
+			o.cs=o.cs-0; o.rs=o.rs-0; o.rs=o.rs-0; o.re=o.re-0;												// Ints
+			if (o.rs == o.re) o.re++;																		// Expand to at least 1 cell
+			if (o.cs == o.ce) o.ce++;																		// Expand
+			for (y=o.cs;y<o.ce;++y)																			// For each column
+				for (x=o.rs;x<o.re;++x)																		// For each row
+					$(`#r${y}-${x}`).css("background-color",o.rug);											// Set color
+			}
+		
+		this.DrawRoom();																					// Draw room overlay																	
+	}
+
+	DrawRoom()
+	{
+		let r=this.venue[this.curFloor][this.curRoom];														// Get room
+		let p=this.venue[this.curFloor][0].params;															// Get params						
+		let gap=p.gap-0;																					// Get gap							
+		if (r.rs == r.re) r.re++;																			// Expand to at least 1 cell
+		if (r.cs == r.ce) r.ce++;																			// Expand
+
+		let l=290;
+		let t=$("#co-tab").position().top+24;
+		let cw=$("#r1-1").width()+gap-0+2;
+		let ch=$("#r1-1").height()+gap-0+2;
+		let x=l+(r.cs-1)*cw;
+		let y=t+(r.rs-1)*ch;
+		let w=cw*(r.ce-r.cs)-gap-3;
+		let h=ch*(r.re-r.rs)-gap-4;
+		let str=`<div id="co-room" style="text-align:center;color:#fff;border:2px dashed #000;position:absolute;cursor:pointer;background-color:${r.rug};
+		left:${x}px;top:${y}px;width:${w}px;height:${h}px;${r.css ? r.css : ""}"></div>`
+		$("#gridHolder").append(str)
+		$("#co-room").html(r.title);
+		$("#co-room").draggable({	stop:()=>{ setPos(); }, 
+								  	containment:[ l,t+46,8000,8000],
+									grid: [ cw, ch ]
+		 							});
+		$("#co-room").resizable({ stop:()=>{ setPos(); }});
+	
+		function setPos()
+		{
+			let x1=$("#co-room").offset().left-l;
+			let x2=x1+$("#co-room").width();
+			r.cs=Math.max(1,Math.min(Math.floor(x1/cw+1),p.cols-0+1));
+			r.ce=Math.max(1,Math.min(Math.floor(x2/cw+1),p.cols-0+1));
+			let y1=$("#co-room").offset().top-t-24;
+			let y2=y1+$("#co-room").height();
+			r.rs=Math.max(1,Math.min(Math.floor(y1/ch+1),p.rows-0+1));
+			r.re=Math.max(1,Math.min(Math.floor(y2/ch+1),p.rows-0+1));
+			app.DrawVenue();
+		}
+
+	}
+
+} // Class closure
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// CSV
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	function ParseCSV(str) 																// PARSE CSV TO NESTED ARRAYS
+	{	
+		return Papa.parse(str, { header:true, skipEmptyLines:true }).data;					// Parse CSV using lib
+
+		let arr=[],obj=[],i,j,o,row,cc;
+		let quote=false,code=false;  														// True means we're inside a quoted or code field
+		str=str.replace(/[\r]/g,"");														// Kill CRs
+		str=str.replace(/""/g,'"');															// Remove double quotes
+		for (row=col=c=0;c < str.length;c++) {   											// Iterate over each character, keep track of current row and column (of the returned array)
+			cc=str[c]; nc=str[c+1];        													// Current character, next character
+			arr[row]=arr[row] || [];             											// Create a new row if necessary
+			arr[row][col]= arr[row][col] || '';   											// Create a new column (start with empty string) if necessary
+			if ((cc == ",") && (str[c+1] == "\n")) continue;								// Skip last comma in a row
+			if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; } 	// If the cur char is ", and we're inside a quoted field, and the next char is also a ", add a " to the current column and skip the next character
+			else if ((cc == "{") || (cc == "<"))	code=true;								// HTML, XML, or JSON
+			else if (cc == '"') { quote = !quote; 	if (!code)  continue; }        			// If it's just one quotation mark, begin/end quoted field
+			else if (cc == ',' && !quote && !code) { ++col; 	continue; }      			// If it's a comma and we're not in a quoted or code field, move on to the next column
+			else if (cc == '\n' && !quote) { 												// LF
+				++row; col=0; code=false; continue;      									// If it's a newline and we're not in a quoted field, move on to the next row and move to column 0 of that new row
+				}
+			arr[row][col] += cc;        													// Otherwise, append the current character to the current column
+			}
+		let n=arr[0].length;																// Number of fields
+		for (i=1;i<arr.length;++i) {														// For each row
+			o={};																			// Empty object
+			for (j=0;j<n;++j) 	o[arr[0][j]]=arr[i][j] ? arr[i][j].replace(/"$/,"") : "";	// Set val and remove last quote if there
+			obj[i-1]=o;																		// Add row to object
+			}
+		return obj;																			// Return nested arrays
+	}
+
+	function ReadFile(e, id, table) 
+	{
+		let file=e.target.files[0];
+		if (!file) 	return;
+		let reader=new FileReader();
+		reader.readAsText(file);
+		reader.onload=(e)=>{ 
+			let d=ParseCSV(e.target.result);
+			if (table == "venue") { 
+				for (let i=0;i<d.length;++i)
+					if (d[i].params)	
+						d[i].params=JSON.parse(d[i].params);
+				app.EditVenue(d);
+				}
+			else{
+				$("#jsGrid-"+table).jsGrid("option", "data", []);
+				for (let i=0;i<d.length;++i)  $("#jsGrid-"+table).jsGrid("insertItem",d[i])
+				}
+			Sound("ding");																	// Ding
+			};
+	}
+
+	function SaveTextAsFile(file, contents)														// SAVE TEXT TO LOCAL FILE
+	{
+		var textFileAsBlob=new Blob([contents], {type:'text/plain'});
+		var downloadLink=document.createElement("a");
+		downloadLink.download=file;
+		downloadLink.innerHTML="Download File";
+		downloadLink.href=window.URL.createObjectURL(textFileAsBlob);
+	    downloadLink.onclick=()=>{ downloadLink.remove(); };
+		downloadLink.style.display="none";
+		downloadLink.id="tdll";
+		document.body.appendChild(downloadLink);
+		downloadLink.click();
+	}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// HELPERS
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	function GetTextBox(title, content, def, callback, x, y)										// GET TEXT LINE BOX
+	{
+		$("#confirmBoxDiv").remove();																	// Remove 
+		$("body").append("<div class='co-confirm' id='confirmBoxDiv' style='text-align:center'></div>");							// Add box								
+		if (x != undefined)		$("#confirmBoxDiv").css({ left:x+"px", top:y+"px" });					// Position if set
+		let str="<img src='img/logo.png' width='64'/><br>";													// Logo					
+		str+="<p style='font-size:14px; color:#666'><b>"+title+"</b></p>";
+		str+="<p>"+content+"<p>";
+		str+="<p><input class='co-is' style='width:95%' type='text' id='gtBoxTt' value='"+def+"'></p>";
+		str+="<div id='dialogOK' class='co-bs'>OK</div>";
+		str+="<div id='dialogCancel' class='co-bs' style='margin-left:8px;background-color:#999'>Cancel</div></div>";
+		$("#confirmBoxDiv").html(str);																	// Add to div
+		$("#gtBoxTt").focus();																			// Focus on button
+		$("#gtBoxTt").on("change", function() {	callback($("#gtBoxTt").val()); $("#confirmBoxDiv").remove(); });	// ONE ENTER
+		$("#dialogOK").on("click", function() {	callback($("#gtBoxTt").val()); $("#confirmBoxDiv").remove(); });	// ON OK 
+		$("#dialogCancel").on("click", function() {	$("#confirmBoxDiv").remove(); });								// ON CANCEL
+		}
+
+	function ConfirmBox(title, content, callback, callback2)										// CONFIRMATION BOX
+	{
+		Sound("ding");																					// Ding sound
+		$("#confirmBoxDiv").remove();																	// Remove 
+		$("body").append("<div class='co-confirm' id='confirmBoxDiv'></div>");														
+		let str="<img src='img/logo.png' width='64'/><br>";													// Logo					
+		str+="<p style='font-size:14px; color:#666'><b>"+title+"</b></p>";
+		str+="<p>"+content+"<p>";
+		str+="<div style='float:right'><div id='confirmOK' class='co-bs'>OK</div>";
+		str+="<div id='confirmCancel' class='co-bs' style='margin-left:8px;background-color:#999'>Cancel</div></div>";
+		$("#confirmBoxDiv").html(str);	
+	
+		$("#confirmOK").on("click", function() {														// ON OK BUT
+				$("#confirmBoxDiv").remove();															// Remove 
+				if (callback)	callback();																// If callback defined, run it
+				});
+
+		$("#confirmCancel").on("click", function() {													// ON CANCEL BUT
+				$("#confirmBoxDiv").remove();															// Remove 
+				if (callback2)	callback2();															// If callback defined, run it
+				Sound("delete");																		// Delete sound
+				});
+	}
+
+	function Sound(sound, mute)															// PLAY SOUND
+	{
+		var snd=new Audio();																// Init audio object
+		let p=(window.location.host == "localhost") ? "../img/" : "../go/img/";				// Route		
+		if (sound.match(/\.mp3/i))		snd=new Audio(sound)								// If an MP3 file
+		else							snd=new Audio(p+sound+".mp3");						// Use built in mp3
+		if (!mute)	{																		// If not initing or muting	
+			snd.volume=50/100;																// Set volume
+			snd.play();																		// Play it
+			}
+	}
+
+	function PopUp(msg, time, div)														// TIMED POPUP
+	{
+		var str="";
+		$("#popupDiv").remove();															// Kill old one, if any
+		str+="<div id='popupDiv' class='co-popup'>"; 										// Add div
+		if (time == -1) {																	// If has close but
+			time=100000;																	// Increase time
+			str+="<img id='pu-close' src='img/closedot.gif' style='float:right;cursor:pointer'>";	// Add close button
+			}
+		str+=msg+"</div>"; 																	// Add div
+		$(div ? "#"+div : "body").append(str);												// Add popup to div or body
+		$("#pu-close").click(function() { $("#popupDiv").remove(); });						// Remove on click of close but
+		$("#popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500)					// Animate in and out		
+	}
+
+	function trace(msg, p1, p2, p3, p4)									
+	{
+		if (p4 != undefined)
+			console.log(msg,p1,p2,p3,p4);
+		else if (p3 != undefined)
+			console.log(msg,p1,p2,p3);
+		else if (p2 != undefined)
+			console.log(msg,p1,p2);
+		else if (p1 != undefined)
+			console.log(msg,p1);
+		else
+			console.log(msg);
+	}
+
+	function GetCookie(cname) 												// GET COOKIE
+	{
+		let i,c,name=cname+"=";
+		let ca=decodeURIComponent(document.cookie).split(';');					// Get cookie array
+		for (i=0;i<ca.length;i++) {												// For each cookie
+			c=ca[i];
+			while (c.charAt(0) == ' ')	c=c.substring(1);
+			if (c.indexOf(name) == 0) 	return c.substring(name.length, c.length);
+			}
+		return "";
+	}
+
+	function ParseJWT(token)
+	{
+		var base64Url=token.split('.')[1];
+		var base64=base64Url.replace(/-/g, '+').replace(/_/g, '/');
+		var jsonPayload=decodeURIComponent(atob(base64).split('').map(function(c) {
+			return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+			}).join(''));
+		return JSON.parse(jsonPayload);
+	}
+
+</script>
+</body>
+</html>
