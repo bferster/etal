@@ -142,11 +142,12 @@ class App  {
 		this.videoWin=null;																			// Video window
 		this.videoRoom=null;																		// Status of video room
 		this.vr="#co-Rm-0";																			// Assume hallway is video rooom for iframes
+		this.retryWS=false;																			// Reconnecting to web socket
 		this.KZ="";																					// Ks
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
-		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
+		this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };					// ON CLOSE
 		this.ws.onerror=(e)=> { 																	// ON ERROR
 			console.log('error',e);
 			let str=`<h1 style="color:#ff0000">There was a problem joining the meeting!</h1><p style="color:#000;font-size:14px;">
@@ -167,6 +168,14 @@ class App  {
 			};				
 		
 		this.pollTimer= window.setInterval( ()=>{													// Init polling timer
+			if (this.retryWS) {																		// If reconnectng to websocket
+				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
+				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
+				this.ws.onmessage=(e)=>{ this.SocketIn(e); };										// ON INCOMING MESSAGE
+				this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };			// ON CLOSE
+				this.ws.onopen=()=>    { console.log('re-connected'); };							// ON OPEN  
+				this.retryWS=false;																	// Not retrying	
+				}
 			if (this.videoWin && (this.videoWin.closed !== false)) {								// Check if window was closed
 				this.videoWin=null;  																// Null 
 				$("#co-videoBar").remove();															// Remove alert bar
