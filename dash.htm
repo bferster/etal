@@ -88,24 +88,30 @@
 <script>
 
 	let app=null;
-	let isMobile=false;
 
 	$(document).ready(function() {								           							// ON PAGE LOADED
-		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		let url=window.location.search.substring(1);						   						// Get query string
 		url=url ? url : 3;																			// Default meeting if not set
 		$("#co-meetingName").text("MEETING ID: " +url);												// Set title
-		app=new App(url);                                      										// Alloc app
 		$("#co-tab" ).tabs();																		// Init tabs
-		CKEDITOR.on('instanceLoaded', function(e) { e.editor.resize("100%", $("body").height()-54)});	// Resize editor
+		app=new App(url);                                      										// Alloc app
+		CKEDITOR.on('instanceLoaded',(e)=>{ e.editor.resize("100%", $("body").height()-54)});		// Resize editor
 		$("#cancelRichBut").on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
-		$("#saveRichBut").on("click", ()=>{ 
+		$("#saveRichBut").on("click", ()=>{ 														// ON RICH BUT CLINK
 			$("#editorDiv").hide(); 																// Hide rich text editor						
 			let d=$("#jsGrid-schedule").jsGrid("option","data");									// Get data
 			d[app.curRow].content=CKEDITOR.instances.editor1.getData();								// Set new content
 			$("#jsGrid-schedule").jsGrid("option","data",d);										// Put data	
 			});	
-});
+		Login(url);																					// Log in
+		});
+
+	function Login(url)																			// LOG IN
+	{
+		GetTextBox("Login","","",()=>{
+			app.ws.send(`I|bferster@stagetools.com||${app.meetingId}`);					// Send login data to WS
+			});
+	}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UI																							    http://js-grid.com
@@ -167,12 +173,30 @@ class App  {
 		this.curFloor=0;																			// Current floor
 		this.curTable="people";																		// Current db table
 		this.InitSpreadSheets();																	// Init jsGrid
-		this.GetFromServer("people");																// Get people data
-		this.GetFromServer("schedule");																// Schedule
-		this.GetFromServer("venue");																// Venue
+		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
+		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
+		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
+		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
+		this.ws.onerror=(e)=>  { console.log('error',e);	};										// ON ERROR
+		this.ws.onopen=()=> { 																		// ON OPEN
+			app.ws.send(`P|${app.meetingId}`);														// Request people data	
+			app.ws.send(`V|${app.meetingId}`);														// Venue 
+			app.ws.send(`S|${app.meetingId}`);														// Schedule
+			console.log('connected'); 
+			}
 	}
 
-	InitSpreadSheets()
+	SocketIn(event)																				// A WEBSOCKET MESSAGE
+	{
+		let msg=event.data;																			// Get message
+		let v=event.data.split("|");																// Split message
+		if (v[0] == "P") 		this.SetTableData("people",JSON.parse(v[1]));						// Set people
+		else if (v[0] == "S") 	this.SetTableData("schedule",JSON.parse(v[1]));						// Schedule
+		else if (v[0] == "V") 	this.SetTableData("venue",JSON.parse(v[1]));						// Venue
+		else if (v[0] == "I") 	trace(v[1]);						
+	}
+
+	InitSpreadSheets()																			// INIT JSGRID
 	{
 		var RichTextEdit = function(config) { jsGrid.Field.call(this, config); };
  		RichTextEdit.prototype = new jsGrid.Field({ align: "center",       
@@ -226,12 +250,16 @@ class App  {
 		$("#jsGrid-schedule").css("padding",0)		
 	}
 
-	RichEdit(row)																						// USE RICH TEXT EDITOR
+	RichEdit(row)																						// SHOW RICH TEXT EDITOR
 	{
 		$("#editorDiv").show();																				// Show editor
 		let d=$("#jsGrid-schedule").jsGrid("option","data");												// Point at table	
 		CKEDITOR.instances.editor1.setData(d[this.curRow].content);											// Set editor
 	}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DATA
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	GDriveLoad(id, table) 																				// LOAD SHEET FROM GOOGLE DRIVE
 	{
@@ -239,11 +267,11 @@ class App  {
 		if (id && id[1]) id=id[1];																			// Point to it
 		var str="https://spreadsheets.google.com/feeds/cells/"+id+"/1/public/values?alt=json";				// Make url
 		$.ajax( { url:str, dataType:'jsonp' }).done((data)=>{												// Get data			
-			this.InitFromJSON(data.feed.entry, table);										
+			this.InitFromJSON(data.feed.entry, table);														// Cells -> JSON								
 			}).fail((msg)=> { Sound("delete");																// Delete sound
 				PopUp("<p style='color:#990000'><b>Couldn't load Google Doc!</b></p>Make sure that it is<br><b>\"Published to web\"</b><br> in Google",5000); // Popup warning
 				});		
-		}
+	}
 
 	InitFromJSON(cells, table)																			// INIT APP DATA FROM GDOCS JSON FILE
 	{
@@ -264,10 +292,9 @@ class App  {
 			}
 		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
 		for (i=0;i<d.length;++i) {																			// For each row
-			if (table == "venue")  {				if (d[i].params)d[i].params=JSON.parse(d[i].params);}		// Objectify if venue params
+			if (table == "venue")  { if (d[i].params)d[i].params=JSON.parse(d[i].params); }					// Objectify if venue params
 			else if (d[i].email || d[i].room)	$("#jsGrid-"+table).jsGrid("insertItem",d[i]);				// Add line to grid
 			}
-		
 		app[table]=d;																						// Copy to app obj
 		if (table == "venue") app.EditVenue(d);																// Redraw table with new data	
 		Sound("ding");																						// Ding
@@ -308,28 +335,55 @@ class App  {
 
 	StartMeeting()																						// START MEETING
 	{
-		let i,params;
-		let d=$("#jsGrid-people").jsGrid("option","data");													// Get data
-		for (i=0;i<d.length;++i) {																			// For each person
-			params={ TableName: "people", Key: { id:this.meetingId+"~"+i },									// Make up params
-				UpdateExpression: "set stats = :q",	ExpressionAttributeValues:{ ":q":"Q"} };								
-				this.doc.update(params, (err, data)=> {														// Write to server
-				if (err) 	{ console.error("Unable to write data: ", JSON.stringify(err, null, 2)); }		// If error
-				else 	 	{ console.log("started")};														// Success
-				});
-			}
+		app.ws.send(`>|${this.meetingId}`);																	// Seend start
 		Sound("ding");																						// Ding
 	}
 		
-	GetFromServer(table)																			// LOAD FROM SERVER
-	{
-		Sound("ding");																					// Ding
+	GetFromServer(table)                                                                           	 	// LOAD FROM SERVER
+    {
+		if (table == "people") 		app.ws.send(`P|${this.meetingId}`);										// Request people data	
+		if (table == "schedule") 	app.ws.send(`S|${this.meetingId}`);										// Schedule
+		if (table == "venue") 		app.ws.send(`V|${this.meetingId}`);										// Venue
 	}
 
-	SaveToServer(table)																				// SEND TO SERVER
+	SetTableData(table, data)																			// SET TABLE DATA
 	{
-		Sound("ding");																					// Ding
+		let i,j,k,o,oo;
+		if (table == "venue") { 																			// Venue
+			this.EditVenue(data);                                                             				// Make up editor
+			return;                                                                                			// Quit
+			}
+		this[table]=data;																					// Copy data
+		let fields=this[table.charAt(0)+"Fields"];															// Point at fields
+		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
+		for (i=0;i<this[table].length;++i) {																// For each person
+			o=this[table][i];																				// Point at them
+			oo={};																							// Clear grid line
+			for (j=0;j<fields.length-1;++j) {																// For each grid field
+				k=fields[j].name;																			// Get field name
+				oo[k]=o[k];																					// Copy value
+				}
+			$("#jsGrid-"+table).jsGrid("insertItem",oo);													// Add line to grid
+			}  
+		Sound("ding");																						// Ding
 	}
+
+	SaveToServer(table)																					// SEND TO SERVER
+	{
+		let i,j,d=[];
+        if (table == "venue") {																				// Flatten venue into room list
+            for (i=0;i<this.venue.length;++i)																// For each floor
+                for (j=0;j<this.venue[i].length;++j)														// For each room in floor
+                    d.push(this.venue[i][j]);																// Add to array
+            }
+        else d=$("#jsGrid-"+table).jsGrid("option","data");                                                 // Get data from spreadsheet
+		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${JSON.stringify(d)}`);			// Write to DB table
+		Sound("ding");																						// Ding
+	}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// VENUE
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	EditVenue(data)																						// MAKE VENUE EDITOR
 	{
