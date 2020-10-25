@@ -15,8 +15,27 @@ class Schedule  {
 			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))			
 				return this.schedule[i];														// Return room event
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
-	}
+			}
 
+/*MakeRoomPaths()
+	{
+		let i,f,o;
+		let _this=this;
+		for (i=0;i<app.venue[0].length;++i)														// For each room on ground floor,
+			addPath(0,i);										 								// Then recurse
+
+			function addPath(floor, room) {
+			let i;
+			app.venue[floor][room].path="";
+			for (i=0;i<_this.schedule.length;++i) {												// For each event
+				o=_this.schedule[i];															// Point at it
+				if (o.link && o.link.match(/floor-/i)) {										// A link to a floor
+					if (o.floor >= app.venue.length)	continue;								// Not a valid floor											
+					app.venue[floor][room].path+=o.link.split("-")[1];							// Add floor
+					}		
+				}
+			}
+*/
 	GoToRoom(floor, room)																	// ENTER A ROOM DIRECTLY
 	{
 		app.CloseAll(3);																		// Close video windows
@@ -162,7 +181,7 @@ class Schedule  {
 			width:${$(app.vr).width()-1}px; height:${($(app.vr).width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
-			<iframe style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
+			<iframe id="co-iframeFrame" style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
 			
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
