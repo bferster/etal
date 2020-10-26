@@ -118,6 +118,7 @@
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s)});	// Broadcast
 				}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
+				app.sced.GetTime(app.sced.now);
 				}
 			});
 	});	
@@ -167,7 +168,10 @@ class App  {
 			console.log('connected');  
 			};				
 		
+		this.secs=0;	
 		this.pollTimer= window.setInterval( ()=>{													// Init polling timer
+			++this.secs;																			// Another second 
+			if ((this.secs%60) == 0) this.sced.now++;												// Advance minute count
 			if (this.retryWS) {																		// If reconnectng to websocket
 				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -358,10 +362,10 @@ class App  {
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at stats
 			if (o.stats.charAt(0) == "R") 	rms[o.stats.substr(1)].push(i);							// If in a room, add person to it
-			if (o.f != this.curFloor) {																// At ET
-				if (!ets[o.f]) ets[o.f]=[];															// No one there yet
-				ets[o.f].push(i);																	// Add et to floor array
-				}
+//			if (o.f != this.curFloor) {																// At ET
+//				if (!ets[o.f]) ets[o.f]=[];															// No one there yet
+//				ets[o.f].push(i);																	// Add et to floor array
+//				}
 			}
 		for (j=1;j<rms.length;++j) {																// For each room
 			ox=$("#co-Rm-"+j).offset().left+4;														// Left side

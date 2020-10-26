@@ -2,12 +2,32 @@ class Schedule  {
 
 	constructor()   																		// CONSTRUCTOR
 	{
-		this.meetingStart=new Date();																// Meeting start
-		this.now=0;																					// Now for meeting
-		this.schedule=[];																			// Holds schedule
-		this.curZoom="";																			// Current zoom link
+		this.meetingStart=new Date();															// Meeting start
+		this.now=0;																				// Now for meeting
+		this.schedule=[];																		// Holds schedule
+		this.curZoom="";																		// Current zoom link
 	}
-	
+
+	GetDate(time, format="Mon Day, Year")													// GET FORMATTED DATE
+	{
+		let str;
+		let mos=["January","February","March","April","May","June","July","August","September","October","November","December"];
+		let d=new Date(this.meetingStart.getTime()+time*60000);									// Get elapsed time
+		var year=d.getFullYear();																// Get year
+		if (format == "Mo/Day/Year") 															// 1/1/2020
+			str=(d.getMonth()+1)+"/"+d.getDate()+"/"+year;										// Set it
+		else if (format == "Mon Day, Year") 													// Jan 1, 2020
+			str=mos[d.getMonth()]+" "+d.getDate()+", "+year;									// Set it
+		return str;																				// Return formatted date
+	}
+
+	GetTime(time)																			// GET FORMATTED TIME
+	{
+		let d=new Date(this.meetingStart.getTime()+time*60000);									// Get elapsed time
+		let t=d.toLocaleTimeString({}, {hour12:true,hour:'numeric', minute:'numeric', seconds:'none'});
+		return t;																				// Return time
+	}
+
 	GeEventByRoom(floor, room)																// GET EVENT FOR A ROOM
 	{
 		let i;
@@ -15,7 +35,8 @@ class Schedule  {
 			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))			
 				return this.schedule[i];														// Return room event
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
-			}
+	}
+
 	GoToRoom(floor, room)																	// ENTER A ROOM DIRECTLY
 	{
 		app.CloseAll(3);																		// Close video windows
@@ -25,9 +46,9 @@ class Schedule  {
 			}
 		app.OnMeMove(app.bx/2,app.by/2,"co-Rm-"+room);											// Join room	
 		app.ArrangePeople();																	// Reaarange the people
-		}
+	}
 
-	ShowSchedule()																				// SHOW EVENT SCHEDULE
+	ShowSchedule()																			// SHOW EVENT SCHEDULE
 	{
 		let i,j=0,r,s,sc;
 		let mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
