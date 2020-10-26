@@ -355,8 +355,7 @@ class App  {
 			}
 		this[table]=[]
 		this[table]=data;																					// Copy data
-		trace("load",data)
-
+	
 		let fields=this[table.charAt(0)+"Fields"];															// Point at fields
 		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
 		for (i=0;i<data.length;++i) {																		// For each row
@@ -428,6 +427,7 @@ class App  {
 				<tr><td>Room color</td><td><input class='co-is' type='color' id='ev-rug' value='${(r.rug ? r.rug : "#ffffff")}' list='palette' style="height:18px"></td></tr>	
 				<tr><td>Room title</td><td><input class='co-is' type='text' id='ev-title' value='${(r.title ? r.title : "")}'></td></tr>	
 				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
+				<tr><td>Children</td><td><input class='co-is' type='text' id='ev-por' value='${(r.portal ? r.portal : "")}'></td></tr>	
 				<tr><td colspan='2'>&nbsp;</td></tr>	
 				<tr><td><div id='evAddRoom' class='co-bs'>Add room</div></td><td><img id='evDelRoom' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
 				</table>
@@ -441,6 +441,7 @@ class App  {
 		d.rows=$("#ev-rows").val();																			// Rows
 		d.gap=$("#ev-gap").val();																			// Gap
 		d.avSize=$("#ev-avs").val();																		// Avatar size 
+		r.portal=$("#ev-por").val();																	// Portal
 		r.rug=$("#ev-rug").val();																			// Room rug
 		r.css=$("#ev-css").val();																			// Room style
 		r.title=$("#ev-title").val();																		// Room title
@@ -493,6 +494,7 @@ class App  {
 			d.rows=$("#ev-rows").val();																		// Rows
 			d.gap=$("#ev-gap").val();																		// Gap
 			d.avSize=$("#ev-avs").val();																	// Avatar size
+			r.portal=$("#ev-por").val();																	// Portal
 			r.rug=$("#ev-rug").val();																		// Room rug
 			r.css=$("#ev-css").val();																		// Room style
 			r.title=$("#ev-title").val();																	// Room title
@@ -526,7 +528,7 @@ class App  {
 		let str=`<div id="co-grid" class="co-grid">`;														// Add grid
 		for (i=1;i<=d.rows;++i)																				// For each row
 				for (j=1;j<=d.cols;++j)																		// For each col
-					str+=`<div id="r${j}-${i}" class="co-room"><br>${i}-${j}</div>`;							// Add div
+					str+=`<div id="co-r${j}-${i}" class="co-room"><br>${i}-${j}</div>`;							// Add div
 		str+=`</div>`;
 		$("#gridHolder").html(str.replace(/\t|\n|\r/g,""));													// Add grid
 		$("#co-grid").css("grid-template-columns","repeat("+d.cols+", 1fr)");								// Columns
@@ -540,8 +542,21 @@ class App  {
 			if (o.cs == o.ce) o.ce++;																		// Expand
 			for (y=o.cs;y<o.ce;++y)																			// For each column
 				for (x=o.rs;x<o.re;++x)																		// For each row
-					$(`#r${y}-${x}`).css("background-color",o.rug);											// Set color
+					$(`#co-r${y}-${x}`).css("background-color",o.rug);										// Set color
 			}
+	
+		$("[id^=co-r]").on("click",(e)=>{																	// ON ROOM CLICK
+			let v=e.currentTarget.id.substr(4).split("-");													// Ger col/row
+			for (i=0;i<app.venue[app.curFloor].length;++i) {												// For each room
+				o=app.venue[app.curFloor][i];																// Point at it
+				trace(v)
+				if ((v[0] >= o.cs) && (v[0] < o.ce) && (v[1] >= o.rs) && (v[1] < o.re)) {					// In room
+					trace(i)
+					this.curRoom=i;																			// Set room
+					this.EditVenue();																		// Redraw
+					}												
+				}
+			});
 		
 		this.DrawRoom();																					// Draw room overlay																	
 	}
@@ -556,8 +571,8 @@ class App  {
 
 		let l=290;
 		let t=$("#co-tab").position().top+24;
-		let cw=$("#r1-1").width()+gap-0+2;
-		let ch=$("#r1-1").height()+gap-0+2;
+		let cw=$("#co-r1-1").width()+gap-0+2;
+		let ch=$("#co-r1-1").height()+gap-0+2;
 		let x=l+(r.cs-1)*cw;
 		let y=t+(r.rs-1)*ch;
 		let w=cw*(r.ce-r.cs)-gap-3;
