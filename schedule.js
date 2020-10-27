@@ -2,17 +2,18 @@ class Schedule  {
 
 	constructor()   																		// CONSTRUCTOR
 	{
-		this.meetingStart=new Date();															// Meeting start
+		this.meetingStart="";																	// Meeting start
 		this.now=0;																				// Now for meeting
 		this.schedule=[];																		// Holds schedule
 		this.curZoom="";																		// Current zoom link
+		this.timeZone="";																		// Time zone
 	}
 
 	GetDate(time, format="Mon Day, Year")													// GET FORMATTED DATE
 	{
 		let str;
 		let mos=["January","February","March","April","May","June","July","August","September","October","November","December"];
-		let d=new Date(this.meetingStart.getTime()+time*60000);									// Get elapsed time
+		let d=new Date(time);																	// Get date
 		var year=d.getFullYear();																// Get year
 		if (format == "Mo/Day/Year") 															// 1/1/2020
 			str=(d.getMonth()+1)+"/"+d.getDate()+"/"+year;										// Set it
@@ -23,8 +24,10 @@ class Schedule  {
 
 	GetTime(time)																			// GET FORMATTED TIME
 	{
-		let d=new Date(this.meetingStart.getTime()+time*60000);									// Get elapsed time
-		let t=d.toLocaleTimeString({}, {hour12:true,hour:'numeric', minute:'numeric', seconds:'none'});
+		time=time.split(":");																	// Hours/minutes
+		let t=(time[0] > 12) ? time[0]%12 : time[0];											// Set 12 hour time
+		t+=":"+time[1]+" ";																		// Add minutes
+		t+=(time[0] > 12) ? "PM" : "AM";														// AM/PM
 		return t;																				// Return time
 	}
 
@@ -35,6 +38,12 @@ class Schedule  {
 			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))			
 				return this.schedule[i];														// Return room event
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
+	}
+
+	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
+	{
+		let d=new Date();																		// Get now
+		d=Math.ceil((d-this.meetingStart)/60000);												// Minutes from conference start
 	}
 
 	GoToRoom(floor, room)																	// ENTER A ROOM DIRECTLY
@@ -50,31 +59,47 @@ class Schedule  {
 
 	ShowSchedule()																			// SHOW EVENT SCHEDULE
 	{
-		let i,j=0,r,s,sc;
-		let mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
-		let days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+		let i,j,s,sc;
 		app.CloseAll();																			// Close all open dialogs
 		let str=`<div id="co-sched" class="co-sched" style=";
 			left:${$(app.vr).offset().left}px;top:0;
 			width:${$(app.vr).width()-48}px; height:${$(app.vr).height()-48}px">
-			<b style="'font-size:30px">Event schedule</b>
+			<span style="font-size:18px">EVENT SCHEDULE</span>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-sched').remove()"><br><br>
 			<div style="height:calc(100% - 48px);width:100%;overflow-y:auto;text-align:left">`;
-			str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
-				${days[this.meetingStart.getDay()]}, ${mons[this.meetingStart.getMonth()]} ${this.meetingStart.getDate()}</div><br><b>`
-			str+=this.schedule[0].start+" to "+this.schedule[0].end+"</b><table style='width:100%'>";
-			for (i=1;i<this.schedule.length;++i) {													// For each event
-				sc=this.schedule[i];																// Point at schedule
-				if (!sc.desc)	continue;															// Skip those with no desc
-				r=this.schedule[i].room;															// Point at rooom
-				s=app.venue[sc.floor][r].title+(sc.parent ? " in "+sc.parent : "");					// Event location
-				str+=`<tr style="vertical-align:top;cursor:pointer">
-				<td style="margin-left:16px"><input type="checkbox" id="co-Sc-${i}" ${sc.going ? " checked" : ""}></td>
-				<td onclick="app.sced.GoToRoom(${sc.floor},${sc.room})" style="cursor:pointer">${sc.desc}</td>
+		let days=[];
+		for (i=0;i<this.schedule.length;++i) {														// For each event
+			sc=this.schedule[i];																	// Point at schedule
+			sc.stn=sc.start.split(":")[0]*60+(sc.start.split(":")[1]-1);							// As minutes
+			if (days[sc.day] == undefined) days[sc.day]=[];											// A new day													
+			days[sc.day].push(sc);																	// Add event to day		
+			}
+		for (j in days) {																			// For each day
+			if (!days[j].length)	continue;														// Skip if no events
+			days[j].sort((a,b)=>{ return (a.stn > b.stn) ? 1 : -1 });								// Sort by minutes
+			if (j == "*") str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
+				Open all day</div><br>`
+			else str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
+				${this.GetDate(this.meetingStart)}${this.timeZone ? " - "+this.timeZone : ""}</div>`;
+			str+="<table style='width:100%'>";														// Add table of events
+			s="";
+			for (i=0;i<days[j].length;++i) {														// For each event that day
+				sc=days[j][i];																		// Point at day's event
+				if (sc.day != j)	continue;														// Not this day
+				if (!sc.desc)		continue;														// No text
+				if ((sc.stn != s) && (j != "*")) {													// New timeslot
+					str+=`<tr><td colspan='3'><b>${this.GetTime(sc.start)}</b></td></tr>`;  		// Add time
+					s=sc.stn;																		// Now is then
+					}
+				str+=`<tr style="vertical-align:top;cursor:pointer">`
+				if (j != "*") str+=`<td style="width:30px">&nbsp;&nbsp;<input type="checkbox" id="co-Sc-${i}" ${sc.going ? " checked" : ""}></td>`;
+				str+=`<td onclick="app.sced.GoToRoom(${sc.floor},${sc.room})" style="cursor:pointer">${sc.desc}</td>
 				<td onclick="app.sced.GoToRoom(${sc.floor},${sc.room})"
-				style="text-align:right;cursor:pointer;font-weight:bold;color:${app.venue[sc.floor][r].rug}">${s}</td></tr>`
+				style="text-align:right;cursor:pointer;font-weight:bold;color:${app.venue[sc.floor][sc.room].rug}">${app.venue[sc.floor][sc.room].title}</td></tr>`;
 				}
-		str+="</table></div></div>";
+			str+="</table><br>";																	// Close table
+			}
+		str+="</div></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Add schedule
 		
 		$("#co-sched").show("slide",{ direction:"down" });											// Slide up

@@ -224,13 +224,13 @@ class App  {
 			{ name:"stats", type:"text",width:50 },
 			{ type: "control" }];
 
-		this.sFields=[{ name:"floor", type:"text", width:30, validate:"required"},
-			{ name:"room", type:"text", width:30, validate:"required"},
-			{ name:"parent", type:"text", width:70 },
-			{ name:"start", type:"text", width:70, validate:"required"},
+		this.sFields=[	{ name:"day", type:"text", width:30, validate:"required"},
+			{ name:"start", type:"text", width:80, validate:"required"},
 			{ name:"end", type:"text", width:80, validate:"required"},
-			{ name:"bar", type:"text", width:30 },
 			{ name:"desc", type:"text",width:150 },
+			{ name:"floor", type:"text", width:30, validate:"required"},
+			{ name:"room", type:"text", width:30, validate:"required"},
+			{ name:"bar", type:"text", width:30 },
 			{ name:"link", type:"text",width:250 },
 			{ name:"content", type:"rich", width:150},
 			{ type: "control" }];
