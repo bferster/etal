@@ -171,7 +171,7 @@ class App  {
 		this.secs=0;	
 		this.pollTimer= window.setInterval( ()=>{													// Init polling timer
 			++this.secs;																			// Another second 
-			if ((this.secs%6) == 0) {																// On every minute
+			if ((this.secs%60) == 0) {																// On every minute
 				this.ArrangePeople();																// Arrange people
 				this.sced.CheckSchedule();															// Check the schedule
 				}
@@ -198,6 +198,7 @@ class App  {
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
 		let vr=$(app.vr).offset();																	// Point at video room box
 		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()-1+"px",height:$(this.vr).width()*.5625+"px" });
+		this.DrawVenue();
 		this.CloseAll();                                                                         	// Close open windows
         this.ArrangePeople();                                                                       // Arrange people               
 	}
@@ -502,7 +503,7 @@ class App  {
 		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
 		
 		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*this.bx; // Size of hall
-		let menu=`<div style="position:absolute;top:calc(100vh - ${60}px - var(--mobileOff));width:${w}px">
+		let menu=`<div style="position:absolute;top:calc(100% - ${60}px - var(--mobileOff));width:${w}px">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
 			<img id="co-coffee-${this.curFloor}-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			

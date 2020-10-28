@@ -705,18 +705,18 @@ class App  {
 		$("body").append("<div class='co-confirm' id='confirmBoxDiv'></div>")							// Add box								
 		let str=`<img src='img/logo.png' width='64'/>														
 		<span style='font-size:16px;float:right'><b>LOG IN</b></span><br><br><table>
-		<tr><td>Email</td><td><input class='co-is' type='text' id='gtBoxEm'></td></tr>
-		<tr><td>Password</td><td><input class='co-is' type='password' id='gtBoxPw'></td></tr>
+		<tr><td>Email</td><td><input class='co-is' type='text' id='username' name='username'></td></tr>
+		<tr><td>Password</td><td><input class='co-is' type='password' id='password' name='password'></td></tr>
 		<tr><td>Meeting Id &nbsp; </td><td><input class='co-is' type='text' id='gtBoxId'></td></tr>
 		</table><br><div id='dialogOK' class='co-bs'>Log in</div>`;
 
 		$("#confirmBoxDiv").html(str);																	// Add to div
 		$("#gtBoxId").on("change", ()=>{																// ON ENTER ID
-			callback($("#gtBoxEm").val(),$("#gtBoxPw").val(),$("#gtBoxId").val());						// Send data back
+			callback($("#username").val(),$("#password").val(),$("#gtBoxId").val());					// Send data back
 			$("#confirmBoxDiv").remove(); 																// Kill dialog
 			});	 
 		$("#dialogOK").on("click", ()=>{																// ON OK
-			callback($("#gtBoxEm").val(),$("#gtBoxPw").val(),$("#gtBoxId").val());						// Send data back
+			callback($("#username").val(),$("#password").val(),$("#gtBoxId").val());					// Send data back
 			$("#confirmBoxDiv").remove(); 																// Kill dialog
 			});	 
 	}
