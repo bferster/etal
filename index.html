@@ -20,7 +20,7 @@
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-repeat:repeat; border-radius:0px; font-size:18px; color:#fff; }
-	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; }
+	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; pointer-events:none; }
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none; -webkit-user-select:none; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; user-select:none; -webkit-user-select:none; }
@@ -456,8 +456,11 @@ class App  {
 	{
 		let i,o;
 		this.venue=[];
+		for (i=0;i<ven.length;++i) if (ven[i].floor == 2) trace(ven[i])
+return;	
 		ven.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });										// Sort by floor
-		for (i=0;i<ven.length;++i) {																	// For each room
+	
+for (i=0;i<ven.length;++i) {																	// For each room
 			o=ven[i];																					// Point at room
 			if (!this.venue[o.floor])	this.venue[o.floor]=[];											// Create new array if empty
 			this.venue[o.floor].push(o);																// Add room to floor	
