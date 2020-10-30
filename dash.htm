@@ -102,7 +102,18 @@
 			d[app.curRow].content=CKEDITOR.instances.editor1.getData();								// Set new content
 			$("#jsGrid-schedule").jsGrid("option","data",d);										// Put data	
 			});	
+	
+		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
+			if ((e.which == 85) && e.altKey && e.ctrlKey) {											// Update key (Ctrl+Alt+U)
+				app.GDriveLoad(GetCookie(`${app.meetingId}-${app.curTable}-gdoc`), app.curTable,true); 	// Load table from gdocs and send to server
+				}
+			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
+				}
+			});
 		});
+
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UI																							    http://js-grid.com
@@ -125,6 +136,9 @@
 												});
 		$(this).prop("selectedIndex",0);															// Clear
 		});
+
+
+
 
 	$("[id^=co-save]").on("change", function(e) {													// ON SAVE
 		let i=$(this).prop("selectedIndex");														// Get option
@@ -261,13 +275,14 @@ class App  {
 // DATA
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	GDriveLoad(id, table) 																				// LOAD SHEET FROM GOOGLE DRIVE
+	GDriveLoad(id, table, autoUpdate) 																	// LOAD SHEET FROM GOOGLE DRIVE
 	{
 		id=id.match(/d\/(.*)\//);																			// Extract id
 		if (id && id[1]) id=id[1];																			// Point to it
 		var str="https://spreadsheets.google.com/feeds/cells/"+id+"/1/public/values?alt=json";				// Make url
 		$.ajax( { url:str, dataType:'jsonp' }).done((data)=>{												// Get data			
 			this.InitFromJSON(data.feed.entry, table);														// Cells -> JSON								
+			if (autoUpdate) this.SaveToServer(table);														// Save to server?
 			}).fail((msg)=> { Sound("delete");																// Delete sound
 				PopUp("<p style='color:#990000'><b>Couldn't load Google Doc!</b></p>Make sure that it is<br><b>\"Published to web\"</b><br> in Google",5000); // Popup warning
 				});		
@@ -379,8 +394,6 @@ class App  {
                     d.push(this.venue[i][j]);																// Add to array
             }
         else d=$("#jsGrid-"+table).jsGrid("option","data");                                                 // Get data from spreadsheet
-		trace("save",d)
-		
 		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${JSON.stringify(d)}`);			// Write to DB table
 		Sound("ding");																						// Ding
 	}

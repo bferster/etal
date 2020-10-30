@@ -201,6 +201,10 @@ class Schedule  {
 				this.ShowLink(str);																	// Open with native app							
 				return;																				// Quit
 				}
+			if (link.charAt(0) == "*") {															// Show a web page
+				window.open(link.substr(1),"_blank");												// Open in new tab
+				return;																				// Quit
+				}
 			if (link && link.match(/zapp/i)) link+="&"+app.KZ										// If zoom app, add k
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;

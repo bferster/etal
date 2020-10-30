@@ -198,7 +198,6 @@ class App  {
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
 		let vr=$(app.vr).offset();																	// Point at video room box
 		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()-1+"px",height:$(this.vr).width()*.5625+"px" });
-		this.DrawVenue();
 		this.CloseAll();                                                                         	// Close open windows
         this.ArrangePeople();                                                                       // Arrange people               
 	}
@@ -412,8 +411,8 @@ class App  {
         $("#co-card").remove();     																// Card                                                                
         $("#co-sched").remove();   																	// Schedule                                                                 
         $("#co-people").remove();        															// People                                                           
-		let src=$("#co-iframeFrame").prop("src");													// Get iframe link		
-		if (src && !src.match(/~coffee/i))	mask=3;													// If an open iframe (not coffee) close it
+//		let src=$("#co-iframeFrame").prop("src");													// Get iframe link		
+//		if (src && !src.match(/~coffee/i))	mask=3;													// If an open iframe (not coffee) close it
 		if (mask&1)	$("#co-iframe").remove();														// Remove iframe if flag set                                                                   
 		if (mask&2 && this.videoWin)  this.videoWin.close();										// Close open video window
 		else if (this.videoWin)		  this.videoWin.focus();										// Put it on front
@@ -502,8 +501,7 @@ class App  {
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
 		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
 		
-		let w=(this.venue[this.curFloor][0].ce-this.venue[this.curFloor][0].cs)/this.venue[this.curFloor][0].params.cols*this.bx; // Size of hall
-		let menu=`<div style="position:absolute;top:calc(100% - ${60}px - var(--mobileOff));width:${w}px">
+		let menu=`<div style="position:absolute;top:calc(100% - ${60}px - var(--mobileOff));width:100%">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;position:absolute;left;left:8px;bottom:4px">
 			<img id="co-coffee-${this.curFloor}-0" style="position:absolute;left:calc(50% - 100px);top:2px;width:200px" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
@@ -531,7 +529,7 @@ class App  {
 			if (o.title && i) str+=`<div class="co-roomHdr">${o.title }</div>`;							// Add title to non-hallways
 			str+=sc.content ? "<div style='pointer-events:none'>"+sc.content+"</div>" : "";	 // Add content if any, wrapped in no-event div
 			if (!i && (this.curFloor == 0))	str+=menu;													// Add menu to hallwaton first floor
-           	if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px;z-index:4" src="img/coffeecup.png">`;
+           	if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            	if (sc.live > 0)    		str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
            	str+="</div></div>";		
 			}
