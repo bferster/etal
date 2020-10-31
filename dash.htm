@@ -562,9 +562,7 @@ class App  {
 			let v=e.currentTarget.id.substr(4).split("-");													// Ger col/row
 			for (i=0;i<app.venue[app.curFloor].length;++i) {												// For each room
 				o=app.venue[app.curFloor][i];																// Point at it
-				trace(v)
 				if ((v[0] >= o.cs) && (v[0] < o.ce) && (v[1] >= o.rs) && (v[1] < o.re)) {					// In room
-					trace(i)
 					this.curRoom=i;																			// Set room
 					this.EditVenue();																		// Redraw
 					}												
@@ -722,8 +720,14 @@ class App  {
 		<tr><td>Password</td><td><input class='co-is' type='password' id='password' name='password'></td></tr>
 		<tr><td>Meeting Id &nbsp; </td><td><input class='co-is' type='text' id='gtBoxId'></td></tr>
 		</table><br><div id='dialogOK' class='co-bs'>Log in</div>`;
-
 		$("#confirmBoxDiv").html(str);																	// Add to div
+		if (window.location.host == "localhost") callback=function() {									// Local callback
+			app.meetingId=window.location.search.substring(1); 											// Set id
+			$("#co-meetingName").text("MEETING ID: " +app.meetingId);									// Set title
+			app.ws.send(`P|${app.meetingId}`);															// Request people data	
+			app.ws.send(`V|${app.meetingId}`);															// Venue 
+			app.ws.send(`S|${app.meetingId}`);															// Schedule
+			}
 		$("#gtBoxId").on("change", ()=>{																// ON ENTER ID
 			callback($("#username").val(),$("#password").val(),$("#gtBoxId").val());					// Send data back
 			$("#confirmBoxDiv").remove(); 																// Kill dialog
@@ -761,9 +765,8 @@ class App  {
 	function Sound(sound, mute)															// PLAY SOUND
 	{
 		var snd=new Audio();																// Init audio object
-		let p=(window.location.host == "localhost") ? "../img/" : "../go/img/";				// Route		
 		if (sound.match(/\.mp3/i))		snd=new Audio(sound)								// If an MP3 file
-		else							snd=new Audio(p+sound+".mp3");						// Use built in mp3
+		else							snd=new Audio("img/"+sound+".mp3");					// Use built in mp3
 		if (!mute)	{																		// If not initing or muting	
 			snd.volume=50/100;																// Set volume
 			snd.play();																		// Play it
