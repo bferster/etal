@@ -60,7 +60,6 @@ class Schedule  {
 	ShowSchedule()																			// SHOW EVENT SCHEDULE
 	{
 		let i,j,s,sc;
-		app.CloseAll();																			// Close all open dialogs
 		let str=`<div id="co-sched" class="co-sched" style=";
 			left:${$(app.vr).offset().left}px;top:0;
 			width:${$(app.vr).width()-48}px; height:${$(app.vr).height()-48}px">
@@ -112,7 +111,6 @@ class Schedule  {
 	ShowAttendees()																				// SHOW THE ATTENDEES
 	{
 		let i,selects=[];
-		app.CloseAll();																				// Close all open dialogs
 		app.chat.curChat=-1;																		// Not chatting with anyone
 		let x=$("#co-attendees").offset().left-133;													// Left
 		let y=$("#co-attendees").offset().top-50-app.by/2											// Top
@@ -176,7 +174,7 @@ class Schedule  {
 
 	ShowLink(link)																				// SHOW LINK
 	{
-		app.CloseAll(3);																			// Close all open dialogs except video/iframes
+		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		$("#co-videoBar").remove();																	// Remove video bar
 		if (link && link.match(/zoom/i)) {															// If Zoom
 			this.curZoom=link;																		// Save link

@@ -16,7 +16,7 @@ class Chat  {
 	ShowQueue()																					// SHOW QUEUE DOT
 	{
 		let i,flip=false;
-		app.CloseAll();																			// Close all open dialogs
+        $("#co-card").remove();     																// Card                                                                
 		this.curChat=-1;																			// Not chatting with anyone
 		let x=$("#co-AvMe").css("left").replace("px","")-150+avSize/2;								// Get my pos x
 		let y=$("#co-AvMe").css("top").replace("px","")-326-12;										// Y
@@ -64,12 +64,13 @@ class Chat  {
 	{
 		let x=$("#co-Ap-"+id).offset().left-175+avSize/2;;											// Center X on avatar 
 		let y=$("#co-Ap-"+id).offset().top-200+12;													// Y atop avatar
-		app.CloseAll();																			// Close all open dialogs
+		$("#co-chat").remove();                                                                     // Close chat if open
+        $("#co-card").remove();     																// Card                                                                
 		this.curChat=-1;																			// Not chatting with anyone
 		let flip=false;																				// Position above avatar
 		if (y < 12) flip=true,y=(y-0+avSize+200);													// Flip to bottom
 		if (x < 12)	x=12;																			// Too far left
-		if (x > app.bx-362)	x=app.bx-362;														// Too far right
+		if (x > app.bx-362)	x=app.bx-362;															// Too far right
 		let o=app.people[id];																		// Point at person
 		let str=`<div id='co-card' class='co-card' style='left:${x}px;top:${y}px'>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-card').remove()">
@@ -105,7 +106,8 @@ class Chat  {
 	Chat(id, infoDesk)																			// CHAT CLIENT
 	{
 		let i,ox,oy,flip=false;
-		app.CloseAll();																			// Close all open dialogs
+		$("#co-chat").remove();                                                                     // Close chat if open
+        $("#co-card").remove();     																// Card                                                                
 		if (infoDesk) {																				// If an info desk query
 			ox=$("#co-infoDesk").offset().left-2;													// Desk left
 			oy=$("#co-infoDesk").offset().top-4														// Top

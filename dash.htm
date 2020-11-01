@@ -29,9 +29,9 @@
 	.co-bs 		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
 					font-size: 13px; background-color:  #36c936; padding: 2px 8px 2px 8px; }
 	.jsgrid-cell{	overflow:hidden; }
-	.co-venue 	{	display:inline-block; height:calc(100vh - 174px); width:250px; border:1px solid #999; vertical-align:top;
+	.co-venue 	{	display:inline-block; height:calc(100vh - 332px); width:250px; border:1px solid #999; vertical-align:top;
 					padding:12px; margin-right:12px; background-color:#f8f8f8;  user-select:none;}
-	.co-grid 	{	display:grid; height:calc(100vh - 148px); width:100%;  user-select:none;}
+	.co-grid 	{	display:grid; height:calc(100vh - 310px); width:100%;  user-select:none;}
 	.co-room 	{	background-repeat:repeat; border:.5px solid #999; text-align:center; 
 					text-shadow:1px 1px #bbb; font-size:9px; }
 	.co-rich 	{	position:absolute; width:calc(100% - 2px); height:calc(100vh - 2px); background-color:#fff; top:0; left:0; display:none; }
@@ -523,17 +523,17 @@ class App  {
 		$("#evFloor").empty();																				// Clear floor select
 		$("#evVideo").empty();																				// Clear floor select
 		for (i=0;i<app.venue.length;++i)																	// For each floor
-			$("#evFloor").append(`<option>${i+1}</option>`);												// Add to select
+			$("#evFloor").append(`<option>${i}</option>`);													// Add to select
 		for (i=0;i<app.venue[app.curFloor].length;++i) {													// For each title
 			s=app.venue[app.curFloor][i].title;																// Get title
 			if (s) s=s.match(/^<*(.*?)>*$/)[1];																// Remove bracket, if there
-			$("#evVideo").append(`<option>${s}</option>`);													// Add to select
+			$("#evVideo").append(`<option>${i+". "+s}</option>`);											// Add to select
 			app.venue[app.curFloor][i].room=i;																// Reset room
 			}
 		for (i=0;i<app.venue[app.curFloor].length;++i) {													// For each title
 			s=app.venue[app.curFloor][i].title;																// Get title
 			if (s) s=s.match(/^<*(.*?)>*$/)[1];																// Remove bracket, if there
-			$("#evRoom").append(`<option>${s}</option>`);													// Add to select
+			$("#evRoom").append(`<option>${i+". "+s}</option>`);											// Add to select
 			}
 		$("#evFloor").prop("selectedIndex",this.curFloor);													// Set floor select	
 		$("#evRoom").prop("selectedIndex",this.curRoom);													// Room	

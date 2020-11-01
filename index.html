@@ -273,7 +273,6 @@ class App  {
 	{
 		let link;
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
-		this.CloseAll();																			// Close all open dialogs
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			link=this.venue[this.curFloor][targetId.substr(6)].link;								// Get goto link
 			if (link && link.match(/floor-/i)) {													// If going to a new floor
@@ -286,7 +285,10 @@ class App  {
 				}
 			this.status="R"+targetId.substr(6);														// Status with room number
 			if (link) this.sced.ShowLink(link);														// Show link id one there
-			else	  this.status="A";																// In active mode
+			else{
+				this.CloseAll();																	// Close all open dialogs
+				this.status="A";																	// In active mode
+				}
 			}
 		else if (targetId == "co-infoDesk")  { this.chat.Chat(this.infoDeskId,true); return; }		// ON INFO DESK BUTTON
 		else if (targetId == "co-attendees") { this.sced.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
@@ -305,7 +307,10 @@ class App  {
  			this.sced.ShowLink("japp.htm?/~"+this.meetingId+"~coffeebar-"+this.curFloor+"-"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
-		else this.status="A";																		// In active mode
+		else{																						// General click
+			this.CloseAll();																		// Close all open dialogs
+			this.status="A";																		// In active mode
+			}
 		x=Math.max(0,Math.min(this.bx,x-avSize/2));													// Cap x to screen
 		y=Math.max(0,Math.min(this.by,y-avSize/2));													// Y
 		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
@@ -407,12 +412,13 @@ class App  {
 	
  	CloseAll(mask=0)                                                                        	// CLOSE ALL OPEN DIALOGS
     {
-        $("#co-chat").remove();                                                                     // Close chat if open
+
+		$("#co-chat").remove();                                                                     // Close chat if open
         $("#co-card").remove();     																// Card                                                                
         $("#co-sched").remove();   																	// Schedule                                                                 
         $("#co-people").remove();        															// People                                                           
-//		let src=$("#co-iframeFrame").prop("src");													// Get iframe link		
-//		if (src && !src.match(/~coffee/i))	mask=3;													// If an open iframe (not coffee) close it
+		let src=$("#co-iframeFrame").prop("src");													// Get iframe link		
+		if (src && !src.match(/~coffee/i))	mask=3;													// If an open iframe (not coffee) close it
 		if (mask&1)	$("#co-iframe").remove();														// Remove iframe if flag set                                                                   
 		if (mask&2 && this.videoWin)  this.videoWin.close();										// Close open video window
 		else if (this.videoWin)		  this.videoWin.focus();										// Put it on front
