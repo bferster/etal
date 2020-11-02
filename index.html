@@ -339,7 +339,7 @@ class App  {
 		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
       		x=$("#co-coffee-"+cf+"-0").offset().left;                                    			// left side of bar
        		w=$("#co-coffee-"+cf+"-0").width()-avSize;                                  			// Width of space
-       		y=this.by-$("#co-coffee-"+cf+"-0").height()-avSize-2;                       			// On top of bar area
+       		y=this.by-$("#co-coffee-"+cf+"-0").height()-avSize+24;                       			// On top of bar area
 			}
 		for (i=0;i<this.people.length;++i) {														// For each person
 			if (cf != this.people[i].f) 			$("#co-Av-"+i).css("display","none");			// Hide people not on this floor
@@ -511,13 +511,13 @@ class App  {
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
 		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
 		
-		let menu=`<div style="width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+24}px)">
+		let menu=`<div style="width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px">
 			<img id="co-coffee-${this.curFloor}-0" style="width:200px;margin-left:calc(50% - 100px - ${avSize+16}px)" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
-				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px">
-				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px">`;
-				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer">';
+				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px">
+				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px">`;
+				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;margin-top:20px;cursor:pointer">';
  		menu+=`</div></div>`;
 
 		sc=this.sced.GeEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
