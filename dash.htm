@@ -486,7 +486,7 @@ class App  {
 			});
 
 		$("#evDelFloor").on("click",()=>{																	// ON DELETE ROOM
-			if (!this.curRoom)	PopUp("You can't delete the first floor!");									// Warn
+			if (!this.curFloor)	PopUp("You can't delete the first floor!");									// Warn
 			else				ConfirmBox("Are you sure?","",()=>{ 										// Ask if sure
 												this.venue.splice(this.curFloor,1);							// Kill floor
 												Sound("delete");											// Delete sound
