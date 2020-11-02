@@ -25,13 +25,40 @@
 									"SHOW_CHROME_EXTENSION_BANNER": false
 								},
 		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false},
-
 		parentNode: document.querySelector('body'),
-		
 		};
 	const api = new JitsiMeetExternalAPI(domain, options);
 	api.executeCommand('displayName',v[1] ? v[1] :"");
 	window.addEventListener("beforeunload",  ()=>{ api.displose();	});
+
+/*
+	api.addEventListeners({
+		videoConferenceJoined: ()=>{
+			let i,p=api.getParticipantsInfo(); 
+			for (i=0;i<p.length;++i) 
+				if (p[i].displayName && p[i].displayName.match(/*)) {
+					api.resizeLargeVideo("50%", "50%");
+					api.pinParticipant(p[i].participantId);
+						api.setLargeVideoParticipant(p[i].participantId);
+					}
+			}
+		});	 
+*/
+
+	function trace(msg, p1, p2, p3, p4)										// CONSOLE 
+	{
+		if (p4 != undefined)
+			console.log(msg,p1,p2,p3,p4);
+		else if (p3 != undefined)
+			console.log(msg,p1,p2,p3);
+		else if (p2 != undefined)
+			console.log(msg,p1,p2);
+		else if (p1 != undefined)
+			console.log(msg,p1);
+		else
+			console.log(msg);
+	}
+
 
 </script>
 </body>
