@@ -162,7 +162,8 @@ class Schedule  {
 				<div style="float:left;width:40px;height:40px;overflow:hidden;border-radius:64px;margin:0 8px 16px 4px;border:1px solid #999">
 				<img id="co-spi-${selects[i].index}" style="cursor:pointer;width:40px;" 
 				src="${o.pic}"></div>
-				<b>${o.firstName} ${o.lastName}</b><br>${o.title}<br>${o.org}</div></div>`;
+				<b>${o.firstName ? o.firstName : ""} ${o.lastName ? o.lastName : ""}</b>
+				<br>${o.title ? o.title : "" }<br>${o.org ? o.org: ""}</div></div>`;
 				}
 			$("#co-spp").html(str);																// Add to listing
 			$("[id^=co-spi-]").on("click",(e)=>{												// ON PIC CLICK

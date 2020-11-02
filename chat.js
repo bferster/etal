@@ -74,10 +74,10 @@ class Chat  {
 		let o=app.people[id];																		// Point at person
 		let str=`<div id='co-card' class='co-card' style='left:${x}px;top:${y}px'>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-card').remove()">
-			<b style='font-size:24px'>${o.firstName} ${o.lastName}</b>
-			<p><b>${o.title} | ${o.org}</b></p>
-			<p>Interests: ${o.ints}<p>
-			<p style="position:absolute;left:24px;bottom:0">`;
+			<b style='font-size:24px'>${o.firstName ? o.firstName : ""} ${o.lastName ? o.lastName : ""}</b>
+			<p><b>${o.title ? o.title : ""} | ${o.org ? o.org: ""}</b></p><p>
+			${o.ints ? "Interests: "+o.ints : ""}
+			</p><p style="position:absolute;left:24px;bottom:0">`;
 			if (o.li) {																				// If a LI site
 				o.li=o.li.replace(/https:\/\//,"");													// Remove http
 				o.li=o.li.replace(/linkedin.com\//,"");												// Domain
