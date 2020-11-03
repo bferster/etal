@@ -35,6 +35,8 @@
 	.co-room 	{	background-repeat:repeat; border:.5px solid #999; text-align:center; 
 					text-shadow:1px 1px #bbb; font-size:9px; }
 	.co-rich 	{	position:absolute; width:calc(100% - 2px); height:calc(100vh - 2px); background-color:#fff; top:0; left:0; display:none; }
+	.co-colChip	{	display:inline-block; border-radius:5px; height:16px;width:16px; border:1px solid #999; 
+					margin-left:6px; cursor:pointer; vertical-align:-4px; }
 
 	#co-tab	{ background:transparent;  border:none; margin-left:-8px; }
 	#co-tab .ui-widget-header { background:transparent; border:none; background-color: #ccc; } 
@@ -427,7 +429,8 @@ class App  {
 		<div class="co-venue">
 				<table>
 				<tr style="vertical-align:top"><td><b>CURRENT FLOOR</b><br><br></td><td><select id="evFloor" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
-				<tr><td>Background color</td><td><input class='co-is' type='color' id='ev-bcol' value='${(d.bcol ? d.bcol : "#ffffff")}' list="palette" style="height:18px;margin:0"></td></tr>	
+				<tr><td>Background color</td><td><input class='co-is' style='width:60px' type='text' id='ev-bcol' value='${(d.bcol ? d.bcol : "#ffffff")}'>
+				<div id='ev-bcolc' class='co-colChip' style='background-color:${(d.bcol ?d.bcol : "#ffffff")}'></td></tr>	
 				<tr><td>Number of columns&nbsp; </td><td><input class='co-is' type='text' id='ev-cols' value='${(d.cols ? d.cols : 10)}'></td></tr>	
 				<tr><td>Number of rows</td><td><input class='co-is' type='text' id='ev-rows' value='${(d.rows ? d.rows : 3)}'></td></tr>	
 				<tr><td>Grid gap</td><td><input class='co-is' type='text' id='ev-gap' value='${(d.gap ? d.gap : 0)}'></td></tr>	
@@ -437,7 +440,8 @@ class App  {
 				<tr><td><div id='evAddFloor' class='co-bs'>Add floor</div></td><td><img id='evDelFloor' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
 				<tr><td colspan='2'><br><hr><br></td></tr>	
 				<tr style="vertical-align:top"><td><b>CURRENT ROOM</b><br><br></td><td><select id="evRoom" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
-				<tr><td>Room color</td><td><input class='co-is' type='color' id='ev-rug' value='${(r.rug ? r.rug : "#ffffff")}' list='palette' style="height:18px"></td></tr>	
+				<tr><td>Room color</td><td><input class='co-is' style='width:60px' type='text' id='ev-rug' value='${(r.rug ? r.rug : "#ffffff")}'>
+				<div id='ev-rugc' class='co-colChip' style='background-color:${(r.rug ? r.rug : "#ffffff")}'></td></tr>	
 				<tr><td>Room title</td><td><input class='co-is' type='text' id='ev-title' value='${(r.title ? r.title : "")}'></td></tr>	
 				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
 				<tr><td>Children</td><td><input class='co-is' type='text' id='ev-por' value='${(r.portal ? r.portal : "")}'></td></tr>	
@@ -454,11 +458,16 @@ class App  {
 		d.rows=$("#ev-rows").val();																			// Rows
 		d.gap=$("#ev-gap").val();																			// Gap
 		d.avSize=$("#ev-avs").val();																		// Avatar size 
-		r.portal=$("#ev-por").val();																	// Portal
+		r.portal=$("#ev-por").val();																		// Portal
 		r.rug=$("#ev-rug").val();																			// Room rug
 		r.css=$("#ev-css").val();																			// Room style
 		r.title=$("#ev-title").val();																		// Room title
 		this.DrawVenue();																					// Draw venue grid
+
+		$("#ev-rug").on("change",()=>{  $("#ev-rugc").css("background-color",$("#ev-rug").val()) });		// Chip follows color field
+		$("#ev-bcol").on("change",()=>{ $("#ev-bcolc").css("background-color",$("#ev-bcol").val()) });		// Field
+		$("#ev-rugc").on("click",()=>{  ColorPicker("#ev-rug") });											// Advanced color
+		$("#ev-bcolc").on("click",()=>{ ColorPicker("#ev-bcol") });											// Advanced 
 
 		$("#evAddRoom").on("click",()=>{																	// ON ADD ROOM
 			this.curRoom=this.venue[this.curFloor].length;													// Set new current room
@@ -470,7 +479,7 @@ class App  {
 
 		$("#evAddFloor").on("click",()=>{																	// ON ADD FLOOR
 			this.curFloor=this.venue.length;																// Set new current floor
-			let o=[{ cs:1, ce:2, rs:1, re:2, rug:"#cccccc", title:"Hallway", floor: this.curFloor, room:this.curRoom, params:{ rows:4, cols:4, gap:8 } }];
+			let o=[{ cs:1, ce:2, rs:1, re:2, rug:"#cccccc", title:"Hallway", floor: this.curFloor, room:this.curRoom, params:{ rows:4, cols:4, gap:0 } }];
 			this.venue.push(o);																				// Add floor
 			Sound("ding");																					// Ding
 			this.EditVenue();																				// Redraw
@@ -481,6 +490,7 @@ class App  {
 			else				ConfirmBox("Are you sure?","",()=>{ 										// Ask if sure
 												this.venue[this.curFloor].splice(this.curRoom,1);			// Kill room
 												Sound("delete");											// Delete sound
+												this.curRoom=0;												// Room to 0
 												this.EditVenue();											// Redraw
 												});
 			});
@@ -490,15 +500,19 @@ class App  {
 			else				ConfirmBox("Are you sure?","",()=>{ 										// Ask if sure
 												this.venue.splice(this.curFloor,1);							// Kill floor
 												Sound("delete");											// Delete sound
+												this.curRoom=0;												// Room to 0
+												this.curFloor=0;											// Floor to 0
 												this.EditVenue();											// Redraw
 												});
 			});
 
 		$("#evFloor").on("change",()=>{	this.curFloor=$("#evFloor").prop("selectedIndex"); 					// On floor change
+										this.curRoom=0;														// Room to 0
 										this.EditVenue(); 
 										$("#evVideo").prop("selectedIndex",0);
 										$("#evRoom").prop("selectedIndex",0)
 										});	
+
 		$("#evRoom").on("change",()=>{	this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();})// On room change
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
@@ -541,7 +555,7 @@ class App  {
 		let str=`<div id="co-grid" class="co-grid">`;														// Add grid
 		for (i=1;i<=d.rows;++i)																				// For each row
 				for (j=1;j<=d.cols;++j)																		// For each col
-					str+=`<div id="co-r${j}-${i}" class="co-room"><br>${i}-${j}</div>`;							// Add div
+					str+=`<div id="co-r${j}-${i}" class="co-room"><br>${i}-${j}</div>`;						// Add div
 		str+=`</div>`;
 		$("#gridHolder").html(str.replace(/\t|\n|\r/g,""));													// Add grid
 		$("#co-grid").css("grid-template-columns","repeat("+d.cols+", 1fr)");								// Columns
@@ -559,12 +573,13 @@ class App  {
 			}
 	
 		$("[id^=co-r]").on("click",(e)=>{																	// ON ROOM CLICK
-			let v=e.currentTarget.id.substr(4).split("-");													// Ger col/row
+			let v=e.currentTarget.id.substr(4).split("-");													// Get col/row
 			for (i=0;i<app.venue[app.curFloor].length;++i) {												// For each room
 				o=app.venue[app.curFloor][i];																// Point at it
-				if ((v[0] >= o.cs) && (v[0] < o.ce) && (v[1] >= o.rs) && (v[1] < o.re)) {					// In room
+				if ((v[0]-0 >= o.cs-0) && (v[0]-0 < o.ce-0) && (v[1]-0 >= o.rs-0) && (v[1]-0 < o.re-0)) {	// In room
 					this.curRoom=i;																			// Set room
 					this.EditVenue();																		// Redraw
+					break;
 					}												
 				}
 			});
@@ -601,11 +616,11 @@ class App  {
 		function setPos()
 		{
 			let x1=$("#co-room").offset().left-l;
-			let x2=x1+$("#co-room").width();
+			let x2=x1+$("#co-room").width()+gap;
 			r.cs=Math.max(1,Math.min(Math.floor(x1/cw+1),p.cols-0+1));
 			r.ce=Math.max(1,Math.min(Math.floor(x2/cw+1),p.cols-0+1));
 			let y1=$("#co-room").offset().top-t-24;
-			let y2=y1+$("#co-room").height();
+			let y2=y1+$("#co-room").height()+gap;
 			r.rs=Math.max(1,Math.min(Math.floor(y1/ch+1),p.rows-0+1));
 			r.re=Math.max(1,Math.min(Math.floor(y2/ch+1),p.rows-0+1));
 			app.DrawVenue();
@@ -786,6 +801,26 @@ class App  {
 		$(div ? "#"+div : "body").append(str);												// Add popup to div or body
 		$("#pu-close").click(function() { $("#popupDiv").remove(); });						// Remove on click of close but
 		$("#popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500)					// Animate in and out		
+	}
+
+	function ColorPicker(id)															// COLOR PICKER
+	{
+		let str="";
+		let col=$(id).val();																// Starting color
+		let p=$(id).offset();																// Position on color chi[
+		$("#popupDiv").remove();															// Kill old one, if any
+		str=`<div id='popupDiv' class='co-popup' style='left:${p.left}px;top:${p.top}px'>						
+		<input class='co-is' type='color' id='co-cpcp' value='${(col ? col : "#ffffff")}' list='palette'>	
+		&nbsp;<img id='pu-close' src='img/closedot.png' style='cursor:pointer'>`;
+		$("body").append(str);																// Add to body
+
+		$("#pu-close").click(function() { $("#popupDiv").remove(); });						// Remove on click of close but
+		$("#popupDiv").fadeIn(500);															// Animate in 
+		$("#co-cpcp").on("change",()=>{														// On color change
+			$(id).val($("#co-cpcp").val());													// Set value
+			$(id).trigger("change");														// Trigger change
+			$("#popupDiv").remove();														// Close
+			});
 	}
 
 	function trace(msg, p1, p2, p3, p4)									
