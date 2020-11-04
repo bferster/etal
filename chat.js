@@ -103,24 +103,19 @@ class Chat  {
 // CHAT
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Chat(id, infoDesk)																			// CHAT CLIENT
+	Chat(id, target, nx, ny)																	// CHAT CLIENT
 	{
 		let i,ox,oy,flip=false;
 		$("#co-chat").remove();                                                                     // Close chat if open
         $("#co-card").remove();     																// Card                                                                
-		if (infoDesk) {																				// If an info desk query
-			ox=$("#co-infoDesk").offset().left-2;													// Desk left
-			oy=$("#co-infoDesk").offset().top-4														// Top
-			}
-		else{																						// Normal chat		
-			ox=$("#co-Ap-"+id).offset().left;														// Avatar left
-			oy=$("#co-Ap-"+id).offset().top;														// Top
-			}
+		if (target == "here") {			ox=nx;	oy=ny; }											// Hover over x/y
+		else if (target == "infoDesk"){ ox=$("#co-infoDesk").offset().left-2;	oy=$("#co-infoDesk").offset().top-4; }	// Infodesk																// If an info desk query
+		else {							ox=$("#co-Ap-"+id).offset().left;	oy=$("#co-Ap-"+id).offset().top; } // Person						
 		let x=ox-119+avSize/2;																		// Center X on avatar 
 		let y=oy-360;																				// Y atop avatar
 		if (y < 12) flip=true,y=(y-0+avSize+370);													// Flip it
 		if (x < 12)	x=12;																			// Too far left
-		if (x > app.bx-312)	x=app.bx-312;														// Too far right
+		if (x > app.bx-312)	x=app.bx-312;															// Too far right
 
 		let o=app.people[id];																		// Point at person
 		this.curChat=id;																			// Set curChat

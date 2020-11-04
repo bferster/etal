@@ -270,10 +270,19 @@ class App  {
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
-		let link;
+		let i,link;
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			link=this.venue[this.curFloor][targetId.substr(6)].link;								// Get goto link
+			if (link && link.match(/chat-/i)) {														// A chat link
+				link=link.substr(5);																// Get just email
+				for (i=0;i<app.people.length;++i)													// For each person
+					if (app.people[i].email == link) {												// A match
+					app.chat.Chat(i,"here", x, y);													// Open chat					
+					$("#co-AvMe").animate({ left:x, top:y });										// Animate me there		
+					return;																			// Quit
+					}
+				}
 			if (link && link.match(/floor-/i)) {													// If going to a new floor
 				this.CloseAll(3);																	// Close video windows
 				this.curFloor=link.substr(6)-0;														// Get floor index
@@ -289,7 +298,7 @@ class App  {
 				this.status="A";																	// In active mode
 				}
 			}
-		else if (targetId == "co-infoDesk")  { this.chat.Chat(this.infoDeskId,true); return; }		// ON INFO DESK BUTTON
+		else if (targetId == "co-infoDesk")  { this.chat.Chat(this.infoDeskId,"infodesk"); return; } // ON INFO DESK BUTTON
 		else if (targetId == "co-attendees") { this.sced.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
 		else if (targetId == "co-schedule") {														// ON SCHEDULE BUTTON
 			this.sced.ShowSchedule();																// Show schedule
