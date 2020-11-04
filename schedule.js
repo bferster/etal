@@ -84,8 +84,9 @@ class Schedule  {
 			s="";
 			for (i=0;i<days[j].length;++i) {														// For each event that day
 				sc=days[j][i];																		// Point at day's event
-				if (sc.day != j)	continue;														// Not this day
-				if (!sc.desc)		continue;														// No text
+				if (sc.day != j)				continue;											// Not this day
+				if (!sc.desc)					continue;											// No text
+				if (sc.desc.charAt(0) == "*")	continue;											// Hidden text text
 				if ((sc.stn != s) && (j != "*")) {													// New timeslot
 					str+=`<tr><td colspan='3'><b>${this.GetTime(sc.start)}</b></td></tr>`;  		// Add time
 					s=sc.stn;																		// Now is then

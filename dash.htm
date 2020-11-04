@@ -25,7 +25,7 @@
 	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
 					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
 					font-size: 14px; text-align:center; display: none; }
-	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:84px }
+	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:84px; }
 	.co-bs 		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
 					font-size: 13px; background-color:  #36c936; padding: 2px 8px 2px 8px; }
 	.jsgrid-cell{	overflow:hidden; }
@@ -54,17 +54,18 @@
 			<li id="co-tab1"><a href="#jsGrid-people">PEOPLE</a></li>
 			<li id="co-tab2"><a href="#jsGrid-schedule">SCHEDULE</a></li>
 			<li id="co-tab3"><a href="#venueEditor">VENUE</a></li>
+			<li id="co-tab4"><a href="#liveEditor">LIVE</a></li>
 		</ul>
 		<div id="jsGrid-people"></div>
 		<div id="jsGrid-schedule"></div>
 		<div id="venueEditor" style="padding:0";></div>
+		<div id="liveEditor"></div>
 	</div>	
 	<input type="file" id="co-filepeople" style="display:none">
 	<input type="file" id="co-fileschedule" style="display:none">
 	<input type="file" id="co-filevenue" style="display:none">
-	<div class="co-bar">
-		<div style="float:right;margin-right:36px; pointer-events:all;">
-			<div class="co-bs" id="co-start">Start meeting</div>			
+	<div id="co-tData" class="co-bar">
+		<div style="float:right;margin-right:36px; pointer-events:all">
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			Load from&nbsp;&nbsp;<select id="co-loadpeople" class="co-is">
 			<option>Choose source</option>
@@ -115,15 +116,14 @@
 		});
 
 
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UI																							    http://js-grid.com
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	$("#co-tab1").on("click",()=>{ app.curTable="people" });
-	$("#co-tab2").on("click",()=>{ app.curTable="schedule" });
-	$("#co-tab3").on("click",()=>{ app.curTable="venue"; app.DrawVenue(); });
+	$("#co-tab1").on("click",()=>{ app.curTable="people"; 	$("#co-tData").css("display","block"); });
+	$("#co-tab2").on("click",()=>{ app.curTable="schedule"; $("#co-tData").css("display","block")  });
+	$("#co-tab3").on("click",()=>{ app.curTable="venue";  	$("#co-tData").css("display","block"); app.DrawVenue(); });
+	$("#co-tab4").on("click",()=>{ app.curTable="live";  	$("#co-tData").css("display","none");  app.DrawLive();  });
 
 	$("[id^=co-load]").on("change", function(e) {													// ON LOAD
 		let i=$(this).prop("selectedIndex");														// Get option
@@ -159,8 +159,6 @@
 	$("[id^=co-file]").on("change",(e)=>{															// ON FILE
 		ReadFile(e,"co-"+app.curTable,app.curTable); $("#co-file"+app.curTable).val("");			// Read file
 		});
-
-	$("#co-start").on("click",(e)=>{ app.StartMeeting() });											// ON START MEETING
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // APP
@@ -627,6 +625,76 @@ class App  {
 		}
 
 	}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// LIVE
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	DrawLive()																						// MAKE LIVE EDITOR
+	{
+		let i,s,o,cf=0;
+		let str=`<br><table style="width:100%;border-spacing:8px">
+		<tr><td><b>Meeting</b></td><td><div class="co-bs" id="co-start">Start meeting</div></td></tr>
+		<tr><td><b>People</b></td><td><div class="co-bs" id="co-addpLive">Add new person live</div>&nbsp;&nbsp;&nbsp;
+		<div class="co-bs" style="background-color:#990000" id="co-addpLive">Remove person live</div></td></tr>
+		<tr><td><b>Room event&nbsp;&nbsp;&nbsp;</b></td>
+		<td>Floor: <select id="dlFloor" class="co-is" style="font-size:13px"></select>&nbsp;&nbsp;&nbsp;
+		Room: <select id="dlRoom" class="co-is" style="font-size:13px"></select>&nbsp;&nbsp;&nbsp;
+		Event: <select id="dlEvent" class="co-is" style="font-size:13px"></select>&nbsp;&nbsp;&nbsp;
+		<div class="co-bs" id="dlSetRoom">Set</div></td>
+		</tr>`;			
+		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
+		
+		for (i=0;i<app.venue.length;++i) $("#dlFloor").append(`<option>${i}</option>`);					// For each floor, add to select
+		for (i=0;i<app.schedule.length;++i) {															// For each event
+			s=app.schedule[i].desc;																		// Get description
+			$("#dlEvent").append(`<option>${i+". "+s}</option>`);										// Add to select
+			}
+	
+		roomSelect(cf);																					// Fill room select
+		setEvent(cf);																					// Set event
+	
+		$("#dlFloor").on("change",()=>{ 																// ON FLOOR CHANGE
+			cf=$("#dlFloor").prop("selectedIndex"); 													// Get new floor			
+			$("#dlRoom").prop("selectedIndex",0);														// Room to start
+			roomSelect(cf);																				// Fill room select
+			setEvent(cf);																				// Set event
+			});	
+
+		$("#dlRoom").on("change",()=>{ setEvent(cf); });												// ON ROOM CHANGE
+	
+		function roomSelect(cf) {																		// FILL ROOM SELECT
+			$("#dlRoom").empty();																		// Start over
+			for (i=0;i<app.venue[cf].length;++i) {														// For each title
+				s=app.venue[cf][i].title;																// Get title
+				$("#dlRoom").append(`<option>${i+". "+s}</option>`);									// Add to select
+				}
+			setEvent(cf);																				// Set event
+		}
+
+		function setEvent(cf) {																			// SET EVENT SELECT OPTION BASED ON FLOOR/ROOM
+			let cr=$("#dlRoom").prop("selectedIndex");													// Get selected room
+			for (i=0;i<app.schedule.length;++i) {														// For each event
+				o=app.schedule[i];																		// Get description
+				if ((o.floor == cf) && (o.room == cr)) {												// A match
+					$("#dlEvent").prop("selectedIndex",i);												// Set current event
+					break;																				// Quit looking
+					}
+			}
+		}
+
+		$("#dlSetRoom").on("click",()=>{																// ON RESET ROOM
+			let e=$("#dlEvent").prop("selectedIndex");													// Get selected event
+			let f=$("#dlFloor").prop("selectedIndex");													// Get selected floor
+			let r=$("#dlRoom").prop("selectedIndex");													// Get selected room
+			$("#jsGrid-schedule").jsGrid("updateItem", e, { floor:"f", room:"r" })
+			Sound("ding");
+			//	app.ws.send(`RS|${app.meetingId}}|${f}}|${r}|${id}`);										// Reset event's room/floor
+			});
+	
+		$("#co-start").on("click",(e)=>{ app.StartMeeting(); });									// ON START MEETING
+	}
+
 
 } // Class closure
 
