@@ -7,6 +7,8 @@ class Schedule  {
 		this.schedule=[];																		// Holds schedule
 		this.curZoom="";																		// Current zoom link
 		this.timeZone="";																		// Time zone
+		this.offset=0;																			// Time from start
+		this.day=1;																				// Day in conference
 	}
 
 	GetDate(time, format="Mon Day, Year")													// GET FORMATTED DATE
@@ -31,19 +33,20 @@ class Schedule  {
 		return t;																				// Return time
 	}
 
-	GeEventByRoom(floor, room)																// GET EVENT FOR A ROOM
+	GeEventByRoom(floor, room)															// GET EVENT FOR A ROOM
 	{
-		let i;
-		for (i=0;i<this.schedule.length;++i)													// For each event
-			if ((this.schedule[i].room == room) && (this.schedule[i].floor == floor))			
-				return this.schedule[i];														// Return room event
+		let i,o;
+		for (i=0;i<this.schedule.length;++i) {													// For each event
+			o=this.schedule[i];																	// Point at it
+			if ((o.room == room) && (o.floor == floor) && (o.day == this.day)) return o;		// Return room event
+			}
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
 	}
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
 	{
 		let d=new Date();																		// Get now
-		d=Math.ceil((d-this.meetingStart)/60000);												// Minutes from conference start
+		d=Math.ceil((d-this.meetingStart-this.offset)/60000);									// Minutes from conference start
 	}
 
 	GoToRoom(floor, room)																	// ENTER A ROOM DIRECTLY
@@ -79,7 +82,7 @@ class Schedule  {
 			if (j == "*") str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 				Open all day</div><br>`
 			else str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
-				${this.GetDate(this.meetingStart)}${this.timeZone ? " - "+this.timeZone : ""}</div>`;
+			${this.GetDate(this.meetingStart.getTime()+((j-1)*24*60*60*1000))}${this.timeZone ? " - "+this.timeZone : ""}</div>`;
 			str+="<table style='width:100%'>";														// Add table of events
 			s="";
 			for (i=0;i<days[j].length;++i) {														// For each event that day

@@ -118,7 +118,10 @@
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s)});	// Broadcast
 				}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
-				app.ArrangePeople()				}
+				app.sced.day++;
+				app.DrawVenue();
+				app.ArrangePeople();	
+				}
 			});
 	});	
  
@@ -456,16 +459,17 @@ class App  {
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
 		let i,o;
-		for (i=0;i<sced.length;++i)																		// For each event
-			if (sced[i].day == 0) {																		// If setup event
+		for (i=0;i<sced.length;++i)	{																	// For each event
+		if (sced[i].day == 0) {																			// If setup event
 				o=sced.splice(i,1);																		// Copy and remove it
 				break;																					// Quit looking
 				}
+			}		
 		this.sced.schedule=sced;																		// Set data
 		if (o[0].start.charAt(0) == "*")	this.sced.meetingStart=new Date();							// Use today
 		else								this.sced.meetingStart=new Date(o[0].start);				// Set start date
 		if (o[0].end.charAt(0) == "*")		this.sced.meetingEnd=new Date();							// Use today
-		else								 this.sced.meetingEnd=new Date(o[0].end);					// Set end date
+		else								this.sced.meetingEnd=new Date(o[0].end);					// Set end date
 		this.sced.timeZone=o[0].bar;																	// Set time zone
 		this.sced.offset=new Date(o[0].start)-this.sced.meetingStart;									// Time offset
 		this.sced.schedule.sort((a,b)=>{ return (a.day > b.day) ? 1 : -1 });							// Sort by day
@@ -566,6 +570,8 @@ class App  {
 		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON QUIET AREA
 		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   	// ON DROP ON COFFEE BAR
 	}
+
+
 
 } // APP CLASS CLOSURE
 
