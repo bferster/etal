@@ -642,10 +642,14 @@ class App  {
 		<td>Floor: <select id="dlFloor" class="co-is" style="font-size:13px"></select>&nbsp;&nbsp;&nbsp;
 		Room: <select id="dlRoom" class="co-is" style="font-size:13px;width:auto"></select>&nbsp;&nbsp;&nbsp;
 		Event: <select id="dlEvent" class="co-is" style="font-size:13px;width:auto"></select>&nbsp;&nbsp;&nbsp;
-		<div class="co-bs" id="dlSetRoom">Set</div></td>
-		</tr>`;			
+		<div class="co-bs" id="dlSetRoom">Set</div></td></tr>;			
+		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
+		<div class="co-bs" id="co-updschedule">Schedule</div>&nbsp;&nbsp;&nbsp;
+		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>`;
+
+
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
-		
+
 		for (i=0;i<app.venue.length;++i) $("#dlFloor").append(`<option>${i}</option>`);					// For each floor, add to select
 		for (i=0;i<app.schedule.length;++i) {															// For each event
 			s=app.schedule[i].desc;																		// Get description
@@ -663,7 +667,10 @@ class App  {
 			});	
 
 		$("#dlRoom").on("change",()=>{ setEvent(cf); });												// ON ROOM CHANGE
-	
+		$("#co-updpeople").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|people`); Sound("ding"); });	 // ON UDATE PEOPLE
+		$("#co-updschedule").on("click",()=>{ app.ws.send(`U|${app.meetingId}|schedule`); Sound("ding"); }); // SCHEDULE
+		$("#co-updvenue").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|venue`); Sound("ding"); });	 // VENUE
+
 		function roomSelect(cf) {																		// FILL ROOM SELECT
 			$("#dlRoom").empty();																		// Start over
 			for (i=0;i<app.venue[cf].length;++i) {														// For each title

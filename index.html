@@ -105,6 +105,7 @@
 				}
 			app.meetingId=""+meetingId;																// Project id
 			app.myId=i;																				// My id
+			app.myEmail=app.people[i].email;														// Get my email
 			app.DrawVenue();																		// Draw venue		
 			app.DrawPeople();																		// Draw people avatars
 			app.Draw();																				// Draw screen
@@ -135,6 +136,7 @@ class App  {
 	{
 		app=this;																					// App global pointer
 		this.meetingId=""+meetingId;																// Meeting id
+		this.myEmail="";																			// My email
 		this.myId="";																				// My unique id
 		this.curFloor=0;																			// Current floor
 		this.venue=[];																				// Holds floors
@@ -206,10 +208,11 @@ class App  {
 
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
+		let id,meeting="";
 		let msg=event.data;																			// Get message
 		let v=event.data.split("|");																// Split message
-		let id,meeting="";
-		if (v[1]) meeting=v[1].split("~")[0];
+		if (v[1]) meeting=v[1].split("~")[0];														// Get meeting id
+		trace(v)
 		if (v[0] == "C") {																			// CHAT
 			if (meeting != this.meetingId)	return;													// Not this meeting
 			id=this.pIndex[v[2]];																	// Get index from id			
@@ -218,8 +221,8 @@ class App  {
 				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
-			else{
-				this.chat.queue.push({ id:id, msg:v[3] });												// Add to queue
+			else{																					// Send to message queue
+				this.chat.queue.push({ id:id, msg:v[3] });											// Add to queue
 				if ($("#co-qv-0").length) this.chat.ShowQueue();									// Show the message queue, if open	
 				$("#co-queue").text(app.chat.queue.length); 										// Reset queue dot length
 				$("#co-queue").show();																// Show dot
@@ -249,13 +252,19 @@ class App  {
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
 			$("#co-At-"+id).css("display",v[5].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
-		else if (v[0] == "P") 	this.AddPeople(JSON.parse(v[1]));									// Add people
-		else if (v[0] == "V") 	{ 																	// Add venue
-			this.AddVenue(JSON.parse(v[1]));														// Set data				
-			app.ws.send(`S|${app.meetingId}`);														// Request schedule data	
+		else if (v[0] == "P") {																		// Add/update people
+			this.AddPeople(JSON.parse(v[1]));														// Set data								
+			if (v[2] == "U")	app.DrawPeople();													// Redraw on update
 			}
-		else if (v[0] == "U") 	this.AddPeople(JSON.parse(v[1]),true);								// Update people
-		else if (v[0] == "S") 	this.AddSchedule(JSON.parse(v[1]));									// Add schedule
+		else if (v[0] == "V") 	{ 																	// Add/update venue
+			this.AddVenue(JSON.parse(v[1]));														// Set data				
+			if (v[2] != "U")	app.ws.send(`S|${app.meetingId}`);									// Request schedule data if adding	
+			else				app.DrawVenue();													// Redraw venue on update
+			}
+		else if (v[0] == "S") {																		// Add/update schedule
+			this.AddSchedule(JSON.parse(v[1]));														// Set data
+			if (v[2]== "U")	    app.DrawVenue();													// Redraw veneu on update
+			}
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS
 				v[2]=v[2].substr(1);																// Remove star
@@ -451,6 +460,7 @@ class App  {
 		for (i=0;i<people.length;++i) {																	// For each person
 			let id=people[i].id.split("~")[1];															// Split id out
 			o=this.people[i];																			// Point at them
+			if (o.email == this.myEmail) this.myId=i;													// Set myid
 			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
 			this.pIndex[people[i].id]=i;																// Save index by full id
 			}
