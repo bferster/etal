@@ -33,12 +33,15 @@ class Schedule  {
 		return t;																				// Return time
 	}
 
-	GeEventByRoom(floor, room)															// GET EVENT FOR A ROOM
+	GeEventByRoom(floor, room)																// GET EVENT FOR A ROOM
 	{
 		let i,o;
 		for (i=0;i<this.schedule.length;++i) {													// For each event
 			o=this.schedule[i];																	// Point at it
-			if ((o.room == room) && (o.floor == floor) && (o.day == this.day)) return o;		// Return room event
+			if ((o.room == room) && 															// Room match
+				(o.floor == floor) && 															// Floor match
+				((o.day == this.day) || (o.day == "*"))) 										// Day match
+					return o;																	// Return room event
 			}
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
 	}

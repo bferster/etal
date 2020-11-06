@@ -180,7 +180,7 @@ class App  {
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
-		this.ws.onclose=()=>   { console.log('disconnected'); };									// ON CLOSE
+		this.ws.onclose=()=>   { console.log('disconnected'); this.ws=null; Sound("delete") };		// ON CLOSE
 		this.ws.onerror=(e)=>  { console.log('error',e);	};										// ON ERROR
 		this.ws.onopen=()=> { 																		// ON OPEN
 			console.log('connected'); 
@@ -356,6 +356,7 @@ class App  {
 		
 	GetFromServer(table)                                                                           	 	// LOAD FROM SERVER
     {
+		if (!app.ws) { PopUp("Disconnected!"); return; }													// Not connected	
 		if (table == "people") 		app.ws.send(`P|${this.meetingId}`);										// Request people data	
 		if (table == "schedule") 	app.ws.send(`S|${this.meetingId}`);										// Schedule
 		if (table == "venue") 		app.ws.send(`V|${this.meetingId}`);										// Venue
@@ -388,6 +389,7 @@ class App  {
 	SaveToServer(table)																					// SEND TO SERVER
 	{
 		let i,j,d=[];
+		if (!app.ws) { PopUp("Disconnected!"); return; }													// Not connected	
         if (table == "venue") {																				// Flatten venue into room list
             for (i=0;i<this.venue.length;++i)																// For each floor
                 for (j=0;j<this.venue[i].length;++j)														// For each room in floor
@@ -636,13 +638,6 @@ class App  {
 		let str=`<br><table style="border-spacing:8px">
 		<tr><td><b>Meeting</b></td><td><div class="co-bs" id="co-start">Start meeting</div>
 		&nbsp;&nbsp;&nbsp;On day:&nbsp<input id="dlDay" class="co-is" style="width:50px" type="number" min=1 value=1></td></tr>
-		<tr><td><b>People</b></td><td><div class="co-bs" id="co-addpLive">Add new person live</div>&nbsp;&nbsp;&nbsp;
-		<div class="co-bs" style="background-color:#990000" id="co-addpLive">Remove person live</div></td></tr>
-		<tr><td><b>Room event&nbsp;&nbsp;&nbsp;</b></td>
-		<td>Floor: <select id="dlFloor" class="co-is" style="font-size:13px"></select>&nbsp;&nbsp;&nbsp;
-		Room: <select id="dlRoom" class="co-is" style="font-size:13px;width:auto"></select>&nbsp;&nbsp;&nbsp;
-		Event: <select id="dlEvent" class="co-is" style="font-size:13px;width:auto"></select>&nbsp;&nbsp;&nbsp;
-		<div class="co-bs" id="dlSetRoom">Set</div></td></tr>;			
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>`;

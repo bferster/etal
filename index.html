@@ -202,7 +202,6 @@ class App  {
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
 		let vr=$(app.vr).offset();																	// Point at video room box									
 		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()+"px",height:$(this.vr).width()*.5625+"px" });
-		this.CloseAll();                                                                         	// Close open windows
         this.ArrangePeople();                                                                       // Arrange people               
 	}
 
@@ -212,7 +211,6 @@ class App  {
 		let msg=event.data;																			// Get message
 		let v=event.data.split("|");																// Split message
 		if (v[1]) meeting=v[1].split("~")[0];														// Get meeting id
-		trace(v)
 		if (v[0] == "C") {																			// CHAT
 			if (meeting != this.meetingId)	return;													// Not this meeting
 			id=this.pIndex[v[2]];																	// Get index from id			
@@ -271,10 +269,6 @@ class App  {
 				this.chat.Speak(v[2]);																// Say it
 				}
 			Popup(`<b style="color:#990000">A message<br>from your meeting host</b><hr><br>${v[2]}<br><br>`,6000);	// Alert them
-			this.chat.queue.push({ id:this.infoDeskId, msg:v[2] });									// Add to queue
-			if ($("#co-qv-0").length) this.chat.ShowQueue();										// Show the message queue, if open	
-			$("#co-queue").text(app.chat.queue.length); 											// Reset queue dot length
-			$("#co-queue").show();																	// Show dot
 			Sound("ding");																			// Ding
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
@@ -392,7 +386,7 @@ class App  {
 		for (i=0;i<this.venue[cf].length;++i) rms.push([]); 										// For each room, make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at stats
-			if (o.stats.charAt(0) == "R") 	rms[o.stats.substr(1)].push(i);							// If in a room, add person to it
+			if (o.stats && (o.stats.charAt(0) == "R")) 	rms[o.stats.substr(1)].push(i);				// If in a room, add person to it
 			if (o.f != cf) {																		// Person not on this floor
 				try{
 					if ((ox=this.roomPortals.indexOf("F"+o.f)) == -1)	continue;					// No portal in current floor
@@ -456,6 +450,7 @@ class App  {
 	AddPeople(people)																				// ADD PEOPLE TO MEETING
 	{
 		let i,o;
+		people.sort((a,b)=>{ return (a.id.split("~")[1]-0 > b.id.split("~")[1]-0) ? 1 : -1 });			// Sort by numeric id
 		this.people=people;																				// Set data
 		for (i=0;i<people.length;++i) {																	// For each person
 			let id=people[i].id.split("~")[1];															// Split id out
