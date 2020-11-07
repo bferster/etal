@@ -317,33 +317,15 @@ class App  {
 
 	SaveToCSV(table)																					// SAVE TO CSV FILE
 	{
-		let i,j,k,str="",f,floors=1;
-		let d=$("#jsGrid-"+table).jsGrid("option","data");													// Get data from spreadsheet
-		if (table == "venue") { floors=this.venue.length; d=this.venue[0]; }								// Set number of floors
-		if (!d.length)		return;																			// Quit if nothing there
-		for (i in d[0])	str+=i+",";																			// Header row
-		str=str.substr(0,str.length-1)+"\n";																// Remove last comma
-
-		for (f=0;f<floors;++f) {																			// For each "floor"
-			if (table == "venue") d=this.venue[f];															// Point at room data if venue
-			for (i=0;i<d.length;++i) {																		// For each row
-				for (j in d[0])	{																			// For each field
-					if (j == "meeting") d[i][j]=this.meetingId;												// Force meeting id
-					if ((j == "params") && d[i][j]) {														// If params set
-						str+="\"{";																			// Quote
-						for (k in d[i][j]) str+=`""${k}"":""${d[i][j][k]}"",`;								// CSV stringify
-						str=str.substr(0,str.length-1);														// Remove last comma
-						str+="}\",";																		// Unquote																			
-						continue;
-						}			
-					if (d[i][j]  == undefined) d[i][j]="";													// Null it out
-					if (d[i][j] && (d[i][j]+"").match(/,/)) d[i][j]="\""+d[i][j]+"\"";						// Escape commas
-					if (d[i][j]) (d[i][j])=(""+d[i][j]).replace(/\t|\n|\r/g,"");							// No CRs, LFs, or tabs
-					str+=d[i][j]+",";																		// Add value
-					}
-				str=str.substr(0,str.length-1)+"\n";														// Remove last comma
-				}
+		let i,d=[];
+		if (table == "venue") {																				// If a venue
+			for (i=0;i<this.venue.length;++i) d=d.concat(this.venue[i])										// Flatten floors into single array
+			for (i=0;i<d.length;++i)																		// For each room
+				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object
 			}
+		else
+			d=$("#jsGrid-"+table).jsGrid("option","data");													// Get data from spreadsheet
+		let str=Papa.unparse(d,{ header:true, skipEmptyLines:true });										// Make CSV using lib
 		SaveTextAsFile(this.meetingId+"-"+table+".csv",str);												// Write file	
 		Sound("ding");																						// Ding
 	}
@@ -409,7 +391,7 @@ class App  {
 		let i;
 		if (data) {																							// If new data
 			this.venue=[];																					// Fresh array
-			data.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });										// Sort by floor
+			data.sort((a,b)=>{ return (a.floor-0 > b.floor-0) ? 1 : -1 });									// Sort by floor
 			for (i=0;i<data.length;++i) {																	// For each room
 				if (!this.venue[data[i].floor])	this.venue[data[i].floor]=[];								// Create new array if empty
 				this.venue[data[i].floor].push(data[i]);													// Add room to floor
@@ -452,7 +434,6 @@ class App  {
 		</div>
 		<div id="gridHolder" style="display:inline-block;width:calc(100% - 288px)"></div></div>`;
 		$("#venueEditor").html(str.replace(/\t|\n|\r/g,""));
-
 		d.bcol=$("#ev-bcol").val();																			// Bg color
 		d.cols=$("#ev-cols").val();																			// Get columns value
 		d.rows=$("#ev-rows").val();																			// Rows
