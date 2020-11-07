@@ -397,7 +397,7 @@ class App  {
 				this.venue[data[i].floor].push(data[i]);													// Add room to floor
 				}	
 			for (i=0;i<this.venue.length;++i) 																// For each floor
-				this.venue[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
+				this.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });						// Sort by room
 			}
 		if (!this.venue[0]) this.venue.push([{ title:"Hallway", rug:"#ffffff", cs:1, ce:2, rs:1, re:2,room:0, floor:0, params:{ rows:4, cols:4, gap:0, avSize:36 }} ]);	// Init if blank
 		let d=this.venue[this.curFloor][0].params;
