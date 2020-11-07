@@ -283,7 +283,7 @@ class App  {
 			if (link && link.match(/chat-/i)) {														// A chat link
 				link=link.substr(5);																// Get just email
 				for (i=0;i<app.people.length;++i)													// For each person
-					if (app.people[i].email == link) {												// A match
+					if (app.people[i].email.toLowerCase() == link.toLowerCase()) {					// A match
 					app.chat.Chat(i,"here", x, y);													// Open chat					
 					$("#co-AvMe").animate({ left:x, top:y });										// Animate me there		
 					return;																			// Quit
