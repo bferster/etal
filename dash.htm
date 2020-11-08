@@ -169,6 +169,7 @@ class App  {
 	constructor()   																	// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
+		this.s3Url="https://etalimages.s3.amazonaws.com/";											// S3 address for images
 		this.people=[];																				// Holds people
 		this.schedule=[];																			// Holds schedule
 		this.venue=[];																				// Holds venue
@@ -298,6 +299,9 @@ class App  {
 			if (row) continue;																				// Not the top row			
 			fields[o.gs$cell.col-1]=o.content.$t;															// Get field names 	
 			}
+		if ((table == "people")   && !fields.includes("email")) { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
+		if ((table == "schedule") && !fields.includes("day"))   { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
+		if ((table == "venue")    && !fields.includes("rug"))   { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
 
 		for (i=0;i<cells.length;++i) {																		// For each cell
 			o=cells[i];																						// Point at it
@@ -319,7 +323,7 @@ class App  {
 	{
 		let i,d=[];
 		if (table == "venue") {																				// If a venue
-			for (i=0;i<this.venue.length;++i) d=d.concat(this.venue[i])										// Flatten floors into single array
+			for (i=0;i<this.venue.length;++i) d=d.concat(JSON.parse(JSON.stringify(this.venue[i])))			// Flatten floors into single array
 			for (i=0;i<d.length;++i)																		// For each room
 				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object
 			}
@@ -351,9 +355,7 @@ class App  {
 			this.EditVenue(data);                                                             				// Make up editor
 			return;                                                                                			// Quit
 			}
-		this[table]=[]
-		this[table]=data;																					// Copy data
-	
+		this[table]=[];		this[table]=data;																// Copy data
 		let fields=this[table.charAt(0)+"Fields"];															// Point at fields
 		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
 		for (i=0;i<data.length;++i) {																		// For each row
@@ -378,7 +380,8 @@ class App  {
                     d.push(this.venue[i][j]);																// Add to array
             }
         else d=$("#jsGrid-"+table).jsGrid("option","data");                                                 // Get data from spreadsheet
-		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${JSON.stringify(d)}`);			// Write to DB table
+		d=JSON.stringify(d).replace(/S3:\/\//ig,this.s3Url);												// Add S3 url stub
+		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${d}`);							// Write to DB table
 		Sound("ding");																						// Ding
 	}
 
@@ -426,6 +429,7 @@ class App  {
 				<div id='ev-rugc' class='co-colChip' style='background-color:${(r.rug ? r.rug : "#ffffff")}'></td></tr>	
 				<tr><td>Room title</td><td><input class='co-is' type='text' id='ev-title' value='${(r.title ? r.title : "")}'></td></tr>	
 				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
+				<tr><td>Link</td><td><input class='co-is' type='text' id='ev-link' value='${(r.link ? r.link : "")}'></td></tr>	
 				<tr><td>Children</td><td><input class='co-is' type='text' id='ev-por' value='${(r.portal ? r.portal : "")}'></td></tr>	
 				<tr><td colspan='2'>&nbsp;</td></tr>	
 				<tr><td><div id='evAddRoom' class='co-bs'>Add room</div></td><td><img id='evDelRoom' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
@@ -440,6 +444,7 @@ class App  {
 		d.gap=$("#ev-gap").val();																			// Gap
 		d.avSize=$("#ev-avs").val();																		// Avatar size 
 		r.portal=$("#ev-por").val();																		// Portal
+		r.link=$("#ev-link").val();																			// Linl
 		r.rug=$("#ev-rug").val();																			// Room rug
 		r.css=$("#ev-css").val();																			// Room style
 		r.title=$("#ev-title").val();																		// Room title
@@ -503,6 +508,7 @@ class App  {
 			d.gap=$("#ev-gap").val();																		// Gap
 			d.avSize=$("#ev-avs").val();																	// Avatar size
 			r.portal=$("#ev-por").val();																	// Portal
+			r.link=$("#ev-link").val();																		// Link
 			r.rug=$("#ev-rug").val();																		// Room rug
 			r.css=$("#ev-css").val();																		// Room style
 			r.title=$("#ev-title").val();																	// Room title
@@ -683,39 +689,8 @@ class App  {
 } // Class closure
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// CSV
+// TEXT
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	function ParseCSV(str) 																// PARSE CSV TO NESTED ARRAYS
-	{	
-		return Papa.parse(str, { header:true, skipEmptyLines:true }).data;					// Parse CSV using lib
-
-		let arr=[],obj=[],i,j,o,row,cc;
-		let quote=false,code=false;  														// True means we're inside a quoted or code field
-		str=str.replace(/[\r]/g,"");														// Kill CRs
-		str=str.replace(/""/g,'"');															// Remove double quotes
-		for (row=col=c=0;c < str.length;c++) {   											// Iterate over each character, keep track of current row and column (of the returned array)
-			cc=str[c]; nc=str[c+1];        													// Current character, next character
-			arr[row]=arr[row] || [];             											// Create a new row if necessary
-			arr[row][col]= arr[row][col] || '';   											// Create a new column (start with empty string) if necessary
-			if ((cc == ",") && (str[c+1] == "\n")) continue;								// Skip last comma in a row
-			if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; } 	// If the cur char is ", and we're inside a quoted field, and the next char is also a ", add a " to the current column and skip the next character
-			else if ((cc == "{") || (cc == "<"))	code=true;								// HTML, XML, or JSON
-			else if (cc == '"') { quote = !quote; 	if (!code)  continue; }        			// If it's just one quotation mark, begin/end quoted field
-			else if (cc == ',' && !quote && !code) { ++col; 	continue; }      			// If it's a comma and we're not in a quoted or code field, move on to the next column
-			else if (cc == '\n' && !quote) { 												// LF
-				++row; col=0; code=false; continue;      									// If it's a newline and we're not in a quoted field, move on to the next row and move to column 0 of that new row
-				}
-			arr[row][col] += cc;        													// Otherwise, append the current character to the current column
-			}
-		let n=arr[0].length;																// Number of fields
-		for (i=1;i<arr.length;++i) {														// For each row
-			o={};																			// Empty object
-			for (j=0;j<n;++j) 	o[arr[0][j]]=arr[i][j] ? arr[i][j].replace(/"$/,"") : "";	// Set val and remove last quote if there
-			obj[i-1]=o;																		// Add row to object
-			}
-		return obj;																			// Return nested arrays
-	}
 
 	function ReadFile(e, id, table) 
 	{
@@ -724,7 +699,10 @@ class App  {
 		let reader=new FileReader();
 		reader.readAsText(file);
 		reader.onload=(e)=>{ 
-			let d=ParseCSV(e.target.result);
+			let d=Papa.parse(e.target.result, { header:true, skipEmptyLines:true }).data;					// Parse CSV using papa lib
+			if ((table == "people")   && !d[0].email) { PopUp("Wrong type!"); Sound("delete"); return; }	// Wrong table type
+			if ((table == "schedule") && !d[0].day)  { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
+			if ((table == "venue")    && !d[0].rug)  { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
 			if (table == "venue") { 
 				for (let i=0;i<d.length;++i)
 					if (d[i].params)	
@@ -760,9 +738,9 @@ class App  {
 	function GetTextBox(title, content, def, callback, x, y)										// GET TEXT LINE BOX
 	{
 		$("#confirmBoxDiv").remove();																	// Remove 
-		$("body").append("<div class='co-confirm' id='confirmBoxDiv' style='text-align:center'></div>");							// Add box								
+		$("body").append("<div class='co-confirm' id='confirmBoxDiv' style='text-align:center'></div>");// Add box								
 		if (x != undefined)		$("#confirmBoxDiv").css({ left:x+"px", top:y+"px" });					// Position if set
-		let str="<img src='img/logo.png' width='64'/><br>";													// Logo					
+		let str="<img src='img/logo.png' width='64'/><br>";												// Logo					
 		str+="<p style='font-size:14px; color:#666'><b>"+title+"</b></p>";
 		str+="<p>"+content+"<p>";
 		str+="<p><input class='co-is' style='width:95%' type='text' id='gtBoxTt' value='"+def+"'></p>";
@@ -770,8 +748,6 @@ class App  {
 		str+="<div id='dialogCancel' class='co-bs' style='margin-left:8px;background-color:#999'>Cancel</div></div>";
 		$("#confirmBoxDiv").html(str);																	// Add to div
 		$("#gtBoxTt").focus();																			// Focus on button
-	
-	
 		$("#gtBoxTt").on("change", function() {	callback($("#gtBoxTt").val()); $("#confirmBoxDiv").remove(); });	// ONE ENTER
 		$("#dialogOK").on("click", function() {	callback($("#gtBoxTt").val()); $("#confirmBoxDiv").remove(); });	// ON OK 
 		$("#dialogCancel").on("click", function() {	$("#confirmBoxDiv").remove(); });								// ON CANCEL
@@ -914,4 +890,3 @@ class App  {
 </script>
 </body>
 </html>
-
