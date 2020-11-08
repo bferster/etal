@@ -386,7 +386,6 @@ class App  {
 		for (i=0;i<this.venue[cf].length;++i) rms.push([]); 										// For each room, make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at stats
-			if (o.stats && (o.stats.charAt(0) == "R")) 	rms[o.stats.substr(1)].push(i);				// If in a room, add person to it
 			if (o.f != cf) {																		// Person not on this floor
 				try{
 					if ((ox=this.roomPortals.indexOf("F"+o.f)) == -1)	continue;					// No portal in current floor
@@ -395,6 +394,7 @@ class App  {
 					rms[ox].push(i);																// If this floor in child path, add to room
 					} catch(e) { trace(e); }
 				}
+			else if (o.stats && (o.stats.charAt(0) == "R"))  rms[o.stats.substr(1)].push(i);		// If in a room, add person to it
 			}
 		for (j=1;j<rms.length;++j) {																// For each room
 			ox=$("#co-Rm-"+j).offset().left+4;														// Left side
