@@ -484,14 +484,14 @@ class App  {
 	{
 		let i,o;
 		this.venue=[];
-		ven.sort((a,b)=>{ return (a.floor > b.floor) ? 1 : -1 });										// Sort by floor
+		ven.sort((a,b)=>{ return (a.floor-0 > b.floor-0) ? 1 : -1 });									// Sort by floor
 		for (i=0;i<ven.length;++i) {																	// For each room
 			o=ven[i];																					// Point at room
 			if (!this.venue[o.floor])	this.venue[o.floor]=[];											// Create new array if empty
 			this.venue[o.floor].push(o);																// Add room to floor	
 			}
 		for (i=0;i<this.venue.length;++i) 																// For each floor
-			this.venue[i].sort((a,b)=>{ return (a.room > b.room) ? 1 : -1 });							// Sort by room
+			this.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });						// Sort by room
 		}
 
 	DrawPeople()																					// ADD PEOPLE TO MEETING
