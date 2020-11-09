@@ -558,7 +558,7 @@ class App  {
 			${o.link ? ";cursor:pointer" : ""}${o.css ? ";"+o.css : ""}">
 			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
 			if (!i && (this.curFloor == 0))	str+=menu;													// Add menu to hallway first floor
- 			if (o.title && i) str+=`<div class="co-roomHdr">${o.title }</div>`;							// Add title to non-hallways
+ 			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
 			if (sc.content)																				// If content
 				str+="<div style='pointer-events:none;display:inline-block;width:100%'>"+sc.content+"</div>";	// Add conten wrapped in no-event div
 			if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;

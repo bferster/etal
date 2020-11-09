@@ -431,6 +431,7 @@ class App  {
 				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
 				<tr><td>Link</td><td><input class='co-is' type='text' id='ev-link' value='${(r.link ? r.link : "")}'></td></tr>	
 				<tr><td>Children</td><td><input class='co-is' type='text' id='ev-por' value='${(r.portal ? r.portal : "")}'></td></tr>	
+				<tr><td>Room number</td><td><input class='co-is' type='text' id='ev-room' value='${r.room}'></td></tr>	
 				<tr><td colspan='2'>&nbsp;</td></tr>	
 				<tr><td><div id='evAddRoom' class='co-bs'>Add room</div></td><td><img id='evDelRoom' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
 				</table>
@@ -446,6 +447,7 @@ class App  {
 		r.portal=$("#ev-por").val();																		// Portal
 		r.link=$("#ev-link").val();																			// Linl
 		r.rug=$("#ev-rug").val();																			// Room rug
+		r.room=$("#ev-room").val();																			// Room number
 		r.css=$("#ev-css").val();																			// Room style
 		r.title=$("#ev-title").val();																		// Room title
 		this.DrawVenue();																					// Draw venue grid
@@ -510,6 +512,7 @@ class App  {
 			r.portal=$("#ev-por").val();																	// Portal
 			r.link=$("#ev-link").val();																		// Link
 			r.rug=$("#ev-rug").val();																		// Room rug
+			r.room=$("#ev-room").val();																		// Room number
 			r.css=$("#ev-css").val();																		// Room style
 			r.title=$("#ev-title").val();																	// Room title
 			this.DrawVenue();																				// Draw venue grid
@@ -527,14 +530,11 @@ class App  {
 			$("#evFloor").append(`<option>${i}</option>`);													// Add to select
 		for (i=0;i<app.venue[app.curFloor].length;++i) {													// For each title
 			s=app.venue[app.curFloor][i].title;																// Get title
-			if (s) s=s.match(/^<*(.*?)>*$/)[1];																// Remove bracket, if there
-			$("#evVideo").append(`<option>${i+". "+s}</option>`);											// Add to select
-			app.venue[app.curFloor][i].room=i;																// Reset room
+			$("#evVideo").append(`<option>${app.venue[app.curFloor][i].room+". "+s}</option>`);				// Add to select
 			}
 		for (i=0;i<app.venue[app.curFloor].length;++i) {													// For each title
 			s=app.venue[app.curFloor][i].title;																// Get title
-			if (s) s=s.match(/^<*(.*?)>*$/)[1];																// Remove bracket, if there
-			$("#evRoom").append(`<option>${i+". "+s}</option>`);											// Add to select
+			$("#evRoom").append(`<option>${app.venue[app.curFloor][i].room+". "+s}</option>`);				// Add to select
 			}
 		$("#evFloor").prop("selectedIndex",this.curFloor);													// Set floor select	
 		$("#evRoom").prop("selectedIndex",this.curRoom);													// Room	
@@ -593,7 +593,7 @@ class App  {
 		let str=`<div id="co-room" style="text-align:center;color:#fff;border:2px dashed #000;position:absolute;cursor:pointer;background-color:${r.rug};
 		left:${x}px;top:${y}px;width:${w}px;height:${h}px;${r.css ? r.css : ""}"></div>`
 		$("#gridHolder").append(str)
-		$("#co-room").html(r.title);
+		$("#co-room").html(r.room+". "+r.title);
 		$("#co-room").draggable({	stop:()=>{ setPos(); }, 
 								  	containment:[ l,t+46,8000,8000],
 									grid: [ cw, ch ]
