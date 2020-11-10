@@ -626,8 +626,8 @@ class App  {
 		<tr><td><b>Meeting</b></td><td><div class="co-bs" id="co-start">Start meeting</div></td></tr>
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div>&nbsp;&nbsp;&nbsp;
-		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>`;
-
+		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>
+		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr>`;
 
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
 
@@ -682,6 +682,21 @@ class App  {
 			});
 	
 		$("#co-start").on("click",(e)=>{ app.StartMeeting(); });										// ON START MEETING
+
+		$("#co-preview").on("click", ()=> {  															// ON PREVIEW 
+			let i,j,d=[];
+			for (i=0;i<this.venue.length;++i)															// For each floor
+                for (j=0;j<this.venue[i].length;++j)													// For each room in floor
+                    d.push(this.venue[i][j]);															// Add to array
+			localStorage.setItem('venue', JSON.stringify(d));											// Store locally
+			d=$("#jsGrid-people").jsGrid("option","data");                                              // Get people data from spreadsheet
+			localStorage.setItem('people', JSON.stringify(d));											// Store locally
+			d=$("#jsGrid-schedule").jsGrid("option","data");                                            // Get schedule
+			localStorage.setItem('schedule', JSON.stringify(d));										// Store locally
+			if (app.previewWin)	app.previewWin.close();									
+			app.previewWin=window.open("index.html?preview");											// Open preview tab
+			Sound("ding"); 																				// Ding
+			});
 	}
 
 
