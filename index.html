@@ -261,7 +261,7 @@ class App  {
 			}
 		else if (v[0] == "S") {																		// Add/update schedule
 			this.AddSchedule(JSON.parse(v[1]));														// Set data
-			if (v[2]== "U")	    app.DrawVenue();													// Redraw veneu on update
+			this.sced.CheckSchedule();																// Set venue via schedule
 			}
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS

@@ -334,9 +334,9 @@ class App  {
 		Sound("ding");																						// Ding
 	}
 
-	StartMeeting(day)																						// START MEETING
+	StartMeeting(day)																					// START MEETING
 	{
-		app.ws.send(`>|${this.meetingId}|${day}`);																// Send start
+		app.ws.send(`>|${this.meetingId}`);																	// Send start
 		Sound("ding");																						// Ding
 	}
 		
@@ -623,8 +623,7 @@ class App  {
 	{
 		let i,s,o,cf=0;
 		let str=`<br><table style="border-spacing:8px">
-		<tr><td><b>Meeting</b></td><td><div class="co-bs" id="co-start">Start meeting</div>
-		&nbsp;&nbsp;&nbsp;On day:&nbsp<input id="dlDay" class="co-is" style="width:50px" type="number" min=1 value=1></td></tr>
+		<tr><td><b>Meeting</b></td><td><div class="co-bs" id="co-start">Start meeting</div></td></tr>
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>`;
@@ -682,7 +681,7 @@ class App  {
 			//	app.ws.send(`RS|${app.meetingId}}|${f}}|${r}|${id}`);									// Reset event's room/floor
 			});
 	
-		$("#co-start").on("click",(e)=>{ app.StartMeeting($("#dlDay").val()); });						// ON START MEETING
+		$("#co-start").on("click",(e)=>{ app.StartMeeting(); });										// ON START MEETING
 	}
 
 

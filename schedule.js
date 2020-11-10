@@ -29,7 +29,7 @@ class Schedule  {
 		time=time.split(":");																	// Hours/minutes
 		let t=(time[0] > 12) ? time[0]%12 : time[0];											// Set 12 hour time
 		t+=":"+time[1]+" ";																		// Add minutes
-		t+=(time[0] > 12) ? "PM" : "AM";														// AM/PM
+		t+=(time[0] >= 12) ? "PM" : "AM";														// AM/PM
 		return t;																				// Return time
 	}
 
@@ -48,8 +48,9 @@ class Schedule  {
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
 	{
-		let d=new Date();																		// Get now
-		d=Math.ceil((d-this.meetingStart-this.offset)/60000);									// Minutes from conference start
+		let today=new Date().getDate()+50;													 	// Get today in days												
+		this.day=today-(this.meetingStart.getDate()+49);										// Days into meeting
+		app.DrawVenue();																		// Redraw venue
 	}
 
 	GoToRoom(floor, room)																	// ENTER A ROOM DIRECTLY
@@ -76,14 +77,15 @@ class Schedule  {
 		for (i=0;i<this.schedule.length;++i) {														// For each event
 			sc=this.schedule[i];																	// Point at schedule
 			sc.stn=sc.start.split(":")[0]*60+(sc.start.split(":")[1]-1);							// As minutes
-			if (days[sc.day] == undefined) days[sc.day]=[];											// A new day													
-			days[sc.day].push(sc);																	// Add event to day		
+			if (days[sc.day] == undefined) 				days[sc.day]=[];							// A new day													
+			if (sc.desc && (sc.desc.charAt(0) != "*"))	days[sc.day].push(sc);						// Add event to day		
 			}
 		for (j in days) {																			// For each day
 			if (!days[j].length)	continue;														// Skip if no events
+			if (j-0 < (this.day-0))	continue;														// Start on today
 			days[j].sort((a,b)=>{ return (a.stn > b.stn) ? 1 : -1 });								// Sort by minutes
-			if (j == "*") str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
-				Open all day</div><br>`
+			if ((j == "*") && (days[j].length)) 													// No date and some takers
+				str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">Open all day</div><br>`
 			else str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 			${this.GetDate(this.meetingStart.getTime()+((j-1)*24*60*60*1000))}${this.timeZone ? " - "+this.timeZone : ""}</div>`;
 			str+="<table style='width:100%'>";														// Add table of events

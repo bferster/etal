@@ -206,6 +206,21 @@ class Chat  {
 			this.recognition.interimResults=true
 			this.recognition.onend=(e)=> { $("#co-talkBut").prop("src","img/talkbut.png"); this.listening=false; };	// On end, restore button
 			this.hasRecognition=true;																	// Has speechrecognition capabilities														
+			let mac=(navigator.platform == "MacIntel");													// A mac?
+			this.femaleVoice=mac ? 0 : 1;																// Female voice
+			this.maleVoice=mac ? 1 : 0;																	// Male voice
+			this.voices=[];																				// New array
+
+			speechSynthesis.onvoiceschanged=()=> {														// React to voice init
+				this.voices=[];																			// Clear list
+				speechSynthesis.getVoices().forEach((voice)=> {											// For each voice
+					if (voice.lang == "en-US")						this.voices.push(voice);			// Just look at English
+					if (voice.name.match(/Microsoft David/i))		this.voices.push(voice),this.maleVoice=this.voices.length-1;	// Male voice
+					if (voice.name.match(/Microsoft Zira/i))		this.voices.push(voice),this.femaleVoice=this.voices.length-1;	// Female voice
+					if (voice.name.match(/Alex/i))					this.voices.push(voice),this.maleVoice=this.voices.length-1;	// Mac male voice
+					if (voice.name.match(/Samantha/i))				this.voices.push(voice),this.femaleVoice=this.voices.length-1;	// Mac female voice
+					});
+				};
 
 			this.recognition.onresult=(e)=> { 															// On some speech recognized
 				for (i=e.resultIndex;i<e.results.length;++i) {											// For each result
@@ -223,10 +238,12 @@ class Chat  {
 		$("#co-talkBut").prop("src","img/intalkbut.png");												// Talking but
 	}
 
-	Speak(msg)
+	Speak(msg, who="female")
 	{
 		try {																							// Try
 			let tts=new SpeechSynthesisUtterance();														// Init TTS
+			if (who == "male")	tts.voice=this.voices[this.maleVoice];									// Set male voice
+			else 				tts.voice=this.voices[this.femaleVoice];								// Set female voice
 			tts.text=msg;																				// Set text
 			speechSynthesis.speak(tts);																	// Speak
 			} catch(e) { trace("TTS error",e) };														// On error
