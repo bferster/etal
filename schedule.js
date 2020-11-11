@@ -185,21 +185,8 @@ class Schedule  {
 	ShowLink(link)																				// SHOW LINK
 	{
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
-		$("#co-videoBar").remove();																	// Remove video bar
 		if (link && link.match(/zoom/i)) {															// If Zoom
 			this.curZoom=link;																		// Save link
-			window.onfocus=()=>{ 																	// If main is back in focus
-				let str=`<div id="co-videoBar" class="co-alert" 
-				style="left:${app.bx/4+16}px;width:${app.bx/2-24}px;background-color:#5b66cb">
-				Click here to return to last Zoom room</div>`;
-				$("body").append(str.replace(/\t|\n|\r/g,""));										// Add return bar
-				app.GoToCenter();																	// Got to center of hall
-				$("#co-videoBar").on("click",()=>{
-					let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
-					setTimeout(function(){ myWin.close(); },10000);									// Close after 10 secs
-					});						
-				}
-			window.onblur=()=>{ $("#co-videoBar").remove();	}										// If main is out, remove bar
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}

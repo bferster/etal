@@ -110,6 +110,15 @@
 			if ((e.which == 85) && e.altKey && e.ctrlKey) {											// Update key (Ctrl+Alt+U)
 				app.GDriveLoad(GetCookie(`${app.meetingId}-${app.curTable}-gdoc`), app.curTable,true); 	// Load table from gdocs and send to server
 				}
+			if ((e.keyCode == 90) && !e.shiftKey && e.ctrlKey) 	app.Undo();							// UNDO KEY (Ctrl+Z)  
+			if (((e.keyCode == 89) && e.ctrlKey) || ((e.keyCode == 90) && e.ctrlKey)) app.Redo();	// REDO KEY (Ctrl+Y / Shift+Ctrl+Z)  
+			if ((e.which == 80) && e.altKey && e.ctrlKey) {											// PALETTE KEY (Ctrl+Alt+P)
+				let p=localStorage.getItem("palette-"+app.meetingId);								// Get locally stored palette entries
+				if (!p) p="";																		// Nul; to ""
+				p+=`<option value='${$("#co-cpcp").val()}'/>`;										// Get new color
+				localStorage.setItem("palette-"+app.meetingId,p);									// Add it
+				Sound("ding");																		// Ding
+				}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
 				}
 			});
@@ -139,9 +148,6 @@
 		$(this).prop("selectedIndex",0);															// Clear
 		});
 
-
-
-
 	$("[id^=co-save]").on("change", function(e) {													// ON SAVE
 		let i=$(this).prop("selectedIndex");														// Get option
 		if (i == 1) 	 	app.SaveToServer(app.curTable);											// Erase and save
@@ -166,10 +172,11 @@
 
 class App  {																					
 
-	constructor()   																	// CONSTRUCTOR
+	constructor()   																			// CONSTRUCTOR
 	{
 		app=this;																					// App global pointer
-		this.s3Url="https://etalimages.s3.amazonaws.com/";											// S3 address for images
+		this.curUndo=0;																				// Undo counter
+		this.undos=[];																				// Holds undos
 		this.people=[];																				// Holds people
 		this.schedule=[];																			// Holds schedule
 		this.venue=[];																				// Holds venue
@@ -352,6 +359,7 @@ class App  {
 	{
 		let i,j,k,o,oo;
 		if (table == "venue") { 																			// Venue
+			this.Do();																						// Set do 
 			this.EditVenue(data);                                                             				// Make up editor
 			return;                                                                                			// Quit
 			}
@@ -380,7 +388,7 @@ class App  {
                     d.push(this.venue[i][j]);																// Add to array
             }
         else d=$("#jsGrid-"+table).jsGrid("option","data");                                                 // Get data from spreadsheet
-		d=JSON.stringify(d).replace(/S3:\/\//ig,this.s3Url);												// Add S3 url stub
+		d=JSON.stringify(d);																				// Stringify
 		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${d}`);							// Write to DB table
 		Sound("ding");																						// Ding
 	}
@@ -407,11 +415,11 @@ class App  {
 		let r=this.venue[this.curFloor][this.curRoom];
 		let str=`<div style="margin-top:12px">
 			<datalist id="palette">
-			<option value="#ffffff"><option value="#cccccc"><option value="#999999"><option value="#666666"><option value="#000000">
-		    <option value="#d8c4ae"><option value="#a2733f"><option value="#cc4c39"><option value="#58aab4"><option value="#5b66cb">
-			<option value="#6e9456"><option value="#ba57ad"><option value="#8b5aa">
-		</datalist>
-		<div class="co-venue">
+			<option value="#ffffff"><option value="#cccccc"><option value="#999999"/><option value="#666666"><option value="#000000"/>
+		    <option value="#d8c4ae"><option value="#a2733f"/><option value="#cc4c39"/><option value="#58aab4"/><option value="#5b66cb"/>
+			<option value="#6e9456"/><option value="#ba57ad"/>
+			${localStorage.getItem("palette-"+this.meetingId)}</datalist>										
+			<div class="co-venue">
 				<table>
 				<tr style="vertical-align:top"><td><b>CURRENT FLOOR</b><br><br></td><td><select id="evFloor" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
 				<tr><td>Background color</td><td><input class='co-is' style='width:60px' type='text' id='ev-bcol' value='${(d.bcol ? d.bcol : "#ffffff")}'>
@@ -458,6 +466,7 @@ class App  {
 		$("#ev-bcolc").on("click",()=>{ ColorPicker("#ev-bcol") });											// Advanced 
 
 		$("#evAddRoom").on("click",()=>{																	// ON ADD ROOM
+			this.Do();																						// Set do 
 			this.curRoom=this.venue[this.curFloor].length;													// Set new current room
 			let o={ cs:1, ce:2, rs:1, re:2, rug:"#cccccc", title:"Change!", floor: this.curFloor, room:this.curRoom };
 			this.venue[this.curFloor].push(o);																// Add room
@@ -466,6 +475,7 @@ class App  {
 			});
 
 		$("#evAddFloor").on("click",()=>{																	// ON ADD FLOOR
+			this.Do();																						// Set do 
 			this.curFloor=this.venue.length;																// Set new current floor
 			let o=[{ cs:1, ce:2, rs:1, re:2, rug:"#cccccc", title:"Hallway", floor: this.curFloor, room:this.curRoom, params:{ rows:4, cols:4, gap:0 } }];
 			this.venue.push(o);																				// Add floor
@@ -474,6 +484,7 @@ class App  {
 			});
 
 		$("#evDelRoom").on("click",()=>{																	// ON DELETE ROOM
+			this.Do();																						// Set do 
 			if (!this.curRoom)	PopUp("You can't delete the hallway!");										// Warn
 			else				ConfirmBox("Are you sure?","",()=>{ 										// Ask if sure
 												this.venue[this.curFloor].splice(this.curRoom,1);			// Kill room
@@ -484,6 +495,7 @@ class App  {
 			});
 
 		$("#evDelFloor").on("click",()=>{																	// ON DELETE ROOM
+			this.Do();																						// Set do 
 			if (!this.curFloor)	PopUp("You can't delete the first floor!");									// Warn
 			else				ConfirmBox("Are you sure?","",()=>{ 										// Ask if sure
 												this.venue.splice(this.curFloor,1);							// Kill floor
@@ -504,6 +516,7 @@ class App  {
 		$("#evRoom").on("change",()=>{	this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();})// On room change
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
+			this.Do();																						// Set do 
 			d.bcol=$("#ev-bcol").val();																		// Background color
 			d.cols=$("#ev-cols").val();																		// Get columns value
 			d.rows=$("#ev-rows").val();																		// Rows
@@ -523,6 +536,7 @@ class App  {
 	{
 		let i,j,x,y,o,s;
 		let d=this.venue[this.curFloor][0].params;
+		$("#popupDiv").remove();																			// Kill popup
 		$("#evRoom").empty();																				// Clear room select
 		$("#evFloor").empty();																				// Clear floor select
 		$("#evVideo").empty();																				// Clear floor select
@@ -581,6 +595,7 @@ class App  {
 		let gap=p.gap-0;																					// Get gap							
 		if (r.rs == r.re) r.re++;																			// Expand to at least 1 cell
 		if (r.cs == r.ce) r.ce++;																			// Expand
+		$("#popupDiv").remove();																			// Kill popup
 
 		let l=290;
 		let t=$("#co-tab").position().top+24;
@@ -699,6 +714,40 @@ class App  {
 			});
 	}
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// UDDO
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	Do()																						// SAVE DO ACTION
+	{
+		let i;
+		this.undos[this.curUndo]=JSON.parse(JSON.stringify(this.venue));							// Add to undos
+		this.curUndo++;																				// Advance index
+		for (i=0;i<this.undos.length-this.curUndo;++i)	this.undos.pop();							// Remove ones beyond this point		
+	}
+
+	Undo()																						// UNDO SAVED ACTION
+	{
+		if (!this.curUndo) {  Sound("delete");	return;	}											// No undos to un-do
+		this.curUndo--;																				// Dec index
+		this.venue=JSON.parse(JSON.stringify(this.undos[this.curUndo]));							// Save state
+		this.EditVenue();																			// Redraw
+		Sound("ding");																				// Acknowledge
+	}
+
+	Redo()																						// REDO UNDO ACTION
+	{
+		let o;
+		if (this.curUndo >= this.undos.length) 		return false;									// No redos to re-do
+		if (this.curUndo == this.undos.length-1)	o=JSON.parse(JSON.stringify(this.venue));		// If on last one, redo is current state
+		else										o=this.undos[this.curUndo+1];					// Point at saved state and advance index
+		this.curUndo++;																				// Inc index
+		this.venue=JSON.parse(JSON.stringify(o));													// Restore venue
+		this.EditVenue();																			// Redraw
+//		Sound("ding");																				// Acknowledge
+		return true;																				// Worked
+	}
 
 } // Class closure
 

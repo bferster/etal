@@ -149,12 +149,11 @@ class App  {
 		this.myId=0;																				// My unique id
 		this.curFloor=0;																			// Current floor
 		this.venue=[];																				// Holds floors
-		this.people=[{ stats:"Q"} ];																	// Holds attendees
+		this.people=[{ stats:"Q"} ];																// Holds attendees
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
 		this.infoDeskId=null;																		// Id of info desk person
 		this.videoWin=null;																			// Video window
-		this.videoRoom=null;																		// Status of video room
 		this.vr="#co-Rm-0";																			// Assume hallway is video rooom for iframes
 		this.retryWS=false;																			// Reconnecting to web socket
 		this.KZ="";																					// Ks
@@ -198,12 +197,7 @@ class App  {
 				this.ws.onopen=()=>    { console.log('re-connected'); };							// ON OPEN  
 				this.retryWS=false;																	// Not retrying	
 				}
-			if (this.videoWin && (this.videoWin.closed !== false)) {								// Check if window was closed
-				this.videoWin=null;  																// Null 
-				$("#co-videoBar").remove();															// Remove alert bar
-				let s=this.people[this.myId].stats;													// Get stats
-				if ((s == this.videoRoom) && (s.match(/R|B/i)))	this.GoToCenter();					// Go to center if in same room or bar		
-				}
+			if (this.videoWin && (this.videoWin.closed !== false)) { this.videoWin=null; }			// Check if window was closed and set var
 			},1000)
 		}
 
