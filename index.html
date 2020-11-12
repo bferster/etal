@@ -309,12 +309,6 @@ class App  {
 				this.status="A";																	// In active mode
 				}
 			}
-		else if (targetId == "co-infoDesk")  { this.chat.Chat(this.infoDeskId,"infodesk"); return; } // ON INFO DESK BUTTON
-		else if (targetId == "co-attendees") { this.sced.ShowAttendees(this.infoDeskId,true); return; }	// ON ATTENDEES BUTTON
-		else if (targetId == "co-schedule") {														// ON SCHEDULE BUTTON
-			this.sced.ShowSchedule();																// Show schedule
-			return;																					// Quit
-			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
 			x=$("#co-quiet").offset().left+(avSize/2)+4;											// Center x
 			y=$("#co-quiet").offset().top+(avSize/2)+4;												// Y
@@ -574,13 +568,15 @@ class App  {
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 
 		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON PERSON
-		$("#co-grid").on("click", 				 (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 		// ON GRID CLICK
+//		$("#co-grid").on("click", 				 (e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }); 		// ON GRID CLICK
 		$("#co-grid").droppable({     		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON GRID 
 		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON ROOM
 		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON QUIET AREA
 		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   	// ON DROP ON COFFEE BAR
+		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });						// ON SCHEDULE BUT
+		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infodesk"); });		// ON HELP BUT
+		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); 	// ON PEOPLE BUT
 	}
-
 
 
 } // APP CLASS CLOSURE
@@ -636,6 +632,7 @@ class App  {
 	{
 		let str="";
 		$("#co-popupDiv").remove();																		// Kill old one, if any
+		if (document.fullscreenElement)	document.exitFullscreen();										// Force non-full screen 
 		str+="<div id='co-popupDiv' class='co-popup'>"; 												// Add div
 		if (time == -1) {																				// If has close but
 			time=100000;																				// Increase time
