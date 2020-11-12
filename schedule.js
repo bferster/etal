@@ -133,7 +133,7 @@ class Schedule  {
 			<tr><td>In </td><td><select class="co-is" id="co-spr" style="width:148px"></select></td></tr>	
 			<tr><td>Find </td><td><input class="co-is" id="co-spf" style="width:130px;height:21px;" placeholder="Type here"></td></tr></table>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-		$("#co-spr").append("<option>Any area</option><option>Hallway");
+		$("#co-spr").append("<option>Any area</option><option>Hallway</option><option>Coffee bar</option>");
 		fillPeople();
 		
 		for (i=1;i<app.venue[app.curFloor].length;++i)	$("#co-spr").append("<option>"+app.venue[app.curFloor][i].title+"</option>");
@@ -158,7 +158,8 @@ class Schedule  {
 					}	
 				if (room) {																		// If filtering by room
 					if ((room == 1) && (o.stats != "A"))				continue;				// Only active people in hallway
-					else if ((room > 1) && ("R"+(room-1) != o.stats))	continue;				// Show only people in the room
+					else if ((room == 2) && (o.stats != "B0-0"))		continue;				// Only active people in main coffee bat
+					else if ((room > 3) && ("R"+(room-2) != o.stats))	continue;				// Show only people in the room
 					}
 				selects.push({index:i, org:o.org, name:o.lastName });							// Add to selects
 				}
@@ -184,23 +185,30 @@ class Schedule  {
 
 	ShowLink(link)																				// SHOW LINK
 	{
+		if (!link) return;
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
-		if (link && link.match(/zoom/i)) {															// If Zoom
-			this.curZoom=link;																		// Save link
+		if (link.match(/zoom/i)) {																	// If Zoom
+			app.curZoom=link;																		// Save link
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
 			}
 		else{																						// Use iframe
-			if (link && link.match(/zapp/i) && isMobile) {											// If zoom mobile
-				let str="zoomus://zoom.us/join?confno="+link.split("?")[1];							// Make mobile url
-				this.ShowLink(str);																	// Open with native app							
-				return;																				// Quit
+			if (link.match(/zapp/i)) {																// An embedded zoom link
+				let str="";
+				if (isMobile)	str="zoomus";														// Use mobile header
+				else if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="zoommtg";
+				if (str) {
+					str+="://zoom.us/join?confno="+link.split("?")[1];								// Make full url
+					app.sced.ShowLink(str);															// Open with native app							
+					return;																			// Quit
+					}
 				}
 			if (link.charAt(0) == "*") {															// Show a web page
 				window.open(link.substr(1),"_blank");												// Open in new tab
 				return;																				// Quit
 				}
-			if (link && link.match(/zapp/i)) link+="&"+app.KZ										// If zoom app, add k
+			if (link.match(/zapp/i)) link+="&"+app.KZ;												// If zoom app, add k
+			if (link.match(/japp/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName;		// If zoom app, add k
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px">

@@ -70,7 +70,7 @@
 		<br><br>
 		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"></div>
 		<br><br>
-		<b>Please note:</b><br>Zoom does not support Safari yet,<br>so use Chrome or FoxFox until they do.
+		<b>For the best experience</b><br>Please use the Chrome or FoxFox browser
 	</div>
 
 <script>
@@ -323,7 +323,7 @@ class App  {
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
    		    this.status="B"+id;                                                  					// Update me
- 			this.sced.ShowLink("japp.htm?/~"+this.meetingId+"~coffeebar-"+this.curFloor+"-"+id+"&"+this.people[this.myId].firstName); // Go to the coffee bar 
+ 			this.sced.ShowLink("japp.htm?/~"+this.meetingId+"~coffeebar-"+this.curFloor+"-"+id); 	// Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else{																						// General click
@@ -410,7 +410,7 @@ class App  {
 			y2=$("#co-Rm-"+j).offset().top+50;														// Top
 			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-5;							// Bottom
 			w=Math.min(Math.sqrt(((x2-ox)*(y-y2)/n)),avSize+2);										// Set avatar spacing
-			if (this.people[this.myId].stats == "R"+j);												// If I'm in this room		
+			if (this.people[this.myId].stats == "R"+j)												// If I'm in this room		
 				$("#co-AvMe").animate({ left:x, top:y},0),x+=w; 									// Move me in
 			for (i=0;i<n;++i) {																		// For person in room
 				if (rms[j][i] == this.myId)	continue;												// Skip me
@@ -535,12 +535,12 @@ class App  {
 		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
 		
 		let menu=`<div style="width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
-			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px">
+			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px" title="Go private">
 			<img id="co-coffee-${this.curFloor}-0" style="width:200px;margin-left:calc(50% - 100px - ${avSize+16}px)" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
-				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px">
-				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px">`;
-				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;margin-top:20px;cursor:pointer">';
+				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See meeting schedule">
+				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See other attendees">`;
+				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;margin-top:20px;cursor:pointer" title="Get help!">';
  		menu+=`</div></div>`;
 
 		sc=this.sced.GeEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			

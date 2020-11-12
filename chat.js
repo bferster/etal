@@ -170,7 +170,7 @@ class Chat  {
 		$("#co-revText").on("change",   ()=>{ sendChat(); });										// ON TEXT ENTER
 		$("#co-revTextBut").on("click", ()=>{ sendChat(); });										// ON SEND CLICK 
 		$("#co-zoomBut").on("click", ()=>{ 															// ON VIDEO CHAT BUT CLICK
-			let link=`japp.htm?/~${app.meetingId}~${app.people[app.myId].firstName}${app.myId}&${app.people[app.myId].firstName}&${app.people[app.myId].firstName}`;
+			let link=`japp.htm?/~${app.meetingId}~${app.people[app.myId].firstName}${app.myId}`;	// Link
 			let str=`<div onclick="app.sced.ShowLink('${link}')">
 			Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> to join`;
 			sendChat(str);																			// Invite
