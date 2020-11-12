@@ -79,6 +79,7 @@ class Chat  {
 			${o.ints ? "Interests: "+o.ints : ""}
 			</p><p style="position:absolute;left:24px;bottom:0">`;
 			if (o.li) {																				// If a LI site
+				o.li=o.li.replace(/www\./,"");														// Remove www.
 				o.li=o.li.replace(/https:\/\//,"");													// Remove http
 				o.li=o.li.replace(/linkedin.com\//,"");												// Domain
 				o.li=o.li.replace(/in\//,"");														// Folder

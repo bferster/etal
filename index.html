@@ -98,6 +98,7 @@
 			app.AddVenue(JSON.parse(localStorage.getItem('venue')));								// Add venue data
 			app.AddSchedule(JSON.parse(localStorage.getItem('schedule')));							// Schedule
 			app.DrawVenue();																		// Draw venue		
+			app.DrawPeople();
 			app.Draw();																				// Draw screen
 			$("#splashDiv").fadeOut();																// Fade out splash
 			$("#co-top").animate({opacity:1},1000);													// Fade in main, the arrange people
