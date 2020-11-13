@@ -64,6 +64,7 @@
 	<input type="file" id="co-filepeople" style="display:none">
 	<input type="file" id="co-fileschedule" style="display:none">
 	<input type="file" id="co-filevenue" style="display:none">
+	<input type="file" id="co-imageUpload" style="display:none">
 	<div id="co-tData" class="co-bar">
 		<div style="float:right;margin-right:36px; pointer-events:all">
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -120,9 +121,10 @@
 				Sound("ding");																		// Ding
 				}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
+				$("#co-imageUpload").trigger("click");
 				}
 			});
-		});
+	});
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -164,6 +166,12 @@
 
 	$("[id^=co-file]").on("change",(e)=>{															// ON FILE
 		ReadFile(e,"co-"+app.curTable,app.curTable); $("#co-file"+app.curTable).val("");			// Read file
+		});
+
+	$("#co-imageUpload").on("change",(e)=>{															// ON IMAGE UPLOAD
+		let myReader=new FileReader();																// Alloc reader
+    	myReader.onloadend=(e)=>{ app.ws.send("IMG|harp/test12.jpg|"+myReader.result); }					// Send base64 to server
+		myReader.readAsDataURL(e.target.files[0]);													// Load file		
 		});
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
