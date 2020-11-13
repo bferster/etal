@@ -13,6 +13,7 @@
 <script>
 
 	let v=window.location.search.substring(1).split("&");
+	let isAndroid=(navigator.userAgent.toLowerCase().indexOf("android") != -1);
 	const domain = 'meet.jit.si';
 	const options = {
 		roomName: v[0],
@@ -24,7 +25,7 @@
 									"VIDEO_QUALITY_LABEL_DISABLED": true,
 									"SHOW_CHROME_EXTENSION_BANNER": false
 								},
-		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false},
+		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  disableDeepLinking:isAndroid },
 		parentNode: document.querySelector('body'),
 		};
 	const api = new JitsiMeetExternalAPI(domain, options);
