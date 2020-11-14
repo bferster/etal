@@ -37,6 +37,9 @@
 	.co-rich 	{	position:absolute; width:calc(100% - 2px); height:calc(100vh - 2px); background-color:#fff; top:0; left:0; display:none; }
 	.co-colChip	{	display:inline-block; border-radius:5px; height:16px;width:16px; border:1px solid #999; 
 					margin-left:6px; cursor:pointer; vertical-align:-4px; }
+	.co-images	{	width:66vw; background-color:#f8f8f8; overflow-y:auto; border:1px solid #999; border-radius:8px; max-height:33vh; }
+	.co-pic		{	display:inline-block; width:128px; height:128px; border:1px solid #999;
+					overflow: hidden; margin:8px 8px 0 0; cursor:pointer; }
 
 	#co-tab	{ background:transparent;  border:none; margin-left:-8px; }
 	#co-tab .ui-widget-header { background:transparent; border:none; background-color: #ccc; } 
@@ -88,6 +91,7 @@
 		<p id='saveRichBut' class='co-bs' style="float:right;margin-right:24px">Save changes</p>
 		<img id="cancelRichBut" style="position:absolute;top:14px;left:calc(100% - 30px);cursor:pointer" src="img/closedot.png">
 	</div>
+	<textarea id='clipOutputDiv' style='width:1px;height:1px;opacity:.01'></textarea>
 
 <script>
 
@@ -170,7 +174,8 @@
 
 	$("#co-imageUpload").on("change",(e)=>{															// ON IMAGE UPLOAD
 		let myReader=new FileReader();																// Alloc reader
-    	myReader.onloadend=(e)=>{ app.ws.send("IMG|harp/test12.jpg|"+myReader.result); }					// Send base64 to server
+		trace(e.target.files[0].name)
+		myReader.onloadend=(e)=>{ app.ws.send("IMG|harp1/test13.jpg|"+myReader.result); }			// Send base64 to server
 		myReader.readAsDataURL(e.target.files[0]);													// Load file		
 		});
 
@@ -642,7 +647,7 @@ class App  {
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// LIVE
+// LIVE / PICS
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	DrawLive()																						// MAKE LIVE EDITOR
@@ -653,8 +658,8 @@ class App  {
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>
-		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr>`;
-
+		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div></td></tr>
+		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
 
 		for (i=0;i<app.venue.length;++i) $("#dlFloor").append(`<option>${i}</option>`);					// For each floor, add to select
@@ -663,7 +668,24 @@ class App  {
 			$("#dlEvent").append(`<option>${i+". "+s}</option>`);										// Add to select
 			}
 	
-		roomSelect(cf);																					// Fill room select
+		str="";
+		for (i=0;i<app.S3Images.length;++i) {															// For each image
+			str+=`<div id="co-pic-${i}", class="co-pic">`;
+			if (app.S3Images[i].match(/gif|png|jpeg|jpg/i)) str+=`<img src="https://etalimages.s3.amazonaws.com/${app.S3Images[i]}" width="100%">`;
+			else											str+="<br>"+app.S3Images[i];
+			str+="</div>";
+			}
+		$("#co-images").html(str.replace(/\t|\n|\r/g,""));
+		
+		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
+			let id=e.currentTarget.id.substr(7);														// Get id
+			PopUp(app.S3Images[id]+"<br>Copied to clipboard");											// Show it
+			$("#clipOutputDiv").val("https://etalimages.s3.amazonaws.com/"+app.S3Images[id]);			// Copy to shill
+			$("#clipOutputDiv")[0].select();															// Select
+			try { if (document.execCommand('copy'))	Sound("ding");	} catch (e) {}						// Copy to clipboard
+			});
+
+		roomSelect(cf);																					// Fill images
 		setEvent(cf);																					// Set event
 	
 		$("#dlFloor").on("change",()=>{ 																// ON FLOOR CHANGE
