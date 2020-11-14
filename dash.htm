@@ -123,7 +123,7 @@
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
 				$("#co-imageUpload").trigger("click");
 				}
-			});
+		});
 	});
 
 
@@ -188,6 +188,7 @@ class App  {
 		this.people=[];																				// Holds people
 		this.schedule=[];																			// Holds schedule
 		this.venue=[];																				// Holds venue
+		this.S3Images=[];																			// Holds S3 images
 		this.curRow=0;																				// Current row I'm editing
 		this.curRoom=0;																				// Current room
 		this.curFloor=0;																			// Current floor
@@ -222,9 +223,11 @@ class App  {
 				app.ws.send(`P|${app.meetingId}`);													// Request people data	
 				app.ws.send(`V|${app.meetingId}`);													// Venue 
 				app.ws.send(`S|${app.meetingId}`);													// Schedule
+				app.ws.send(`IMGL|${app.meetingId}`);												// S3 images
 				}
 			}						
-	}
+		else if (v[0] == "IMGL") 	app.S3Images=(JSON.parse(v[1]));								// Get S3 images
+		}
 
 	InitSpreadSheets()																			// INIT JSGRID
 	{
@@ -841,6 +844,7 @@ class App  {
 			app.ws.send(`P|${app.meetingId}`);															// Request people data	
 			app.ws.send(`V|${app.meetingId}`);															// Venue 
 			app.ws.send(`S|${app.meetingId}`);															// Schedule
+			app.ws.send(`IMGL|${app.meetingId}`);														// S3 images
 			}
 		$("#gtBoxId").on("change", ()=>{																// ON ENTER ID
 			callback($("#username").val(),$("#password").val(),$("#gtBoxId").val());					// Send data back
