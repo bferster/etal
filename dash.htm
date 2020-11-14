@@ -27,7 +27,7 @@
 					font-size: 14px; text-align:center; display: none; }
 	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:84px; }
 	.co-bs 		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
-					font-size: 13px; background-color:  #36c936; padding: 2px 8px 2px 8px; }
+					font-size: 13px; background-color:  #999; padding: 2px 8px 2px 8px; }
 	.jsgrid-cell{	overflow:hidden; }
 	.co-venue 	{	display:inline-block; height:calc(100vh - 332px); width:250px; border:1px solid #999; vertical-align:top;
 					padding:12px; margin-right:12px; background-color:#f8f8f8;  user-select:none;}
@@ -37,9 +37,9 @@
 	.co-rich 	{	position:absolute; width:calc(100% - 2px); height:calc(100vh - 2px); background-color:#fff; top:0; left:0; display:none; }
 	.co-colChip	{	display:inline-block; border-radius:5px; height:16px;width:16px; border:1px solid #999; 
 					margin-left:6px; cursor:pointer; vertical-align:-4px; }
-	.co-images	{	width:66vw; background-color:#f8f8f8; overflow-y:auto; border:1px solid #999; border-radius:8px; max-height:33vh; }
+	.co-images	{	width:66vw; background-color:#f8f8f8; overflow-y:auto; border:1px solid #999; border-radius:8px; max-height:33vh; padding:4px}
 	.co-pic		{	display:inline-block; width:128px; height:128px; border:1px solid #999;
-					overflow: hidden; margin:8px 8px 0 0; cursor:pointer; }
+					overflow: hidden; margin:6px; cursor:pointer; background-color:#ccc;}
 
 	#co-tab	{ background:transparent;  border:none; margin-left:-8px; }
 	#co-tab .ui-widget-header { background:transparent; border:none; background-color: #ccc; } 
@@ -125,7 +125,6 @@
 				Sound("ding");																		// Ding
 				}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
-				$("#co-imageUpload").trigger("click");
 				}
 		});
 	});
@@ -174,8 +173,11 @@
 
 	$("#co-imageUpload").on("change",(e)=>{															// ON IMAGE UPLOAD
 		let myReader=new FileReader();																// Alloc reader
-		trace(e.target.files[0].name)
-		myReader.onloadend=(e)=>{ app.ws.send("IMG|harp1/test13.jpg|"+myReader.result); }			// Send base64 to server
+		let s=app.meetingId+"/"+e.target.files[0].name;												// Make up file name
+		myReader.onloadend=(e)=>{ 																	// When loaded
+			app.ws.send("IMG|"+s+"|"+myReader.result);												// Send base64 to server
+			app.S3Images.push(s);																	// Add to list	
+			}						
 		myReader.readAsDataURL(e.target.files[0]);													// Load file		
 		});
 
@@ -232,7 +234,8 @@ class App  {
 				}
 			}						
 		else if (v[0] == "IMGL") 	app.S3Images=(JSON.parse(v[1]));								// Get S3 images
-		}
+		else if (v[0] == "IMG") 	app.DrawLive();													// Refreh when new images loaded
+	}
 
 	InitSpreadSheets()																			// INIT JSGRID
 	{
@@ -658,7 +661,8 @@ class App  {
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>
-		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div></td></tr>
+		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
+		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div></td></tr>
 		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
 
@@ -667,6 +671,8 @@ class App  {
 			s=app.schedule[i].desc;																		// Get description
 			$("#dlEvent").append(`<option>${i+". "+s}</option>`);										// Add to select
 			}
+		roomSelect(cf);																					// Set room
+		setEvent(cf);																					// Set event
 	
 		str="";
 		for (i=0;i<app.S3Images.length;++i) {															// For each image
@@ -685,8 +691,8 @@ class App  {
 			try { if (document.execCommand('copy'))	Sound("ding");	} catch (e) {}						// Copy to clipboard
 			});
 
-		roomSelect(cf);																					// Fill images
-		setEvent(cf);																					// Set event
+		$("#co-addImage").on("click",()=>{ $("#co-imageUpload").trigger("click") })						// ON ADD IMAGE	
+	
 	
 		$("#dlFloor").on("change",()=>{ 																// ON FLOOR CHANGE
 			cf=$("#dlFloor").prop("selectedIndex"); 													// Get new floor			
