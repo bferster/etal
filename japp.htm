@@ -13,7 +13,12 @@
 <script>
 
 	let v=window.location.search.substring(1).split("&");
-	let isAndroid=(navigator.userAgent.toLowerCase().indexOf("android") != -1);
+	let ua=window.navigator.userAgent;
+	let isIos=!!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
+	let isWebkit=!!ua.match(/WebKit/i);
+	let isSafari=isIos && isWebkit && !ua.match(/CriOS/i);
+	let isAndroid=ua.match(/android/i);
+	let deep=(isAndroid || isSafari);
 	const domain = 'meet.jit.si';
 	const options = {
 		roomName: v[0],
@@ -25,7 +30,7 @@
 									"VIDEO_QUALITY_LABEL_DISABLED": true,
 									"SHOW_CHROME_EXTENSION_BANNER": false
 								},
-		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  disableDeepLinking:isAndroid },
+		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  disableDeepLinking:deep },
 		parentNode: document.querySelector('body'),
 		};
 	const api = new JitsiMeetExternalAPI(domain, options);
