@@ -24,8 +24,8 @@
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none; -webkit-user-select:none; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; user-select:none; -webkit-user-select:none; }
-	.co-qNum 	{	color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
-					border:1px solid white; cursor:pointer; width:12px; height:12px; display:none; }
+	.co-qNum 	{	position:relative;color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
+					cursor:pointer; width:11px; height:11px; display:none;  }
 	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:4px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
 	.co-sched 	{	position:absolute;  background-color:#fff; padding:24px; text-align:center;	font-size:14px; 
@@ -339,7 +339,7 @@ class App  {
 	{
 		let x=(Math.random()*20+40)/100;															// Hover X in center
 		let y=(Math.random()*20+40)/100;															// Y
-		if (this.curFloor > 0)	{x=.5; y=16/this.by; }												// Go to top of screen on upper floors
+//		if (this.curFloor > 0)	{x=.5; y=16/this.by; }												// Go to top of screen on upper floors
 		app.ReportLocation(x,y);																	// Report location
 		$("#co-AvMe").animate({ left:this.bx*x, top:this.by*y });									// Animate me there	
 	}
@@ -510,7 +510,7 @@ class App  {
 			}
 		str+=`<div class="co-me" id="co-AvMe" style="width:${avSize}px;height:${avSize}px">
 		<img src="img/avme.png" width="100%">
-		<div id="co-queue" class="co-qNum" style="margin:-14px 0 0 calc(var(${avSize}) - 4px)"></div>`;	// Add me
+		<div id="co-queue" class="co-qNum" style="margin:-15px 0 0 13px"></div></div>`;					// Add me
 		$("body").append(str);																			// Add to body
 
 		$("[id^=co-Av-]").on("click", (e)=>{ this.chat.ShowCard(e.currentTarget.id.substr(6)); }); 		// ON PERSON CLICK

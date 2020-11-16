@@ -127,7 +127,8 @@ class Chat  {
                 Send <img id="co-zoomBut" src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> invite
                 <select id="co-canned" class="co-is" style="float:right;width:90px">
                     <option>Canned</option>
-                    <option>Sure</option>
+                    <option>OK</option>
+					<option>Sure</option>
                     <option>I'll get back with you</option>
                     <option>Maybe later</option>
                     <option>Do you want to video chat?</option>
