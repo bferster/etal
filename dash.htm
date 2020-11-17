@@ -336,14 +336,14 @@ class App  {
 			d[row-1][fields[col]]=o.content.$t;																// Add content
 			}
 		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
-		for (i=0;i<d.length;++i) {																			// For each row
-			if (table == "venue")  { if (d[i].params)d[i].params=JSON.parse(d[i].params); }					// Objectify if venue params
-			else if (d[i].email || d[i].room)	$("#jsGrid-"+table).jsGrid("insertItem",d[i]);				// Add line to grid
+		if (table == "venue") {
+			for (i=0;i<d.length;++i) if  (d[i].params)d[i].params=JSON.parse(d[i].params); 					// Objectify if venue params
 			}
+		else $("#jsGrid-"+table).jsGrid("option","data",d);													// Add lines to grid
 		app[table]=d;																						// Copy to app obj
 		if (table == "venue") app.EditVenue(d);																// Redraw table with new data	
 		Sound("ding");																						// Ding
-		}
+	}
 
 	SaveToCSV(table)																					// SAVE TO CSV FILE
 	{
@@ -384,7 +384,6 @@ class App  {
 			}
 		this[table]=[];		this[table]=data;																// Copy data
 		let fields=this[table.charAt(0)+"Fields"];															// Point at fields
-		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
 		for (i=0;i<data.length;++i) {																		// For each row
 			o=data[i];																						// Point at them
 			oo={};																							// Clear grid line
@@ -392,8 +391,8 @@ class App  {
 				k=fields[j].name;																			// Get field name
 				oo[k]=o[k];																					// Copy value
 				}
-			$("#jsGrid-"+table).jsGrid("insertItem",oo);													// Add line to grid
 			}  
+		$("#jsGrid-"+table).jsGrid("option","data",this[table]);											// Add lines to grid
 		Sound("ding");																						// Ding
 	}
 
@@ -811,11 +810,8 @@ class App  {
 						d[i].params=JSON.parse(d[i].params);
 				app.EditVenue(d);
 				}
-			else{
-				$("#jsGrid-"+table).jsGrid("option", "data", []);
-				for (let i=0;i<d.length;++i)  $("#jsGrid-"+table).jsGrid("insertItem",d[i])
-				}
-			Sound("ding");																	// Ding
+			else  $("#jsGrid-"+table).jsGrid("option", "data", d);
+			Sound("ding");																				// Ding
 			};
 	}
 
