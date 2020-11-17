@@ -208,7 +208,10 @@ class App  {
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
 		let vr=$(app.vr).offset();																	// Point at video room box									
 		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()+"px",height:$(this.vr).width()*.5625+"px" });
-        this.ArrangePeople();                                                                       // Arrange people               
+	    this.ArrangePeople();                                                                       // Arrange people               
+		let x=Math.max(0,Math.min(this.bx-avSize,$("#co-AvMe").offset().left));						// Cap me x to screen
+		let y=Math.max(0,Math.min(this.by-avSize*2,$("#co-AvMe").offset().top));					// Y
+		$("#co-AvMe").offset({left:x,top:y });														// Move icon there
 	}
 
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
