@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
+	<title>èt•al Registration</title>
+</head>
+<style>
+	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:14px; padding:0px;
+					box-sizing:content-box; margin:16px;background-color: #fafafa; }
+	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:150px; }
+	.co-bs 		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
+					font-size: 13px; background-color:  #999; padding: 2px 8px 2px 8px; }
+	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
+					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
+					font-size: 14px; text-align:center; display: none; }
+</style>
+<body>
+<div style="text-align:center">
+	<br><br>
+	<img src="img/logo.png" alt="" style="width:200px"><br><br>
+	<div style="font-size:30px"><b>ATTENDEE REGISTRATION</b></div>
+	<table style="display:inline-block;border-spacing:8px;text-align:left">
+		<tr><td colspan='4'><hr></td></tr>
+		<tr><td>*First name</td><td><input class='co-is' type='text' id='firstName'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>*Last name</td><td><input class='co-is' type='text' id='lastName'></td></tr>
+		<tr><td>*Email</td><td><input class='co-is' type='text' id='email'></td></tr>
+		<tr><td>Title</td><td><input class='co-is' type='text' id='title'></td><td>Organization</td><td><input class='co-is' type='text' id='org'></td></tr>
+		<tr><td>Linked-In</td><td><input class='co-is' type='text' id='li'></td><td>Website</td><td><input class='co-is' type='text' id='web'></td></tr>
+		<tr><td>Interests</td><td><input class='co-is' type='text' id='ints'></td></tr>
+		<tr><td>Picture link</td><td><input class='co-is' type='text' id='pic'></td>
+		<td colspan='2'><div class='co-bs' onclick='StartStreaming()'>Start camera</div>&nbsp;&nbsp;&nbsp;
+		<div class='co-bs' onclick='StopStreaming()'>Capture</div></td></tr>
+		<tr><td>*required</td></tr>
+		<tr><td colspan='4'><hr></td></tr>
+	</table>
+	<br><div class='co-bs' id='send'>Register</div>
+	<br><br>
+	<div style="margin-left:-80px;border-radius:300px;">
+		<div id="snapshot"></div>
+	</div>
+	<div id="streamBox" style="overflow:hidden;width:240px;height:240px;display:inline-block;border-radius:300px">
+		<video id="stream" width="320" height="240" ></video>
+	</div>
+	<canvas id="capture" width="320" height="240" style="display:none;overflow:hidden"></canvas>
+</div>
+
+<script>
+
+	var cameraStream = null;
+	$("#send").on("click",()=>{ SaveToForm("https"); });
+
+	function SaveToForm(link)																				// SAVE DATA TO FORM
+	{
+		let d={};
+	
+	link="https://docs.google.com/forms/d/e/1FAIpQLScyAlHFxNUMtSvQK0HasOW7vV63o2GUG5nU3VtCzyVOEVc5gg/viewform?usp=pp_url&entry.331175376=firstName&entry.1150747530=lastName&entry.1466567109=email&entry.1229598408=title&entry.663689923=org&entry.1319953108=li&entry.897093569=web&entry.151157528=ints&entry.353733358=pic"
+		let url=link.split("/viewform?")[0]+"/formResponse";												// Extract post url
+		let firstName=link.match(/entry.[0-9]*=firstName/i)[0].split("=")[0];									// Extract first name
+		let lastName=link.match(/entry.[0-9]*=lastName/i)[0].split("=")[0];									
+		let email=link.match(/entry.[0-9]*=email/i)[0].split("=")[0];										
+		let org=link.match(/entry.[0-9]*=org/i)[0].split("=")[0];									
+		let title=link.match(/entry.[0-9]*=title/i)[0].split("=")[0];									
+		let li=link.match(/entry.[0-9]*=li/i)[0].split("=")[0];									
+		let web=link.match(/entry.[0-9]*=web/i)[0].split("=")[0];									
+		let ints=link.match(/entry.[0-9]*=ints/i)[0].split("=")[0];									
+		let pic=link.match(/entry.[0-9]*=pic/i)[0].split("=")[0];									
+
+		d[firstName]=$("#firstName").val();		d[lastName]=$("#lastName").val()
+		d[email]=$("#email").val();				d[title]=$("#title").val()
+		d[org]=$("#org").val();					d[ints]=$("#ints").val()
+		d[li]=$("#li").val();					d[web]=$("#web").val()
+		d[pic]=$("#pic").val()
+
+		if (!$("#firstName").val()) 			{ PopUp("First name is required!"); return; }
+		if (!$("#lastName").val()) 				{ PopUp("Last name is required!");  return; }
+		if (!$("#email").val()) 				{ PopUp("Email is required!");      return; }
+	
+		let reqData={ url: url, data: d,  type: "POST",  dataType: "xml" };										// Request
+		$.ajax(reqData);																					// May generate CORS error, but posts anyway
+	}
+
+	function PopUp(msg, time, div)														// TIMED POPUP
+	{
+		var str="";
+		$("#popupDiv").remove();															// Kill old one, if any
+		str+="<div id='popupDiv' class='co-popup'>"; 										// Add div
+		str+=msg+"</div>"; 																	// Add div
+		$(div ? "#"+div : "body").append(str);												// Add popup to div or body
+		$("#pu-close").click(function() { $("#popupDiv").remove(); });						// Remove on click of close but
+		$("#popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500)					// Animate in and out		
+	}
+
+	function StartStreaming() 
+	{
+		var mediaSupport = 'mediaDevices' in navigator;
+		$("#streamBox").show();
+		$("#snapshot").hide();
+		if (mediaSupport && null == cameraStream ) {
+			navigator.mediaDevices.getUserMedia( { video: true } )
+			.then( function( mediaStream ) {
+				cameraStream = mediaStream;
+				stream.srcObject = mediaStream;
+				stream.play();
+				})
+			.catch( function( err ) {
+				console.log( "Unable to access camera: " + err );
+				});
+		}
+	}
+
+	function StopStreaming() 
+	{
+		CaptureSnapshot();
+		$("#snapshot").show();
+		$("#streamBox").hide();
+		if (null != cameraStream) {
+			var track = cameraStream.getTracks()[0];
+			track.stop();
+			stream.load();
+			cameraStream = null;
+			}
+	}
+
+	function CaptureSnapshot() 
+	{
+		if (cameraStream != null) {
+			var ctx=capture.getContext('2d');
+			var img=new Image();
+			ctx.drawImage(stream, 80, 0, 320, 240 );
+			img.src=capture.toDataURL("image/png" );
+			img.width=320; 
+			snapshot.innerHTML="";
+			snapshot.appendChild(img);
+			}
+}
+
+</script>
+
+</body>
+</html>
