@@ -335,7 +335,11 @@ class App  {
 			if (!row) continue;																				// Not the top row			
 			d[row-1][fields[col]]=o.content.$t;																// Add content
 			}
-		$("#jsGrid-"+table).jsGrid("option", "data", []);													// Clear grid
+		for (i=0;i<d.length;++i) {																			// For each row	
+			if ((table == "schedule")    && (d[i].day == undefined))   d.splice(i,1);						// Remove blank row	
+			else if ((table == "people") && (d[i].email == undefined)) d.splice(i,1);						// Remove
+			else if ((table == "venue")  && (d[i].floor == undefined)) d.splice(i,1);						// Remove
+			}
 		if (table == "venue") {
 			for (i=0;i<d.length;++i) if  (d[i].params)d[i].params=JSON.parse(d[i].params); 					// Objectify if venue params
 			}
@@ -795,6 +799,7 @@ class App  {
 
 	function ReadFile(e, id, table) 
 	{
+		let i;
 		let file=e.target.files[0];
 		if (!file) 	return;
 		let reader=new FileReader();
@@ -804,6 +809,11 @@ class App  {
 			if ((table == "people")   && !d[0].email) { PopUp("Wrong type!"); Sound("delete"); return; }	// Wrong table type
 			if ((table == "schedule") && !d[0].day)  { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
 			if ((table == "venue")    && !d[0].rug)  { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
+			for (i=0;i<d.length;++i) {																		// For each row	
+				if ((table == "schedule")    && (d[i].day == undefined))   d.splice(i,1);					// Remove blank row	
+				else if ((table == "people") && (d[i].email == undefined)) d.splice(i,1);					// Remove
+				else if ((table == "venue")  && (d[i].floor == undefined)) d.splice(i,1);					// Remove
+				}
 			if (table == "venue") { 
 				for (let i=0;i<d.length;++i)
 					if (d[i].params)	
