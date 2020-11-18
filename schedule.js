@@ -75,7 +75,6 @@ class Schedule  {
 			<div style="height:calc(100% - 48px);width:100%;overflow-y:auto;text-align:left">`;
 		let days=[];
 		for (i=0;i<this.schedule.length;++i) {														// For each event
-			trace(i,sc)
 			sc=this.schedule[i];																	// Point at schedule
 			sc.stn=sc.start.split(":")[0]*60+(sc.start.split(":")[1]-1);							// As minutes
 			if (days[sc.day] == undefined) 				days[sc.day]=[];							// A new day													
