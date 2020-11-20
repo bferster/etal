@@ -16,40 +16,42 @@
 	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
 					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
 					font-size: 14px; text-align:center; display: none; }
+	.body ::-webkit-input-placeholder { color: #bbb; text-align:center } ::placeholder { color: #bbb; text-align:center }
+
 </style>
 <body>
 <div style="text-align:center">
-	<br><br>
-	<img src="img/logo.png" alt="" style="width:200px"><br><br>
-	<div style="font-size:30px"><b>ATTENDEE REGISTRATION</b></div>
-	<table style="display:inline-block;border-spacing:8px;text-align:left">
+	<img src="img/logo.png" alt="" style="width:150px"><br>
+	<div style="font-size:24px"><b>ATTENDEE REGISTRATION</b></div>
+	<table style="display:inline-block;border-spacing:4px;text-align:left">
 		<tr><td colspan='4'><hr></td></tr>
-		<tr><td>*First name</td><td><input class='co-is' type='text' id='firstName'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>*Last name</td><td><input class='co-is' type='text' id='lastName'></td></tr>
-		<tr><td>*Email</td><td><input class='co-is' type='text' id='email'></td></tr>
+		<tr><td>First name</td><td><input class='co-is' type='text' id='firstName' placeholder='required'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>Last name</td><td><input class='co-is' type='text' id='lastName' placeholder='required'></td></tr>
+		<tr><td>Email</td><td><input class='co-is' type='text' id='email' placeholder='required'></td></tr>
 		<tr><td>Title</td><td><input class='co-is' type='text' id='title'></td><td>Organization</td><td><input class='co-is' type='text' id='org'></td></tr>
 		<tr><td>Linked-In</td><td><input class='co-is' type='text' id='li'></td><td>Website</td><td><input class='co-is' type='text' id='web'></td></tr>
 		<tr><td>Interests</td><td><input class='co-is' type='text' id='ints'></td></tr>
-		<tr><td>Picture link</td><td><input class='co-is' type='text' id='pic'></td>
-		<td colspan='2'><div class='co-bs' onclick='StartStreaming()'>Start camera</div>&nbsp;&nbsp;&nbsp;
-		<div class='co-bs' onclick='StopStreaming()'>Capture</div></td></tr>
-		<tr><td>*required</td></tr>
+		<tr><td>Picture</td><td>Capture a picture<br>from your webcam,<br>type in the full url,<br>or load a picture<br>from your computer.<br><br><input class='co-is' type='text' id='pic'><br><br>
+		<div class='co-bs' id='loadImage' onclick=''>Load from computer</div></td>
+		<td colspan='2' style='text-align:center'>
+			<div id="streamBox" style="overflow:hidden;width:240px;height:180px;display:inline-block;border:1px solid #999">
+				<div id="snapshot"><img id="snapimg" width="240"></div>
+				<video id="stream" width="240" height="180"></video>
+			</div>
+			<canvas id="capture" width="240" height="180" style="display:none;overflow:hidden"></canvas>
+			<div><div class='co-bs' id='camBut' onclick='StartStreaming()'>Start webcam</div></div><div>
+		</td></tr>
 		<tr><td colspan='4'><hr></td></tr>
-	</table>
+		</table>
 	<br><div class='co-bs' id='send'>Register</div>
-	<br><br>
-	<div style="margin-left:-80px;border-radius:300px;">
-		<div id="snapshot"></div>
-	</div>
-	<div id="streamBox" style="overflow:hidden;width:240px;height:240px;display:inline-block;border-radius:300px">
-		<video id="stream" width="320" height="240" ></video>
-	</div>
-	<canvas id="capture" width="320" height="240" style="display:none;overflow:hidden"></canvas>
+	<input type="file" id="co-imageUpload" style="display:none">
 </div>
 
 <script>
 
-	var cameraStream = null;
+	let cameraStream=null;
+	let meetingId="3";
 	$("#send").on("click",()=>{ SaveToForm("https"); });
+	$("#loadImage").on("click",()=>{ $("#co-imageUpload").trigger("click") })								// ON ADD IMAGE	
 
 	function SaveToForm(link)																				// SAVE DATA TO FORM
 	{
@@ -57,7 +59,7 @@
 	
 	link="https://docs.google.com/forms/d/e/1FAIpQLScyAlHFxNUMtSvQK0HasOW7vV63o2GUG5nU3VtCzyVOEVc5gg/viewform?usp=pp_url&entry.331175376=firstName&entry.1150747530=lastName&entry.1466567109=email&entry.1229598408=title&entry.663689923=org&entry.1319953108=li&entry.897093569=web&entry.151157528=ints&entry.353733358=pic"
 		let url=link.split("/viewform?")[0]+"/formResponse";												// Extract post url
-		let firstName=link.match(/entry.[0-9]*=firstName/i)[0].split("=")[0];									// Extract first name
+		let firstName=link.match(/entry.[0-9]*=firstName/i)[0].split("=")[0];								// Extract data
 		let lastName=link.match(/entry.[0-9]*=lastName/i)[0].split("=")[0];									
 		let email=link.match(/entry.[0-9]*=email/i)[0].split("=")[0];										
 		let org=link.match(/entry.[0-9]*=org/i)[0].split("=")[0];									
@@ -67,35 +69,49 @@
 		let ints=link.match(/entry.[0-9]*=ints/i)[0].split("=")[0];									
 		let pic=link.match(/entry.[0-9]*=pic/i)[0].split("=")[0];									
 
-		d[firstName]=$("#firstName").val();		d[lastName]=$("#lastName").val()
-		d[email]=$("#email").val();				d[title]=$("#title").val()
-		d[org]=$("#org").val();					d[ints]=$("#ints").val()
-		d[li]=$("#li").val();					d[web]=$("#web").val()
-		d[pic]=$("#pic").val()
+		d[firstName]=$("#firstName").val();		d[lastName]=$("#lastName").val();
+		d[email]=$("#email").val();				d[title]=$("#title").val();
+		d[org]=$("#org").val();					d[ints]=$("#ints").val();
+		d[li]=$("#li").val();					d[web]=$("#web").val();
+		d[pic]=$("#pic").val();
 
 		if (!$("#firstName").val()) 			{ PopUp("First name is required!"); return; }
 		if (!$("#lastName").val()) 				{ PopUp("Last name is required!");  return; }
 		if (!$("#email").val()) 				{ PopUp("Email is required!");      return; }
+
+//		let s=meetingId+"/"+$("#email").val();														// Make up file name
+//		app.ws.send("IMG|"+s+"|"+snapimg.src);														// Send base64 to server
+//		app.S3Images.push(s);																		// Add to list	
 	
-		let reqData={ url: url, data: d,  type: "POST",  dataType: "xml" };										// Request
-		$.ajax(reqData);																					// May generate CORS error, but posts anyway
+		let reqData={ url: url, data: d,  type: "POST",  dataType: "xml" };							// Request
+		$.ajax(reqData);																			// May generate CORS error, but posts anyway
 	}
 
-	function PopUp(msg, time, div)														// TIMED POPUP
-	{
-		var str="";
-		$("#popupDiv").remove();															// Kill old one, if any
-		str+="<div id='popupDiv' class='co-popup'>"; 										// Add div
-		str+=msg+"</div>"; 																	// Add div
-		$(div ? "#"+div : "body").append(str);												// Add popup to div or body
-		$("#pu-close").click(function() { $("#popupDiv").remove(); });						// Remove on click of close but
-		$("#popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500)					// Animate in and out		
-	}
-
+	$("#co-imageUpload").on("change",(e)=>{															// ON IMAGE UPLOAD
+		let myReader=new FileReader();																// Alloc reader
+		myReader.onloadend=(e)=>{ snapimg.src=myReader.result; }									// When loaded
+		myReader.readAsDataURL(e.target.files[0]);													// Load file		
+		});
+	
 	function StartStreaming() 
 	{
+		if (cameraStream) {
+			$("#camBut").text("Start webcam");
+			var ctx=capture.getContext('2d');
+			var img=new Image();
+			ctx.drawImage(stream, 0, 0, 240, 180 );
+			snapimg.src=capture.toDataURL("image/png" );
+			$("#capture").hide();
+			$("#snapshot").show();
+			$("#stream").hide();
+			var track=cameraStream.getTracks()[0].stop();
+			stream.load();
+			cameraStream=null;
+			return;	
+			}
+		$("#camBut").text("Take picture");
 		var mediaSupport = 'mediaDevices' in navigator;
-		$("#streamBox").show();
+		$("#stream").show();
 		$("#snapshot").hide();
 		if (mediaSupport && null == cameraStream ) {
 			navigator.mediaDevices.getUserMedia( { video: true } )
@@ -110,31 +126,17 @@
 		}
 	}
 
-	function StopStreaming() 
+	function PopUp(msg, time, div)														
 	{
-		CaptureSnapshot();
-		$("#snapshot").show();
-		$("#streamBox").hide();
-		if (null != cameraStream) {
-			var track = cameraStream.getTracks()[0];
-			track.stop();
-			stream.load();
-			cameraStream = null;
-			}
+		var str="";
+		$("#popupDiv").remove();													
+		str+="<div id='popupDiv' class='co-popup'>"; 							
+		str+=msg+"</div>"; 														
+		$(div ? "#"+div : "body").append(str);								
+		$("#pu-close").click(function() { $("#popupDiv").remove(); });			
+		$("#popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500);		
 	}
 
-	function CaptureSnapshot() 
-	{
-		if (cameraStream != null) {
-			var ctx=capture.getContext('2d');
-			var img=new Image();
-			ctx.drawImage(stream, 80, 0, 320, 240 );
-			img.src=capture.toDataURL("image/png" );
-			img.width=320; 
-			snapshot.innerHTML="";
-			snapshot.appendChild(img);
-			}
-}
 
 </script>
 
