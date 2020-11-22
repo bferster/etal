@@ -6,10 +6,10 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
-   <script src="lib/ckeditor/ckeditor.js"></script>
+  <script src="lib/ckeditor/ckeditor.js"></script>
   <script src="lib/papaparse.min.js"></script>
   <link REL="SHORTCUT ICON" HREF="img/favicon.ico">
   <title>èt • al dashboard</title>
@@ -34,7 +34,8 @@
 	.co-grid 	{	display:grid; height:calc(100vh - 310px); width:100%;  user-select:none;}
 	.co-room 	{	background-repeat:repeat; border:.5px solid #999; text-align:center; 
 					text-shadow:1px 1px #bbb; font-size:9px; }
-	.co-rich 	{	position:absolute; width:calc(100% - 2px); height:calc(100vh - 2px); background-color:#fff; top:0; left:0; display:none; }
+	.co-rich 	{	position:absolute; background-color:#fff; top:55px; left:40%; display:none; width:fit-content; height:fit-content;
+					border:1px solid #999; background-color:#f8f8f8; border-radius:8px }
 	.co-colChip	{	display:inline-block; border-radius:5px; height:16px;width:16px; border:1px solid #999; 
 					margin-left:6px; cursor:pointer; vertical-align:-4px; }
 	.co-images	{	width:66vw; background-color:#f8f8f8; overflow-y:auto; border:1px solid #999; border-radius:8px; max-height:33vh; padding:4px}
@@ -87,9 +88,9 @@
 			</div>
 	</div>
 	<div id="editorDiv" class="co-rich">
+		<img id="cancelRichBut" style="position:absolute;top:14px;left:calc(100% - 30px);cursor:pointer" src="img/closedot.png">
 		<textarea class="ckeditor" id="editor1" name="editor1" style="width:100%;height:100%"></textarea>
 		<p id='saveRichBut' class='co-bs' style="float:right;margin-right:24px">Save changes</p>
-		<img id="cancelRichBut" style="position:absolute;top:14px;left:calc(100% - 30px);cursor:pointer" src="img/closedot.png">
 	</div>
 	<textarea id='clipOutputDiv' style='width:1px;height:1px;opacity:.01'></textarea>
 
@@ -101,10 +102,12 @@
 		$("#co-tab" ).tabs();																		// Init tabs
 		app=new App();                                      										// Alloc app
 		Login((e, p, m)=>{ app.ws.send(`I|${e}|${p}|${m}`); });										// Send login data to WS
-		CKEDITOR.on('instanceLoaded',(e)=>{ e.editor.resize("100%", $("body").height()-54)});		// Resize editor
-	
+		$("#editorDiv").resizable({ 																// Make it resizable
+			stop:(e,ui)=>{ CKEDITOR.instances.editor1.resize(ui.size.width,ui.size.height) }		// Resize editor
+			});
+
 		$("#cancelRichBut").on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
-		$("#saveRichBut").on("click", ()=>{ 														// ON RICH BUT CLINK
+		$("#saveRichBut").on("click", ()=>{ 														// ON RICH BUT CLICNK
 			$("#editorDiv").hide(); 																// Hide rich text editor						
 			let d=$("#jsGrid-schedule").jsGrid("option","data");									// Get data
 			d[app.curRow].content=CKEDITOR.instances.editor1.getData();								// Set new content
@@ -293,10 +296,19 @@ class App  {
 
 	RichEdit(row)																						// SHOW RICH TEXT EDITOR
 	{
-		$("#editorDiv").show();																				// Show editor
+		let rn=app.schedule[row].room;																		// Get room number
+		let fn=app.schedule[row].floor;																		// Get floor number
+		let r=app.venue[fn][rn];																			// Point at room
+		let p=app.venue[fn][0].params;																		// Point at params
+		let w=($("body").width()/p.cols)*Math.max(1,Math.abs(r.ce-r.cs));									// Width
+		let h=($("body").height()/p.rows)*Math.max(1,Math.abs(r.re-r.rs));									// Height
 		let d=$("#jsGrid-schedule").jsGrid("option","data");												// Point at table	
+		$("#editorDiv").show();																				// Show editor
+		CKEDITOR.instances.editor1.resize(w,0);																// Set size, less content
+		let t=CKEDITOR.instances.editor1.container.$.clientHeight;											// Get toolbar height
+		CKEDITOR.instances.editor1.resize(w,h+t);															// Set size
 		CKEDITOR.instances.editor1.setData(d[this.curRow].content);											// Set editor
-	}
+		}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATA
