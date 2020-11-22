@@ -41,6 +41,9 @@
 	.co-images	{	width:66vw; background-color:#f8f8f8; overflow-y:auto; border:1px solid #999; border-radius:8px; max-height:33vh; padding:4px}
 	.co-pic		{	display:inline-block; width:128px; height:128px; border:1px solid #999;
 					overflow: hidden; margin:6px; cursor:pointer; background-color:#ccc;}
+	.co-sgrid 	{	display:grid; user-select:none;}
+	.co-slot 	{	border-left:.5px solid #999; text-align:center; width:150px; height:12px; 
+					font-size:10px; color:#8585f3;overflow:hidden; }
 
 	#co-tab	{ background:transparent;  border:none; margin-left:-8px; }
 	#co-tab .ui-widget-header { background:transparent; border:none; background-color: #ccc; } 
@@ -56,13 +59,13 @@
 	<div id="co-tab">
 		<ul>
 			<li id="co-tab1"><a href="#jsGrid-people">PEOPLE</a></li>
-			<li id="co-tab2"><a href="#jsGrid-schedule">SCHEDULE</a></li>
+			<li id="co-tab2"><a href="#scheduleEditor">SCHEDULE</a></li>
 			<li id="co-tab3"><a href="#venueEditor">VENUE</a></li>
 			<li id="co-tab4"><a href="#liveEditor">LIVE</a></li>
 		</ul>
 		<div id="jsGrid-people"></div>
-		<div id="jsGrid-schedule"></div>
-		<div id="venueEditor" style="padding:0";></div>
+		<div id="scheduleEditor" style="padding:0"></div>
+		<div id="venueEditor" style="padding:0"></div>
 		<div id="liveEditor"></div>
 	</div>	
 	<input type="file" id="co-filepeople" style="display:none">
@@ -138,7 +141,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	$("#co-tab1").on("click",()=>{ app.curTable="people"; 	$("#co-tData").css("display","block"); });
-	$("#co-tab2").on("click",()=>{ app.curTable="schedule"; $("#co-tData").css("display","block")  });
+	$("#co-tab2").on("click",()=>{ app.curTable="schedule"; $("#co-tData").css("display","block"); app.DrawSchedule(); });
 	$("#co-tab3").on("click",()=>{ app.curTable="venue";  	$("#co-tData").css("display","block"); app.DrawVenue(); });
 	$("#co-tab4").on("click",()=>{ app.curTable="live";  	$("#co-tData").css("display","none");  app.DrawLive();  });
 
@@ -357,7 +360,8 @@ class App  {
 			}
 		else $("#jsGrid-"+table).jsGrid("option","data",d);													// Add lines to grid
 		app[table]=d;																						// Copy to app obj
-		if (table == "venue") app.EditVenue(d);																// Redraw table with new data	
+		if (table == "venue") 			app.EditVenue(d);													// Redraw table with new data	
+		else if (table == "schedule") 	app.EditSchedule(d);											// Redraw table with new data	
 		Sound("ding");																						// Ding
 	}
 
@@ -398,6 +402,11 @@ class App  {
 			this.EditVenue(data);                                                             				// Make up editor
 			return;                                                                                			// Quit
 			}
+		if (table == "schedule") { 																			// Schedule
+			this.Do();																						// Set do 
+			this.EditSchedule(data);                                                             			// Make up editor
+			return;                                                                                			// Quit
+			}
 		this[table]=[];		this[table]=data;																// Copy data
 		let fields=this[table.charAt(0)+"Fields"];															// Point at fields
 		for (i=0;i<data.length;++i) {																		// For each row
@@ -426,6 +435,81 @@ class App  {
 		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${d}`);							// Write to DB table
 		Sound("ding");																						// Ding
 	}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SCHEDULE
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	EditSchedule(data)																					// MAKE SCHEDULE EDITOR
+	{
+		let i;
+		if (data) this.schedule=data;																		// Set data
+		let str=`<br><div"><div id="scedHead"></div>
+				<div id="scedGrid" style="display:inline-block;overflow:auto;height:calc(100vh - 190px)"></div>
+					<div style="display:inline-block;vertical-align:top;padding:12px">
+						<b>CURRENT FLOOR</b>&nbsp;&nbsp;&nbsp;<select id="scFloor" class="co-is" style="width:100px;font-size:13px"></select><br>
+						<div id="scprop"></div>
+					</div>
+				</div>`;
+		$("#scheduleEditor").html(str.replace(/\t|\n|\r/g,""));
+		this.DrawSchedule();																				// Draw schedule grid
+	}
+
+	DrawSchedule()																						// DRAW THE SCHEDULE GRID
+	{
+		let i,j,x,y,o,s;
+		$("#popupDiv").remove();																			// Kill popup
+		$("#scFloor").empty();																				// Clear floor select
+		for (i=0;i<app.venue.length;++i)																	// For each floor
+			$("#scFloor").append(`<option>${i}</option>`);													// Add to select
+		let rooms=this.venue[this.curFloor];																// Point to rooms
+		let nr=rooms.length;
+		$("#scFloor").prop("selectedIndex",this.curFloor);													// Set floor select	
+		let str=`<div id="co-sgridh" class="co-sgrid">`;													// Add header grid
+		for (i=0;i<nr;++i) str+=`<div style="overflow:hidden;width:150px;text-align:center;white-space:nowrap"><b>${i}. ${rooms[i].title.substr(0,10).replace(/\*/,"")}</b></div>`;	// For each room, add header
+		str+=`</div>`;
+		$("#scedHead").html(str.replace(/\t|\n|\r/g,""));													// Add grid header
+		$("#co-sgridh").css("grid-template-columns","repeat("+nr+", 1fr)");									// Columns
+		str=`<div id="co-sgrid" class="co-sgrid">`;															// Add grid
+		let tim=0;	
+		for (i=0;i<96;++i) {																				// For each row (15 mins)
+			let s=Math.floor(tim/60);																		// Get hour
+			if (s < 10)	s="0"+s;																			// Pad
+			s+=":00";																						// Minutes
+			for (j=0;j<nr;++j)	{																			// For each col
+				if (!(i%4))	str+=`<div id="co-e${j}-${i}" class="co-slot" style="border-top:2px solid #999">${s}</div>`
+				else		str+=`<div id="co-e${j}-${i}" class="co-slot" style="border-top:.5px dotted #0000ff"></div>`;								
+				}
+			tim+=15;
+			}
+		str+=`</div>`;
+		$("#scedGrid").html(str.replace(/\t|\n|\r/g,""));													// Add grid
+		$("#co-sgrid").css("grid-template-columns","repeat("+nr+", 1fr)");									// Columns
+		$("#scedHead").width($("#co-sgrid").width());														// Head to match grid	
+
+		$("#scFloor").on("change",()=>{	this.curFloor=$("#scFloor").prop("selectedIndex"); 					// On floor change
+										this.EditSchedule(); 												// Reedit
+										});	
+
+
+		$("[id^=co-e]").on("click",(e)=>{																	// ON ROOM CLICK
+			let v=e.currentTarget.id.substr(4).split("-");													// Get col/row
+			for (i=0;i<app.venue[app.curFloor].length;++i) {												// For each room
+				o=app.venue[app.curFloor][i];																// Point at it
+				if ((v[0]-0 >= o.cs-0) && (v[0]-0 < o.ce-0) && (v[1]-0 >= o.rs-0) && (v[1]-0 < o.re-0)) {	// In room
+					this.curRoom=i;																			// Set room
+					this.EditSchedule();																		// Redraw
+					break
+					}												
+				}
+			});
+	
+		this.DrawEvent();																					// Draw room overlay																	
+		}
+
+		DrawEvent()
+		{
+		}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VENUE
@@ -832,6 +916,7 @@ class App  {
 						d[i].params=JSON.parse(d[i].params);
 				app.EditVenue(d);
 				}
+			else if (table == "schedule")	app.EditSchedule(d);
 			else  $("#jsGrid-"+table).jsGrid("option", "data", d);
 			Sound("ding");																				// Ding
 			};
