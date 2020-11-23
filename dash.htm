@@ -31,7 +31,7 @@
 	.jsgrid-cell{	overflow:hidden; }
 	.co-venue 	{	display:inline-block; height:calc(100vh - 332px); width:250px; border:1px solid #999; vertical-align:top;
 					padding:12px; margin-right:12px; background-color:#f8f8f8;  user-select:none;}
-	.co-grid 	{	display:grid; height:calc(100vh - 310px); width:100%;  user-select:none;}
+	.co-grid 	{	display:grid; height:calc(100vh - 310px); width:100%; user-select:none;}
 	.co-room 	{	background-repeat:repeat; border:.5px solid #999; text-align:center; 
 					text-shadow:1px 1px #bbb; font-size:9px; }
 	.co-rich 	{	position:absolute; background-color:#fff; top:55px; left:40%; display:none; width:fit-content; height:fit-content;
@@ -41,15 +41,20 @@
 	.co-images	{	width:66vw; background-color:#f8f8f8; overflow-y:auto; border:1px solid #999; border-radius:8px; max-height:33vh; padding:4px}
 	.co-pic		{	display:inline-block; width:128px; height:128px; border:1px solid #999;
 					overflow: hidden; margin:6px; cursor:pointer; background-color:#ccc;}
-	.co-sgrid 	{	display:grid; user-select:none;}
-	.co-slot 	{	border-left:.5px solid #999; text-align:center; width:150px; height:12px; 
-					font-size:10px; color:#8585f3;overflow:hidden; }
+	.co-sgrid 	{	display:grid; user-select:none; grid-auto-rows:12px; grid-column-gap:4px; }
+	.co-slot 	{	text-align:center; font-size:12px; color:#8585f3; overflow:hidden; }
 
 	#co-tab	{ background:transparent;  border:none; margin-left:-8px; }
 	#co-tab .ui-widget-header { background:transparent; border:none; background-color: #ccc; } 
 	#co-tab .ui-tabs-nav .ui-state-default { background:transparent; border:none;  }
 	#co-tab .ui-tabs-nav .ui-state-default a { color: #888; font-size:24px; }
 	#co-tab .ui-tabs-nav .ui-state-active a {  color: #fff; font-weight:bold;font-size:24px; outline:none; }
+
+	body ::-webkit-scrollbar { width: 9px; height:8px } 
+	body ::-webkit-scrollbar-track { background: transparent; }
+	body ::-webkit-scrollbar-thumb { border-radius:8px ;background:#a4baec }
+	body ::-webkit-scrollbar-thumb:hover { background: #a4baec }
+
 
 </style>
 
@@ -112,9 +117,7 @@
 		$("#cancelRichBut").on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
 		$("#saveRichBut").on("click", ()=>{ 														// ON RICH BUT CLICNK
 			$("#editorDiv").hide(); 																// Hide rich text editor						
-			let d=$("#jsGrid-schedule").jsGrid("option","data");									// Get data
 			d[app.curRow].content=CKEDITOR.instances.editor1.getData();								// Set new content
-			$("#jsGrid-schedule").jsGrid("option","data",d);										// Put data	
 			});	
 	
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
@@ -169,7 +172,8 @@
 	$("[id^=co-clear]").on("click",(e)=>{															// ON CLEAR
 		ConfirmBox("Are you sure?","",()=>{															// Are we sure?
 			if (app.curTable == "venue") app.EditVenue([]);
-			else $("#jsGrid-"+app.curTable).jsGrid("option", "data", [])
+			else if (app.curTable == "schedule") app.EditSchedule([]);
+			else if (app.curTable == "people") $("#jsGrid-"+app.curTable).jsGrid("option", "data", [])
 			}) 
 		});
 
@@ -205,6 +209,7 @@ class App  {
 		this.curRow=0;																				// Current row I'm editing
 		this.curRoom=0;																				// Current room
 		this.curFloor=0;																			// Current floor
+		this.curDay=1;
 		this.curTable="people";																		// Current db table
 		this.InitSpreadSheets();																	// Init jsGrid
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
@@ -271,30 +276,13 @@ class App  {
 			{ name:"stats", type:"text",width:50 },
 			{ type: "control" }];
 
-		this.sFields=[	{ name:"day", type:"text", width:30, validate:"required"},
-			{ name:"start", type:"text", width:80, validate:"required"},
-			{ name:"end", type:"text", width:80, validate:"required"},
-			{ name:"desc", type:"text",width:150 },
-			{ name:"floor", type:"text", width:30, validate:"required"},
-			{ name:"room", type:"text", width:30, validate:"required"},
-			{ name:"bar", type:"text", width:30 },
-			{ name:"link", type:"text",width:250 },
-			{ name:"content", type:"rich", width:150},
-			{ type: "control" }];
-
 		$("#jsGrid-people").jsGrid({ width:"100%", height:"calc(100vh - 168px)",
 				inserting:true, editing:true, sorting:true,
 				fields: this.pFields, data:[],
 				onItemEditing: function(args) { app.curRow=args.itemIndex;  }
 				});
-		$("#jsGrid-schedule").jsGrid({ width:"100%", height:"calc(100vh - 168px)",
-				inserting:true, editing:true, sorting:true,
-				fields: this.sFields, data:[],
-				onItemEditing: function(args) { app.curRow=args.itemIndex;  }
-				});
 	
 		$("#jsGrid-people").css("padding",0)		
-		$("#jsGrid-schedule").css("padding",0)		
 	}
 
 	RichEdit(row)																						// SHOW RICH TEXT EDITOR
@@ -305,7 +293,6 @@ class App  {
 		let p=app.venue[fn][0].params;																		// Point at params
 		let w=($("body").width()/p.cols)*Math.max(1,Math.abs(r.ce-r.cs));									// Width
 		let h=($("body").height()/p.rows)*Math.max(1,Math.abs(r.re-r.rs));									// Height
-		let d=$("#jsGrid-schedule").jsGrid("option","data");												// Point at table	
 		$("#editorDiv").show();																				// Show editor
 		CKEDITOR.instances.editor1.resize(w,0);																// Set size, less content
 		let t=CKEDITOR.instances.editor1.container.$.clientHeight;											// Get toolbar height
@@ -356,12 +343,12 @@ class App  {
 			else if ((table == "venue")  && (d[i].floor == undefined)) d.splice(i,1);						// Remove
 			}
 		if (table == "venue") {
-			for (i=0;i<d.length;++i) if  (d[i].params)d[i].params=JSON.parse(d[i].params); 					// Objectify if venue params
+			for (i=0;i<d.length;++i) if (d[i].params)d[i].params=JSON.parse(d[i].params); 					// Objectify if venue params
 			}
-		else $("#jsGrid-"+table).jsGrid("option","data",d);													// Add lines to grid
+		else if (table == "people")  	$("#jsGrid-"+table).jsGrid("option","data",d);						// Add lines to people grid
 		app[table]=d;																						// Copy to app obj
 		if (table == "venue") 			app.EditVenue(d);													// Redraw table with new data	
-		else if (table == "schedule") 	app.EditSchedule(d);											// Redraw table with new data	
+		else if (table == "schedule") 	app.EditSchedule(d);												// Redraw table with new data	
 		Sound("ding");																						// Ding
 	}
 
@@ -373,8 +360,8 @@ class App  {
 			for (i=0;i<d.length;++i)																		// For each room
 				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object
 			}
-		else
-			d=$("#jsGrid-"+table).jsGrid("option","data");													// Get data from spreadsheet
+		else if (table == "people")		d=$("#jsGrid-"+table).jsGrid("option","data");						// Get from grid													
+		else if (table == "schedule")	d=JSON.parse(JSON.stringify(this.venue[i]));						// Clone schedule data
 		let str=Papa.unparse(d,{ header:true, skipEmptyLines:true });										// Make CSV using lib
 		SaveTextAsFile(this.meetingId+"-"+table+".csv",str);												// Write file	
 		Sound("ding");																						// Ding
@@ -430,7 +417,8 @@ class App  {
                 for (j=0;j<this.venue[i].length;++j)														// For each room in floor
                     d.push(this.venue[i][j]);																// Add to array
             }
-        else d=$("#jsGrid-"+table).jsGrid("option","data");                                                 // Get data from spreadsheet
+		else if (table == "people")  	d=$("#jsGrid-"+table).jsGrid("option","data");                      // Get people from spreadsheet
+		else if (table == "schedule")	d=this.schedule;													// Get from scheduel	
 		d=JSON.stringify(d);																				// Stringify
 		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${d}`);							// Write to DB table
 		Sound("ding");																						// Ding
@@ -442,16 +430,32 @@ class App  {
 
 	EditSchedule(data)																					// MAKE SCHEDULE EDITOR
 	{
-		let i;
+		let i,o={ day:"0", start:"", end:"", bar:"", floor:"", desc:"", link:"", content:"" };
 		if (data) this.schedule=data;																		// Set data
-		let str=`<br><div"><div id="scedHead"></div>
-				<div id="scedGrid" style="display:inline-block;overflow:auto;height:calc(100vh - 190px)"></div>
+		if (!this.schedule.length)	this.schedule.push(o);													// Need day 0
+		for (i=0;i<this.schedule.length;++i)																// For each event
+			if (this.schedule[i].day == 0)	o=this.schedule[i];												// Set val if 0
+		let str=`<br><div id="scedGrid" style="display:inline-block;overflow:auto;padding-right:4px;
+				height:calc(100vh - 190px);max-width:calc(100% - 380px)"></div>
 					<div style="display:inline-block;vertical-align:top;padding:12px">
-						<b>CURRENT FLOOR</b>&nbsp;&nbsp;&nbsp;<select id="scFloor" class="co-is" style="width:100px;font-size:13px"></select><br>
+						<table>
+							<tr><td><b>Day</b></td><td><select id="scDay" class="co-is" style="width:50px;font-size:13px"></select></td>
+							<td><b>Floor</b></td><td><select id="scFloor" class="co-is" style="width:50px;font-size:13px"></select></td></tr>
+							<tr><td>&nbsp;</td></tr>
+							<tr><td>Start date&nbsp;&nbsp;</td><td colspan=2><input type="text" id="scStart" class="co-is" style="width:100px" value="${o.start}"></td></tr>
+							<tr><td>End date</td><td colspan=2><input type="text" id="scEnd" class="co-is" style="width:100px"  value="${o.end}"></td></tr>
+							<tr><td>Time zone</td><td colspan=2><input type="text" id="scZone" class="co-is" style="width:100px" value="${o.bar}"></select></td></tr>
+						<table>
+						<br>
 						<div id="scprop"></div>
 					</div>
 				</div>`;
 		$("#scheduleEditor").html(str.replace(/\t|\n|\r/g,""));
+		for (i=1;i<10;++i)	$("#scDay").append(`<option>${i}</option>`);									// For each day, add to select
+		$("#scDay").prop("selectedIndex",this.curDay-1);													// Set day
+		$("#scStart").on("change",()=>{ o.start=$("#scStart").val(); });									// ON START CHANGE
+		$("#scEnd").on("change",()=>{ o.end=$("#scEnd").val(); });											// ON END CHANGE
+		$("#scZone").on("change",()=>{ o.bar=$("#scZone").val(); });										// ON ZONE CHANGE
 		this.DrawSchedule();																				// Draw schedule grid
 	}
 
@@ -465,51 +469,75 @@ class App  {
 		let rooms=this.venue[this.curFloor];																// Point to rooms
 		let nr=rooms.length;
 		$("#scFloor").prop("selectedIndex",this.curFloor);													// Set floor select	
-		let str=`<div id="co-sgridh" class="co-sgrid">`;													// Add header grid
-		for (i=0;i<nr;++i) str+=`<div style="overflow:hidden;width:150px;text-align:center;white-space:nowrap"><b>${i}. ${rooms[i].title.substr(0,10).replace(/\*/,"")}</b></div>`;	// For each room, add header
-		str+=`</div>`;
-		$("#scedHead").html(str.replace(/\t|\n|\r/g,""));													// Add grid header
-		$("#co-sgridh").css("grid-template-columns","repeat("+nr+", 1fr)");									// Columns
-		str=`<div id="co-sgrid" class="co-sgrid">`;															// Add grid
-		let tim=0;	
-		for (i=0;i<96;++i) {																				// For each row (15 mins)
-			let s=Math.floor(tim/60);																		// Get hour
-			if (s < 10)	s="0"+s;																			// Pad
-			s+=":00";																						// Minutes
-			for (j=0;j<nr;++j)	{																			// For each col
-				if (!(i%4))	str+=`<div id="co-e${j}-${i}" class="co-slot" style="border-top:2px solid #999">${s}</div>`
-				else		str+=`<div id="co-e${j}-${i}" class="co-slot" style="border-top:.5px dotted #0000ff"></div>`;								
-				}
-			tim+=15;
+	
+		let str=`<div id="co-sgrid" class="co-sgrid">`;														// Add grid
+		for (i=0;i<nr;++i) {																				// For each hour
+			str+=`<div style="grid-column-start:${i+1};grid-column-end:${i+2};
+				grid-row-start:0;grid-row-end:1;text-align:center;">
+				<b>${i}<br>${rooms[i].title.replace(/\*/,"")}</b>
+			</div>`;								
+			}
+		for (i=0;i<19;++i) {																				// For each hour
+			s=i+6;
+			if (i < 10)	s="0"+s;																			// Pad
+			str+=`<div class="co-slot" style="grid-column-start:0;grid-column-end:1;width:60px;
+				grid-row-start:${i*4};grid-row-end:${i*4+1}">${s}:00</div>`;								
 			}
 		str+=`</div>`;
 		$("#scedGrid").html(str.replace(/\t|\n|\r/g,""));													// Add grid
-		$("#co-sgrid").css("grid-template-columns","repeat("+nr+", 1fr)");									// Columns
-		$("#scedHead").width($("#co-sgrid").width());														// Head to match grid	
-
-		$("#scFloor").on("change",()=>{	this.curFloor=$("#scFloor").prop("selectedIndex"); 					// On floor change
-										this.EditSchedule(); 												// Reedit
-										});	
-
-
-		$("[id^=co-e]").on("click",(e)=>{																	// ON ROOM CLICK
-			let v=e.currentTarget.id.substr(4).split("-");													// Get col/row
-			for (i=0;i<app.venue[app.curFloor].length;++i) {												// For each room
-				o=app.venue[app.curFloor][i];																// Point at it
-				if ((v[0]-0 >= o.cs-0) && (v[0]-0 < o.ce-0) && (v[1]-0 >= o.rs-0) && (v[1]-0 < o.re-0)) {	// In room
-					this.curRoom=i;																			// Set room
-					this.EditSchedule();																		// Redraw
-					break
-					}												
-				}
-			});
+		$("#co-sgrid").css("grid-template-columns","repeat("+nr+",150px)");									// Columns
 	
-		this.DrawEvent();																					// Draw room overlay																	
+		for (i=0;i<this.schedule.length;++i) {																// For each event
+			if (((this.schedule[i].day == this.curDay) || (this.schedule[i].day == "*")) &&	(this.schedule[i].floor == this.curFloor))	// Today or any day
+			this.DrawEvent(i);																			// Draw it
+			}
+			
+		$("#scFloor").on("change",()=>{																		// ON FLOOR CHANGE
+				this.curFloor=$("#scFloor").prop("selectedIndex"); 											// Set floor			
+				this.EditSchedule(); 																		// Reedit
+				});	
+		$("#scDay").on("change",()=>{																		// ON DAY CHANGE
+				this.curDay=$("#scDay").prop("selectedIndex")+1; 											// Set day
+				this.EditSchedule(); 																		// Reedit
+				});	
+		$("[id^=co-ev-]").on("click",(e)=>{	this.ShowEventDetails(e.target.id.substr(6)); });				// ON EVENT CLICK
 		}
 
-		DrawEvent()
-		{
-		}
+	ShowEventDetails(num)
+	{
+		let o=this.schedule[num];																			// Point at event
+		let col;
+		if (o.room && this.venue[this.curFloor][o.room] && this.venue[this.curFloor][o.room].rug)
+			col=this.venue[this.curFloor][o.room].rug;
+		let str=`<b>EVENT DETAILS:</b><br><br><table>
+		<tr><td>Day</td><td><input type="text" id="evY-${num}" class="co-is" style="width:50px"  value="${o.day}"></td></tr>
+		<tr><td>Floor</td><td><input type="text" id="evR-${num}" class="co-is" style="width:50px"  value="${o.floor}"></td>
+		<td>Room</td><td><input type="text" id="evF-${num}" class="co-is" style="width:50px"  value="${o.room}"></td></tr>
+		<tr><td>Start</td><td><input type="text" id="evS-${num}" class="co-is" style="width:50px"  value="${o.start}"></td>
+		<td>End</td><td><input type="text" id="evE-${num}" class="co-is" style="width:50px"  value="${o.end}"></td></tr>
+		<tr><td>Link</td><td colspan='3'><input type="text" id="evL-${num}" class="co-is" style="width:240px"  value="${o.link ? o.link : ""}"></td></tr>
+		<tr><td>Desc</td><td colspan='3'><textarea type="text" id="evD-${num}" class="co-is" style="width:240px">${o.desc ? o.desc : ""}</textarea></td></tr>
+		<tr><td>Show bar?&nbsp;</td><td><input type="checkbox" id="evB-${num}"${o.bar > 0 ? " checked": ""}></td></tr>
+		<tr><td>Content</td><td><div id="evC-${num}" class="co-bs">Edit HTML</div></td></td></tr>
+		<tr><td colspan='4'><p style="background-color:${col};text-align:center;color:#fff;width:320px;;padding:8px"
+			${o.content ? o.content : ""}</p></td></tr>
+		</table>`;
+		$("#scprop").html(str.replace(/\t|\n|\r/g,""));
+	}
+
+	DrawEvent(num)
+	{
+		let o=this.schedule[num];																			// Point at event
+		let s=timeToMins(o.start)/15-24;																	// Set start
+		let e=timeToMins(o.end)/15-24;																		// End
+		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
+		cursor:pointer;overflow:hidden;font-size:11px;border-radius:6px;
+		text-align:center;color:#fff;border:1px solid #999;background-color:#a4baec;padding:6px">
+		${o.desc ? o.desc : ""}</div>`;
+		$("#co-sgrid").append(str)
+
+		function timeToMins(t) { return t.split(":")[0]*60+(t.split(":")[1]-0) }
+	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VENUE
@@ -825,15 +853,6 @@ class App  {
 			}
 		}
 
-		$("#dlSetRoom").on("click",()=>{																// ON RESET ROOM
-			let e=$("#dlEvent").prop("selectedIndex");													// Get selected event
-			let f=$("#dlFloor").prop("selectedIndex");													// Get selected floor
-			let r=$("#dlRoom").prop("selectedIndex");													// Get selected room
-			$("#jsGrid-schedule").jsGrid("updateItem", e, { floor:"f", room:"r" })
-			Sound("ding");
-			//	app.ws.send(`RS|${app.meetingId}}|${f}}|${r}|${id}`);									// Reset event's room/floor
-			});
-	
 		$("#co-start").on("click",(e)=>{ app.StartMeeting(); });										// ON START MEETING
 
 		$("#co-preview").on("click", ()=> {  															// ON PREVIEW 
@@ -844,8 +863,7 @@ class App  {
 			localStorage.setItem('venue', JSON.stringify(d));											// Store locally
 			d=$("#jsGrid-people").jsGrid("option","data");                                              // Get people data from spreadsheet
 			localStorage.setItem('people', JSON.stringify(d));											// Store locally
-			d=$("#jsGrid-schedule").jsGrid("option","data");                                            // Get schedule
-			localStorage.setItem('schedule', JSON.stringify(d));										// Store locally
+			localStorage.setItem('schedule', JSON.stringify(this.schedule));							// Store locally
 			if (app.previewWin)	app.previewWin.close();									
 			app.previewWin=window.open("index.html?preview");											// Open preview tab
 			Sound("ding"); 																				// Ding
@@ -917,8 +935,8 @@ class App  {
 				app.EditVenue(d);
 				}
 			else if (table == "schedule")	app.EditSchedule(d);
-			else  $("#jsGrid-"+table).jsGrid("option", "data", d);
-			Sound("ding");																				// Ding
+			else if (table == "people") 	$("#jsGrid-"+table).jsGrid("option", "data", d);
+			Sound("ding");																					// Ding
 			};
 	}
 
