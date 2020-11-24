@@ -34,7 +34,7 @@
 	.co-grid 	{	display:grid; height:calc(100vh - 310px); width:100%; user-select:none;}
 	.co-room 	{	background-repeat:repeat; border:.5px solid #999; text-align:center; 
 					text-shadow:1px 1px #bbb; font-size:9px; }
-	.co-rich 	{	position:absolute; background-color:#fff; top:55px; left:40%; display:none; width:fit-content; height:fit-content;
+	.co-rich 	{	position:absolute; background-color:#fff; top:133px; left:40%; display:none; width:fit-content; height:fit-content;
 					border:1px solid #999; background-color:#f8f8f8; border-radius:8px }
 	.co-colChip	{	display:inline-block; border-radius:5px; height:16px;width:16px; border:1px solid #999; 
 					margin-left:6px; cursor:pointer; vertical-align:-4px; }
@@ -115,9 +115,10 @@
 			});
 
 		$("#cancelRichBut").on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
-		$("#saveRichBut").on("click", ()=>{ 														// ON RICH BUT CLICNK
+		$("#saveRichBut").on("click", ()=>{ 														// ON RICH BUT CLICK
 			$("#editorDiv").hide(); 																// Hide rich text editor						
-			d[app.curRow].content=CKEDITOR.instances.editor1.getData();								// Set new content
+			app.schedule[app.curEvent].content=CKEDITOR.instances.editor1.getData();				// Set new content
+			app.ShowEventDetails(app.curEvent);														// Redraw html
 			});	
 	
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
@@ -209,6 +210,7 @@ class App  {
 		this.curRow=0;																				// Current row I'm editing
 		this.curRoom=0;																				// Current room
 		this.curFloor=0;																			// Current floor
+		this.curEvent=0;																			// Current event
 		this.curDay=1;
 		this.curTable="people";																		// Current db table
 		this.InitSpreadSheets();																	// Init jsGrid
@@ -250,16 +252,6 @@ class App  {
 
 	InitSpreadSheets()																			// INIT JSGRID
 	{
-		var RichTextEdit = function(config) { jsGrid.Field.call(this, config); };
- 		RichTextEdit.prototype = new jsGrid.Field({ align: "center",       
-			editTemplate: function(value,a) {  
-				let s=`<button class="co-bs" style="border:none;outline:none" 
-				onclick="app.RichEdit('${app.curRow}')">Edit</button>`;
-				return this._editPicker=s 
-				}
-			});
-		jsGrid.fields.rich=RichTextEdit;
-
 		this.pFields=[{ name:"firstName", type:"text", width:100, validate:"required" },
 			{ name:"lastName", type:"text", width:100, validate:"required" },
 			{ name:"email", type:"text", width:100, validate:"required"},
@@ -284,21 +276,6 @@ class App  {
 	
 		$("#jsGrid-people").css("padding",0)		
 	}
-
-	RichEdit(row)																						// SHOW RICH TEXT EDITOR
-	{
-		let rn=app.schedule[row].room;																		// Get room number
-		let fn=app.schedule[row].floor;																		// Get floor number
-		let r=app.venue[fn][rn];																			// Point at room
-		let p=app.venue[fn][0].params;																		// Point at params
-		let w=($("body").width()/p.cols)*Math.max(1,Math.abs(r.ce-r.cs));									// Width
-		let h=($("body").height()/p.rows)*Math.max(1,Math.abs(r.re-r.rs));									// Height
-		$("#editorDiv").show();																				// Show editor
-		CKEDITOR.instances.editor1.resize(w,0);																// Set size, less content
-		let t=CKEDITOR.instances.editor1.container.$.clientHeight;											// Get toolbar height
-		CKEDITOR.instances.editor1.resize(w,h+t);															// Set size
-		CKEDITOR.instances.editor1.setData(d[this.curRow].content);											// Set editor
-		}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DATA
@@ -439,12 +416,13 @@ class App  {
 				height:calc(100vh - 190px);max-width:calc(100% - 380px)"></div>
 					<div style="display:inline-block;vertical-align:top;padding:12px">
 						<table>
-							<tr><td><b>Day</b></td><td><select id="scDay" class="co-is" style="width:50px;font-size:13px"></select></td>
-							<td><b>Floor</b></td><td><select id="scFloor" class="co-is" style="width:50px;font-size:13px"></select></td></tr>
-							<tr><td>&nbsp;</td></tr>
-							<tr><td>Start date&nbsp;&nbsp;</td><td colspan=2><input type="text" id="scStart" class="co-is" style="width:100px" value="${o.start}"></td></tr>
-							<tr><td>End date</td><td colspan=2><input type="text" id="scEnd" class="co-is" style="width:100px"  value="${o.end}"></td></tr>
-							<tr><td>Time zone</td><td colspan=2><input type="text" id="scZone" class="co-is" style="width:100px" value="${o.bar}"></select></td></tr>
+							<tr><td colspan="4"><b>Day</b>&nbsp;&nbsp;<select id="scDay" class="co-is" style="width:50px;font-size:13px"></select>
+							&nbsp;&nbsp;&nbsp;<b>Floor</b>&nbsp;&nbsp;<select id="scFloor" class="co-is" style="width:50px;font-size:13px"></select>
+							&nbsp;&nbsp;&nbsp;&nbsp;<div id="scAddEvent" class="co-bs">Add new event</div></td></tr>
+							<tr><td colspan="4"><hr></td></tr>
+							<tr><td>Start date&nbsp;</td><td colspan="4"><input type="text" id="scStart" class="co-is" style="width:85px" value="${o.start}">
+							&nbsp;&nbsp;&nbsp;End&nbsp;&nbsp;<input type="text" id="scEnd" class="co-is" style="width:85px" value="${o.end}"></td></tr>
+							<tr><td>Time zone</td><td colspan=2><input type="text" id="scZone" class="co-is" style="width:85px" value="${o.bar}"></select></td></tr>
 						<table>
 						<br>
 						<div id="scprop"></div>
@@ -453,10 +431,17 @@ class App  {
 		$("#scheduleEditor").html(str.replace(/\t|\n|\r/g,""));
 		for (i=1;i<10;++i)	$("#scDay").append(`<option>${i}</option>`);									// For each day, add to select
 		$("#scDay").prop("selectedIndex",this.curDay-1);													// Set day
-		$("#scStart").on("change",()=>{ o.start=$("#scStart").val(); });									// ON START CHANGE
-		$("#scEnd").on("change",()=>{ o.end=$("#scEnd").val(); });											// ON END CHANGE
-		$("#scZone").on("change",()=>{ o.bar=$("#scZone").val(); });										// ON ZONE CHANGE
-		this.DrawSchedule();																				// Draw schedule grid
+		$("#scStart").on("change",()=>{ this.Do(); o.start=$("#scStart").val(); });							// ON START CHANGE
+		$("#scEnd").on("change",()=>  { this.Do(); o.end=$("#scEnd").val(); });								// ON END CHANGE
+		$("#scZone").on("change",()=> { this.Do(); o.bar=$("#scZone").val(); });							// ON ZONE CHANGE
+		$("#scAddEvent").on("click",()=> {																	// ON ADD EVENT
+			let o={ day:this.curDay, start:"9:00", end:"10:00", bar:"0", room:"0", floor:this.curFloor, desc:"", link:"", content:"" };
+			this.curEvent=this.schedule.length;																// Set new number
+			this.schedule.push(o);																			// Add new event
+			this.DrawSchedule();																			// Draw schedule grid
+			this.ShowEventDetails(this.curEvent);															// Redraw event
+			Sound("ding");																					// Ding
+			});
 	}
 
 	DrawSchedule()																						// DRAW THE SCHEDULE GRID
@@ -464,6 +449,7 @@ class App  {
 		let i,j,x,y,o,s;
 		$("#popupDiv").remove();																			// Kill popup
 		$("#scFloor").empty();																				// Clear floor select
+		$("#scprop").html("");																				// Claar details
 		for (i=0;i<app.venue.length;++i)																	// For each floor
 			$("#scFloor").append(`<option>${i}</option>`);													// Add to select
 		let rooms=this.venue[this.curFloor];																// Point to rooms
@@ -501,43 +487,93 @@ class App  {
 				this.EditSchedule(); 																		// Reedit
 				});	
 		$("[id^=co-ev-]").on("click",(e)=>{	this.ShowEventDetails(e.target.id.substr(6)); });				// ON EVENT CLICK
-		}
+	}
 
-	ShowEventDetails(num)
+	ShowEventDetails(num)																				// SHOW EVENT DETAILS
 	{
+		let col="#ccc",title="";
 		let o=this.schedule[num];																			// Point at event
-		let col;
-		if (o.room && this.venue[this.curFloor][o.room] && this.venue[this.curFloor][o.room].rug)
-			col=this.venue[this.curFloor][o.room].rug;
-		let str=`<b>EVENT DETAILS:</b><br><br><table>
-		<tr><td>Day</td><td><input type="text" id="evY-${num}" class="co-is" style="width:50px"  value="${o.day}"></td></tr>
-		<tr><td>Floor</td><td><input type="text" id="evR-${num}" class="co-is" style="width:50px"  value="${o.floor}"></td>
-		<td>Room</td><td><input type="text" id="evF-${num}" class="co-is" style="width:50px"  value="${o.room}"></td></tr>
-		<tr><td>Start</td><td><input type="text" id="evS-${num}" class="co-is" style="width:50px"  value="${o.start}"></td>
-		<td>End</td><td><input type="text" id="evE-${num}" class="co-is" style="width:50px"  value="${o.end}"></td></tr>
-		<tr><td>Link</td><td colspan='3'><input type="text" id="evL-${num}" class="co-is" style="width:240px"  value="${o.link ? o.link : ""}"></td></tr>
-		<tr><td>Desc</td><td colspan='3'><textarea type="text" id="evD-${num}" class="co-is" style="width:240px">${o.desc ? o.desc : ""}</textarea></td></tr>
-		<tr><td>Show bar?&nbsp;</td><td><input type="checkbox" id="evB-${num}"${o.bar > 0 ? " checked": ""}></td></tr>
-		<tr><td>Content</td><td><div id="evC-${num}" class="co-bs">Edit HTML</div></td></td></tr>
-		<tr><td colspan='4'><div style="background-color:${col};text-align:center;color:#fff;
-		width:320px;padding:8px;margin-top:8px">${o.content ? o.content : ""}</div></td></tr>
+		this.curEvent=num;																					// This is the event being edited
+		$("[id^=co-ev-]").css("opacity",.33);		$("#co-ev-"+num).css("opacity",.66);					// Hilite current event
+		if (o.room && this.venue[this.curFloor][o.room]) {													// A valid room
+			if (this.venue[this.curFloor][o.room].rug)	col=this.venue[this.curFloor][o.room].rug;			// Set color
+			if (this.venue[this.curFloor][o.room].title && (o.room > 0)) title=this.venue[this.curFloor][o.room].title;	// Set title
+			}
+		
+		let str=`<b>EVENT DETAILS:</b><hr><br><table>
+		<tr><td>Day</td><td><input type="text" id="evvDY-${num}" class="co-is" style="width:50px" value="${o.day}"></td></tr>
+		<tr><td>Floor</td><td><input type="text" id="evvDF-${num}" class="co-is" style="width:50px"  value="${o.floor}"></td>
+		<td>Room</td><td><input type="text" id="evvDR-${num}" class="co-is" style="width:50px"  value="${o.room}"></td></tr>
+		<tr><td>Start</td><td><input type="text" id="evvDS-${num}" class="co-is" style="width:50px"  value="${o.start}"></td>
+		<td>Duration</td><td><input type="text" id="evvDE-${num}" class="co-is" style="width:50px"  value="${o.end}"></td></tr>
+		<tr><td>Link</td><td colspan='3'><input type="text" id="evvDL-${num}" class="co-is" style="width:240px" value="${o.link ? o.link : ""}"></td></tr>
+		<tr><td>Desc</td><td colspan='3'><input type="text" id="evvDD-${num}" class="co-is" style="width:240px" value="${o.desc ? o.desc : ""}"></td></tr>
+		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}></td><tr>
+		<tr><td colspan="4" style="padding-top:8px;text-align:center"><div id="ev-EditH-${num}" class="co-bs">Edit content HTML</div></td></td></tr>
+		<tr><td colspan="4"><div style="background-color:${col};text-align:center;color:#fff;
+		width:320px;padding:8px;margin-top:8px">
+		${title.charAt(0) != "*" ? title+"<br><br>" : ""}${o.content ? o.content : ""}</div></td></tr>
+		<td colspan="4" style="text-align:center"><br><img id="ev-Delete" src="img/deletebut.png" style="width:12px;cursor:pointer"></tr>
 		</table>`;
 		$("#scprop").html(str.replace(/\t|\n|\r/g,""));
+
+		$("[id^=evvD]").on("change",(e)=>{																	// ON EVENT ITEM CHANGE
+			this.Do();																						// Undo
+			let t=e.target.id.charAt(4);																	// Get type																
+			let id=e.target.id.substr(6);																	// Get id
+			if (t == "Y")		o.day=$("#"+e.target.id).val();												// Get vals
+			else if (t == "F")	o.floor=$("#"+e.target.id).val();												
+			else if (t == "R")	o.room=$("#"+e.target.id).val();												
+			else if (t == "S")	o.start=$("#"+e.target.id).val();												
+			else if (t == "E")	o.end=$("#"+e.target.id).val();												
+			else if (t == "L")	o.link=$("#"+e.target.id).val();												
+			else if (t == "D")	o.desc=$("#"+e.target.id).val();												
+			else if (t == "B")	o.bar=$("#"+e.target.id).prop("checked") ? "1" : "0";												
+			this.DrawSchedule();																			// Redraw schedule grid
+			this.ShowEventDetails(this.curEvent);															// Rerdaw event
+			});
+
+		$("#ev-Delete").on("click",()=>{																	// ON DELETE EVENT
+			ConfirmBox("Are you sure?","",()=>{ 															// Ask if sure
+				this.schedule.splice(this.curEvent,1);														// Kill it
+				Sound("delete");																			// Delete sound
+				this.DrawSchedule();																		// Redraw schedule grid
+				});
+		});
+
+	$("[id^=ev-EditH-]").on("click",(e)=>{																	// ON EDIT HTML
+		let num=e.target.id.substr(9);																		// Get id num
+		let rn=app.schedule[num].room;																		// Get room number
+		let fn=app.schedule[num].floor;																		// Get floor number
+		let r=app.venue[fn][rn];																			// Point at room
+		let p=app.venue[fn][0].params;																		// Point at params
+		let w=($("body").width()/p.cols)*Math.max(1,Math.abs(r.ce-r.cs));									// Width
+		let h=($("body").height()/p.rows)*Math.max(1,Math.abs(r.re-r.rs));									// Height
+		$("#editorDiv").show();																				// Show editor
+		CKEDITOR.instances.editor1.resize(w,0);																// Set size, less content
+		let t=CKEDITOR.instances.editor1.container.$.clientHeight;											// Get toolbar height
+		CKEDITOR.instances.editor1.resize(w,h+t);															// Set size
+		CKEDITOR.instances.editor1.setData(this.schedule[num].content);										// Set editor
+		});
 	}
 
 	DrawEvent(num)
 	{
 		let o=this.schedule[num];																			// Point at event
 		let s=timeToMins(o.start)/15-24;																	// Set start
-		let e=timeToMins(o.end)/15-24;																		// End
+		let e=s+timeToMins(o.end)/15;																		// End
 		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
 		cursor:pointer;overflow:hidden;font-size:11px;border-radius:8px;
-		text-align:center;color:#fff;border:1px solid #999;background-color:#a4baec;padding:6px">
+		text-align:center;color:#fff;border:1px solid #999;background-color:#004eff;opacity:.33;padding:6px">
 		${o.desc ? o.desc : ""}</div>`;
 		$("#co-sgrid").append(str)
 
-		function timeToMins(t) { return t.split(":")[0]*60+(t.split(":")[1]-0) }
+		function timeToMins(t) {																			// CONVERT TIME TO MINUTES
+			return t.split(":")[0]*60+(t.split(":")[1]-0); 
+			}
 	}
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VENUE
@@ -878,6 +914,7 @@ class App  {
 	Do()																						// SAVE DO ACTION
 	{
 		let i;
+		if (this.curTable == "schedule")	return;
 		this.undos[this.curUndo]=JSON.parse(JSON.stringify(this.venue));							// Add to undos
 		this.curUndo++;																				// Advance index
 		for (i=0;i<this.undos.length-this.curUndo;++i)	this.undos.pop();							// Remove ones beyond this point		
@@ -885,6 +922,7 @@ class App  {
 
 	Undo()																						// UNDO SAVED ACTION
 	{
+		if (this.curTable == "schedule")	return;
 		if (!this.curUndo) {  Sound("delete");	return;	}											// No undos to un-do
 		this.curUndo--;																				// Dec index
 		this.venue=JSON.parse(JSON.stringify(this.undos[this.curUndo]));							// Save state
@@ -894,6 +932,7 @@ class App  {
 
 	Redo()																						// REDO UNDO ACTION
 	{
+		if (this.curTable == "schedule")	return;
 		let o;
 		if (this.curUndo >= this.undos.length) 		return false;									// No redos to re-do
 		if (this.curUndo == this.undos.length-1)	o=JSON.parse(JSON.stringify(this.venue));		// If on last one, redo is current state
