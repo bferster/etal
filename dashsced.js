@@ -16,6 +16,8 @@ class Schedule  {
 			this.curFloor=this.curEvent=0;																	// Resey
 			this.curDay=1;
 			app.schedule=data;																				// Set data
+			this.curUndo=0;																					// Reset undos
+			this.Do();																						// Set 1st undo
 			}
 		if (!app.schedule.length)	app.schedule.push(o);													// Need day 0
 		for (i=0;i<app.schedule.length;++i)																	// For each event
@@ -196,14 +198,28 @@ class Schedule  {
 		for (i=0;i<this.undos.length-this.curUndo;++i)	this.undos.pop();							// Remove ones beyond this point		
 	}
 
-
 	Undo()																						// UNDO SAVED ACTION
 	{
 		if (!this.curUndo) {  Sound("delete");	return;	}											// No undos to un-do
 		this.curUndo--;																				// Dec index
-		app.venue=JSON.parse(JSON.stringify(this.undos[this.curUndo]));								// Save state
+		app.schedule=JSON.parse(JSON.stringify(this.undos[this.curUndo]));							// Save state
 		this.EditSchedule();																		// Redraw
+		this.ShowEventDetails(this.curEvent);														// Rerdaw event
 		Sound("ding");																				// Acknowledge
+	}
+
+	Redo()																						// REDO UNDO ACTION
+	{
+		let o;
+		if (this.curUndo >= this.undos.length) 		return false;									// No redos to re-do
+		if (this.curUndo == this.undos.length-1)	o=JSON.parse(JSON.stringify(app.schedule));		// If on last one, redo is current state
+		else										o=this.undos[this.curUndo+1];					// Point at saved state and advance index
+		this.curUndo++;																				// Inc index
+		app.schedule=JSON.parse(JSON.stringify(o));													// Restore venue
+		this.EditSchedule();																		// Redraw
+		this.ShowEventDetails(this.curEvent);														// Rerdaw event
+		Sound("ding");																				// Acknowledge
+		return true;																				// Worked
 	}
 
 

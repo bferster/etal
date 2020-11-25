@@ -133,7 +133,10 @@
 				if (app.curTable == "schedule")		app.sced.Undo();								// Schedule		
 				else if (app.curTable == "venue")	app.ven.Undo();									// Venue
 				}
-			if (((e.keyCode == 89) && e.ctrlKey) || ((e.keyCode == 90) && e.ctrlKey)) app.Redo();	// REDO KEY (Ctrl+Y / Shift+Ctrl+Z)  
+			if (((e.keyCode == 89) && e.ctrlKey) || ((e.keyCode == 90) && e.ctrlKey && e.shiftKey)){ // REDO KEY (Ctrl+Y / Shift+Ctrl+Z)
+				if (app.curTable == "schedule")		app.sced.Redo();								// Schedule		
+				else if (app.curTable == "venue")	app.ven.Redo();									// Venue
+				}
 			if ((e.which == 80) && e.altKey && e.ctrlKey) {											// PALETTE KEY (Ctrl+Alt+P)
 				let p=localStorage.getItem("palette-"+app.meetingId);								// Get locally stored palette entries
 				if (!p) p="";																		// Nul; to ""

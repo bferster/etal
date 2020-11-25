@@ -16,10 +16,12 @@ class Venue {
 			data.sort((a,b)=>{ return (a.floor-0 > b.floor-0) ? 1 : -1 });									// Sort by floor
 			for (i=0;i<data.length;++i) {																	// For each room
 				if (!app.venue[data[i].floor])	app.venue[data[i].floor]=[];								// Create new array if empty
-				app.venue[data[i].floor].push(data[i]);													// Add room to floor
+				app.venue[data[i].floor].push(data[i]);														// Add room to floor
 				}	
 			for (i=0;i<app.venue.length;++i) 																// For each floor
 				app.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });						// Sort by room
+			this.curUndo=0;																					// Reset undos
+			this.Do();																						// Set 1st undo
 			}
 		if (!app.venue[0]) app.venue.push([{ title:"Hallway", rug:"#ffffff", cs:1, ce:2, rs:1, re:2,room:0, floor:0, params:{ rows:4, cols:4, gap:0, avSize:36 }} ]);	// Init if blank
 		let d=app.venue[this.curFloor][0].params;
@@ -228,6 +230,7 @@ class Venue {
 	
 		function setPos()
 		{
+			app.ven.Do();
 			let x1=$("#co-room").offset().left-l;
 			let x2=x1+$("#co-room").width()+gap;
 			r.cs=Math.max(1,Math.min(Math.floor(x1/cw+1),p.cols-0+1));
@@ -256,9 +259,22 @@ class Venue {
 	{
 		if (!this.curUndo) {  Sound("delete");	return;	}											// No undos to un-do
 		this.curUndo--;																				// Dec index
-		app.venue=JSON.parse(JSON.stringify(this.undos[this.curUndo]));							// Save state
+		app.venue=JSON.parse(JSON.stringify(this.undos[this.curUndo]));								// Save state
 		this.EditVenue();																			// Redraw
 		Sound("ding");																				// Acknowledge
+	}
+
+	Redo()																						// REDO UNDO ACTION
+	{
+		let o;
+		if (this.curUndo >= this.undos.length) 		return false;									// No redos to re-do
+		if (this.curUndo == this.undos.length-1)	o=JSON.parse(JSON.stringify(app.venue));		// If on last one, redo is current state
+		else										o=this.undos[this.curUndo+1];					// Point at saved state and advance index
+		this.curUndo++;																				// Inc index
+		app.venue=JSON.parse(JSON.stringify(o));													// Restore venue
+		this.EditVenue();																			// Redraw
+		Sound("ding");																				// Acknowledge
+		return true;																				// Worked
 	}
 
 } // Class closure

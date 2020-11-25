@@ -265,18 +265,4 @@ class App  {
 			});
 	}
 
-	Redo()																						// REDO UNDO ACTION
-	{
-		if (this.curTable == "schedule")	return;
-		let o;
-		if (this.curUndo >= this.undos.length) 		return false;									// No redos to re-do
-		if (this.curUndo == this.undos.length-1)	o=JSON.parse(JSON.stringify(this.venue));		// If on last one, redo is current state
-		else										o=this.undos[this.curUndo+1];					// Point at saved state and advance index
-		this.curUndo++;																				// Inc index
-		this.venue=JSON.parse(JSON.stringify(o));													// Restore venue
-		this.EditVenue();																			// Redraw
-//		Sound("ding");																				// Acknowledge
-		return true;																				// Worked
-	}
-
 } // Class closure
