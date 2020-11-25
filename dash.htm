@@ -121,8 +121,8 @@
 		$("#cancelRichBut").on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
 		$("#saveRichBut").on("click", ()=>{ 														// ON RICH BUT CLICK
 			$("#editorDiv").hide(); 																// Hide rich text editor						
-			app.schedule[app.curEvent].content=CKEDITOR.instances.editor1.getData();				// Set new content
-			app.ShowEventDetails(app.curEvent);														// Redraw html
+			app.schedule[app.sced.curEvent].content=CKEDITOR.instances.editor1.getData();			// Set new content
+			app.sced.ShowEventDetails(app.sced.curEvent);											// Redraw html
 			});	
 	
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
