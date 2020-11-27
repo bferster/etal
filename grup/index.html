@@ -7,11 +7,10 @@
 	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="lib/jquery.ui.touch-punch.min.js"></script>
-	<script src="chat.js"></script>
-	<script src="schedule.js"></script>
-	<script src="venue.js"></script>
+	<script src="/go/chat.js"></script>
+	<script src="/./chat.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
-	<title>èt•al Meeting</title>
+	<title>grup meeting</title>
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px;}
@@ -67,7 +66,7 @@
 	</div>
 	<div id="splashDiv" class="co-splash">
 		<img src="img/logo.png" alt="" style="width: 20%"><br><br>
-		<p style="color:#000;font-size:14px"><em>A people centered virtual meeting tool</em></p>
+		<p style="color:#000;font-size:14px"><em>A people centered group meeting tool</em></p>
 		<br><br>
 		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"></div>
 		<br><br>
@@ -96,16 +95,6 @@
 		app=new App(meetingId);                                      								// Alloc app
 		$("#splashDiv").fadeIn();																	// Fade in splash
 	
-		if (url == "preview") {																		// PREVIEW MODE
-			app.AddVenue(JSON.parse(localStorage.getItem('venue')));								// Add venue data
-			app.AddSchedule(JSON.parse(localStorage.getItem('schedule')));							// Schedule
-			app.DrawVenue();																		// Draw venue		
-			app.DrawPeople();
-			app.Draw();																				// Draw screen
-			$("#splashDiv").fadeOut();																// Fade out splash
-			$("#co-top").animate({opacity:1},1000);													// Fade in main, the arrange people
-			}
-		
 		$("#co-logon").on("change",()=>{															// ON LOGON
 			let i,pid=$("#co-logon").val();															// Get value
 			for (i=0;i<app.people.length;++i) 														// For each person
@@ -131,9 +120,6 @@
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s)});	// Broadcast
 				}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
-				app.sced.day++;
-				app.DrawVenue();
-				app.ArrangePeople();	
 				}
 			});
 	});	
@@ -150,17 +136,13 @@ class App  {
 		this.meetingId=""+meetingId;																// Meeting id
 		this.myEmail="";																			// My email
 		this.myId=0;																				// My unique id
-		this.curFloor=0;																			// Current floor
 		this.venue=[];																				// Holds floors
 		this.people=[{ stats:"Q"} ];																// Holds attendees
 		this.pIndex=[];																				// Get people index from id
 		this.status="";																				// My status
-		this.infoDeskId=null;																		// Id of info desk person
 		this.videoWin=null;																			// Video window
-		this.vr="#co-Rm-0";																			// Assume hallway is video rooom for iframes
 		this.retryWS=false;																			// Reconnecting to web socket
 		this.KZ="";																					// Ks
-		this.roomPortals=[];																		// Portals for this room
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -174,13 +156,10 @@ class App  {
 			};
 		
 		this.chat=new Chat();																		// Add chat class
-		this.sced=new Schedule();																	// Add schedule class
-		this.venu=new Venue();																		// Add venue class
 	
 		this.ws.onopen=()=> { 																		// ON OPEN
 			if (this.meetingId != "preview") {														// If not previewing
 				app.ws.send(`P|${app.meetingId}`);													// Request people data	
-				app.ws.send(`V|${app.meetingId}`);													// Request venue data	
 				}
 			app.ws.send(`KZ|*`);																	// Request zk data	
 			console.log('connected');  
@@ -190,7 +169,6 @@ class App  {
 		this.pollTimer= window.setInterval( ()=>{													// Init polling timer
 			++this.secs;																			// Another second 
 			if ((this.secs%15) == 0)  this.ArrangePeople();											// Every 15 secs, arrange people
-			if ((this.secs%60) == 10) this.sced.CheckSchedule();									// On every minute, check the schedule
 																			
 			if (this.retryWS) {																		// If reconnectng to websocket
 				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
@@ -208,8 +186,6 @@ class App  {
     {
         this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
         $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
-		let vr=$(app.vr).offset();																	// Point at video room box									
-		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()+"px",height:$(this.vr).width()*.5625+"px" });
 	    this.ArrangePeople();                                                                       // Arrange people               
 		let x=Math.max(0,Math.min(this.bx-avSize,$("#co-AvMe").offset().left));						// Cap me x to screen
 		let y=Math.max(0,Math.min(this.by-avSize*2,$("#co-AvMe").offset().top));					// Y
@@ -265,15 +241,6 @@ class App  {
 			this.AddPeople(JSON.parse(v[1]));														// Set data								
 			if (v[2] == "U")	app.DrawPeople();													// Redraw on update
 			}
-		else if (v[0] == "V") 	{ 																	// Add/update venue
-			this.AddVenue(JSON.parse(v[1]));														// Set data				
-			if (v[2] != "U")	app.ws.send(`S|${app.meetingId}`);									// Request schedule data if adding	
-			else				app.DrawVenue();													// Redraw venue on update
-			}
-		else if (v[0] == "S") {																		// Add/update schedule
-			this.AddSchedule(JSON.parse(v[1]));														// Set data
-			this.sced.CheckSchedule();																// Set venue via schedule
-			}
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS
 				v[2]=v[2].substr(1);																// Remove star
@@ -291,39 +258,13 @@ class App  {
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		if (targetId.match(/co-Rm-/)) {																// In a room
 			link=this.venue[this.curFloor][targetId.substr(6)].link;								// Get goto link
-			if (link && link.match(/chat-/i)) {														// A chat link
-				link=link.substr(5);																// Get just email
-				for (i=0;i<app.people.length;++i)													// For each person
-					if (app.people[i].email.toLowerCase() == link.toLowerCase()) {					// A match
-					app.chat.Chat(i,"here", x, y);													// Open chat					
-					$("#co-AvMe").animate({ left:x, top:y });										// Animate me there		
-					return;																			// Quit
-					}
-				}
-			if (link && link.match(/floor-/i)) {													// If going to a new floor
-				this.CloseAll(3);																	// Close video windows
-				this.curFloor=link.substr(6)-0;														// Get floor index
-				this.DrawVenue();																	// Draw floor
-				this.ArrangePeople();																// Reaarange the
-				return;
-				}
 			this.status="R"+targetId.substr(6);														// Status with room number
-			if (link) this.sced.ShowLink(link);														// Show link id one there
-			else{
-				this.CloseAll();																	// Close all open dialogs
-				this.status="A";																	// In active mode
-				}
-			}
-		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
-			x=$("#co-quiet").offset().left+(avSize/2)+4;											// Center x
-			y=$("#co-quiet").offset().top+(avSize/2)+4;												// Y
-			this.status="Q";																		// In quiet mode
+			this.CloseAll();																		// Close all open dialogs
+			this.status="A";																		// In active mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
    		    this.status="B"+id;                                                  					// Update me
- 			this.sced.ShowLink("japp.htm?/~"+this.meetingId+"~coffeebar-"+this.curFloor+"-"+id); 	// Go to the coffee bar 
-//			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
 			}
 		else{																						// General click
 			this.CloseAll();																		// Close all open dialogs
@@ -344,82 +285,12 @@ class App  {
 	{
 		let x=(Math.random()*20+40)/100;															// Hover X in center
 		let y=(Math.random()*20+40)/100;															// Y
-//		if (this.curFloor > 0)	{x=.5; y=16/this.by; }												// Go to top of screen on upper floors
 		app.ReportLocation(x,y);																	// Report location
 		$("#co-AvMe").animate({ left:this.bx*x, top:this.by*y });									// Animate me there	
 	}
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-		let x,w,y,h,i,j,x2,inc,bar=[];
-		let cf=this.curFloor;																		// Current floor
-		let nf=this.venue.length																	// Number of floors
-		let nr=this.venue[cf].length;																// Number of rooms on current floor
-		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
-      		x=$("#co-coffee-"+cf+"-0").offset().left;                                    			// left side of bar
-       		w=$("#co-coffee-"+cf+"-0").width()-avSize;                                  			// Width of space
-       		y=this.by-$("#co-coffee-"+cf+"-0").height()-avSize+24;                       			// On top of bar area
-			}
-		for (i=0;i<this.people.length;++i) {														// For each person
-			if (cf != this.people[i].f) 			$("#co-Av-"+i).css("display","none");			// Hide people not on this floor
-			else if (this.people[i].stats != "Q")	$("#co-Av-"+i).css("display","block")			// Show unless quiet
-			}
-	
-		for (j=0;j<this.venue[cf].length;++j) {                             		   	 			// For each room
-            bar=[];                                                                                 // New array
-			for (i=0;i<this.people.length;++i) {													// For each person
-				if ((this.people[i].stats) == "B"+cf+"-"+j) 										// In a bar		
-					bar.push(i); 																	// Add to array
-				}
-			if (bar.length && j) {																	// If not main hall
-                x=$("#co-coffee-"+cf+"-"+j).offset().left-avSize/2+8; 	                			// Left
-                y=$("#co-coffee-"+cf+"-"+j).offset().top+18;                            			// Top      
-                w=$("#co-Rm-"+j).height()-avSize-34;                                                // Get size                                             
-                }
-            inc=avSize+2;                                                                           // Spacing between barmates
-            if (bar.length > 1) inc=Math.min(inc,w/(bar.length-1));                                 // Squeeze them in?
-			for (i=0;i<bar.length;++i) {                                                            // For each barmate
-                if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  // Move me
-              	else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           // Move them
-				 $("#co-At-"+bar[i]).css("display","none");                                         // Hide me tag
-                if (j)  y+=inc;    else x+=inc;                                                  	// Advance
-                }
-   			}
-
-		let o,n,ox,y2,rms=[]
-		for (i=0;i<this.venue[cf].length;++i) rms.push([]); 										// For each room, make room arrays
-		for (i=0;i<this.people.length;++i) {														// For each person
-			o=this.people[i];																		// Point at stats
-			if (o.f != cf) {																		// Person not on this floor
-				try{
-					if ((ox=this.roomPortals.indexOf("F"+o.f)) == -1)	continue;					// No portal in current floor
-					ox=this.roomPortals.substr(0,ox).match(/R\d+(?!.*R\d+)/)[0].substr(1);			// Get room
-					if (o.stats != "Q")	$("#co-Av-"+i).css("display","block")						// Show unless quiet
-					rms[ox].push(i);																// If this floor in child path, add to room
-					} catch(e) { trace(e); }
-				}
-			else if (o.stats && (o.stats.charAt(0) == "R"))  rms[o.stats.substr(1)].push(i);		// If in a room, add person to it
-			}
-		for (j=1;j<rms.length;++j) {																// For each room
-			ox=$("#co-Rm-"+j).offset().left+4;														// Left side
-			x=ox;																					// Start pos
-			x2=x+$("#co-Rm-"+j).width()-avSize-8;													// Width of space
-			w=avSize+2;																				// Full size spacing
-			n=rms[j].length;																		// Number of people
-			y2=$("#co-Rm-"+j).offset().top+50;														// Top
-			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-5;							// Bottom
-			w=Math.min(Math.sqrt(((x2-ox)*(y-y2)/n)),avSize+2);										// Set avatar spacing
-			if (this.people[this.myId].stats == "R"+j)												// If I'm in this room		
-				$("#co-AvMe").animate({ left:x, top:y},0),x+=w; 									// Move me in
-			for (i=0;i<n;++i) {																		// For person in room
-				if (rms[j][i] == this.myId)	continue;												// Skip me
-				$("#co-Av-"+rms[j][i]).animate({ left:x, top:y},0);									// Move there
-				$("#co-At-"+rms[j][i]).css("display","none");										// Hide me tag
-				x+=w;																				// Advance
-				if (x > x2)	{ x=ox;	 y-=w; }														// Next row
-				if (y < y2)	break;																	// Quit if too many
-				}
-			}
 		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
@@ -438,8 +309,7 @@ class App  {
     {
 		$("#co-chat").remove();                                                                     // Close chat if open
         $("#co-card").remove();     																// Card                                                                
-        $("#co-sched").remove();   																	// Schedule                                                                 
-        $("#co-people").remove();        															// People                                                           
+         $("#co-people").remove();        															// People                                                           
 		let src=$("#co-iframeFrame").prop("src");													// Get iframe link		
 		if (src) mask=3;																			// If an open iframe close it
 		if (mask&1)	$("#co-iframe").remove();														// Remove iframe if flag set                                                                   
@@ -460,43 +330,9 @@ class App  {
 			let id=people[i].id.split("~")[1];															// Split id out
 			o=this.people[i];																			// Point at them
 			if (o.email == this.myEmail) this.myId=i;													// Set myid
-			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
 			this.pIndex[people[i].id]=i;																// Save index by full id
 			}
 	}
-
-	AddSchedule(sced)																				// ADD SCHEDULE
-	{
-		let i,o;
-		for (i=0;i<sced.length;++i)	{																	// For each event
-		if (sced[i].day == 0) {																			// If setup event
-				o=sced.splice(i,1);																		// Copy and remove it
-				break;																					// Quit looking
-				}
-			}		
-		this.sced.schedule=sced;																		// Set data
-		if (o[0].start.charAt(0) == "*")	this.sced.meetingStart=new Date();							// Use today
-		else								this.sced.meetingStart=new Date(o[0].start);				// Set start date
-		if (o[0].end.charAt(0) == "*")		this.sced.meetingEnd=new Date();							// Use today
-		else								this.sced.meetingEnd=new Date(o[0].end);					// Set end date
-		this.sced.timeZone=o[0].bar;																	// Set time zone
-		this.sced.offset=new Date(o[0].start)-this.sced.meetingStart;									// Time offset
-		this.sced.schedule.sort((a,b)=>{ return (a.day > b.day) ? 1 : -1 });							// Sort by day
-	}
-
-	AddVenue(ven)																					// ADD VENUE DATA
-	{
-		let i,o;
-		this.venue=[];
-		ven.sort((a,b)=>{ return (a.floor-0 > b.floor-0) ? 1 : -1 });									// Sort by floor
-		for (i=0;i<ven.length;++i) {																	// For each room
-			o=ven[i];																					// Point at room
-			if (!this.venue[o.floor])	this.venue[o.floor]=[];											// Create new array if empty
-			this.venue[o.floor].push(o);																// Add room to floor	
-			}
-		for (i=0;i<this.venue.length;++i) 																// For each floor
-			this.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });						// Sort by room
-		}
 
 	DrawPeople()																					// ADD PEOPLE TO MEETING
 	{
@@ -526,60 +362,12 @@ class App  {
 	
 	DrawVenue()																						// DRAW VENUE
 	{
-		let i,j,o,row,n,x,sc;
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-		let p=this.venue[this.curFloor][0].params;														// Point at all params
-		if (p.avSize)		avSize=p.avSize-0;															// Use size if set
-		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
 		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
-		
-		let menu=`<div style="width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
-			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px" title="Go private">
-			<img id="co-coffee-${this.curFloor}-0" style="width:200px;margin-left:calc(50% - 100px - ${avSize+16}px)" src="img/coffeebar.png">
-			<div style="float:right;margin:16px 8px 0 0">			
-				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See meeting schedule">
-				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See other attendees">`;
-				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;margin-top:20px;cursor:pointer" title="Get help!">';
- 		menu+=`</div></div>`;
-
-		sc=this.sced.GeEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
-		o=this.venue[this.curFloor][0];																	// Point at room
-
-		let str=`<div id="co-grid" class="co-venue" style="
-			grid-template-columns:repeat(${o.params.cols}, 1fr);
-			grid-template-rows:repeat(${o.params.rows}, 1fr);
-			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`
-		
-		this.roomPortals=[];																			// Clear portals
-		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
-			o=this.venue[this.curFloor][i];																// Point at room
-			app.roomPortals+="R"+i+"="+o.portal;														// Add portal info
-			sc=this.sced.GeEventByRoom(this.curFloor,i)													// Point at schedule room																		
-			this.venue[this.curFloor][i].link=sc.link;													// Set room link
-			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
-			str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
-			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
-			${o.link ? ";cursor:pointer" : ""}${o.css ? ";"+o.css : ""}">
-			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
-			if (!i && (this.curFloor == 0))	str+=menu;													// Add menu to hallway first floor
- 			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
-			if (sc.content)																				// If content
-				str+="<div style='pointer-events:none;display:inline-block;width:100%'>"+sc.content+"</div>";	// Add conten wrapped in no-event div
-			if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
-           	if (sc.live > 0)    		str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
-          	str+="</div></div>";		
-			}
-		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
+		let str="main"		
+	
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
-
-		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON PERSON
-		$("#co-grid").droppable({     		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON GRID 
-		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON ROOM
-		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON QUIET AREA
 		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   	// ON DROP ON COFFEE BAR
-		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });						// ON SCHEDULE BUT
-		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infoDesk"); });		// ON HELP BUT
-		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); 	// ON PEOPLE BUT
 	}
 
 
