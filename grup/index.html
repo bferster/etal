@@ -6,7 +6,7 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-	<script src="lib/jquery.ui.touch-punch.min.js"></script>
+	<script src="/go/lib/jquery.ui.touch-punch.min.js"></script>
 	<script src="/go/chat.js"></script>
 	<script src="/./chat.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
@@ -18,9 +18,6 @@
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-repeat:repeat; border-radius:0px; font-size:18px; color:#fff; }
-	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; pointer-events:none; }
-	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none;
 	 				line-height:1.2em; -webkit-user-select:none; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; user-select:none; -webkit-user-select:none; }
@@ -28,8 +25,6 @@
 					cursor:pointer; width:11px; height:11px; display:none;  }
 	.co-card 	{	position:absolute; width:300px; height:150px; background-color:#fff; border-radius:4px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:14px; box-shadow:2px 2px 4px #999; }
-	.co-sched 	{	position:absolute;  background-color:#fff; padding:24px; text-align:center;	font-size:14px; 
-					background-color:#e4e7ef; display:none; line-height:1.5; }
 	.co-qlist 	{	position:absolute; width:274px; height:300px; background-color:#fff; border-radius:8px;
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
 	.co-chat	{	position:absolute; width:230px; height:320px; background-color:#fff; border-radius:12px;
@@ -78,7 +73,6 @@
 
 	let app=null;																					// Holds app
 	let	avSize=36;																					// Avatar size
-	let butCol="#5b66cb"																			// Color  of vutton and ui
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
 
@@ -256,13 +250,7 @@ class App  {
 	{
 		let i,link;
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
-		if (targetId.match(/co-Rm-/)) {																// In a room
-			link=this.venue[this.curFloor][targetId.substr(6)].link;								// Get goto link
-			this.status="R"+targetId.substr(6);														// Status with room number
-			this.CloseAll();																		// Close all open dialogs
-			this.status="A";																		// In active mode
-			}
-		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
+		if (targetId.match(/co-coffee/)) {															// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
    		    this.status="B"+id;                                                  					// Update me
 			}
@@ -353,10 +341,9 @@ class App  {
 		<img src="img/avme.png" width="100%">
 		<div id="co-queue" class="co-qNum" style="margin:-15px 0 0 13px"></div></div>`;					// Add me
 		$("body").append(str);																			// Add to body
+		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
 
 		$("[id^=co-Av-]").on("click", (e)=>{ this.chat.ShowCard(e.currentTarget.id.substr(6)); }); 		// ON PERSON CLICK
-		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.chat.ShowCard(e.target.id.substr(6)); }}); 		// ON DROP ON PERSON
-		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
 		$("#co-AvMe").on("click", (e)=>{ this.chat.ShowQueue();	}); 									// ON ME CLICK
 	}
 	
