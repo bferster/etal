@@ -19,7 +19,7 @@ GRUP
 </head>
 <style>
 	:root 		{ 	--mobileOff:0px;}
-	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:0; }
+	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:14px; padding:0; box-sizing:content-box; margin:0; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
@@ -52,6 +52,19 @@ GRUP
 					cursor:pointer; z-index:2; padding-bottom:1px; color:#fff}
 	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
 					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
+	.co-iframe 	{	display:inline-block; width:66vw; height:calc(66vw * .5265); border-radius:4px; vertical-align:top; background-color:#444;} 
+	.co-room	{	display:inline-block; width:calc(34vw - 36px); height:calc(100vh - 24px); border-radius:4px; 
+					background-color:#d8c4ae; margin-left:12px; text-align:center; vertical-align:top; }
+	.co-table	{	display:inline-block; width:23vw; height:23vw; border-radius:1000px; background-color:#a2733f; 
+					margin-top:9vh; text-align:center; color:#fff }
+	.co-breakout{	display:inline-block; width:9vw; height:150px; border-radius:8px; 
+					border:2px solid #a2733f; margin:6px; text-align:center; color:#a2733f}
+	.co-topic	{	width:calc(100% - 48px); color:#fff; text-align:center; padding:24px; font-size:16px; }
+	.co-docs	{	display:inline-block; width:calc(33vw - 6px); height:calc(100vh - 66vw * .5265 - 36px); border-radius:4px; 
+					background-color:#ddd; margin-top:12px; text-align:center; vertical-align:top; }
+	.co-title	{	color:#333; text-align:center; font-size:24px; margin: 6px 0; }
+	.co-items	{	color:#333; text-align:center; font-size:16px; margin-top:12px;
+					width:calc(100% - 6px); overflow-x:hidden;overflow-y:auto; height:calc(100% - 70px); }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
 	body ::-webkit-scrollbar-track { background: transparent; }
@@ -62,7 +75,7 @@ GRUP
 <body>
 
 	<div id="co-top" class="co-top">
-		<div id="co-main" style="width:100%;height:100%"></div>
+		<div id="co-main" style="width:100%;height:100%;margin:12px"></div>
 	</div>
 	<div id="splashDiv" class="co-splash">
 		<img src="img/logo.png" alt="" style="width: 20%"><br><br>
@@ -76,9 +89,11 @@ GRUP
 
 <script>
 
-	let app=null;																					// Holds app
-	let	avSize=36;																					// Avatar size
-	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
+	var	avSize=36;																					// Avatar size
+	var app=null;																					// Holds app
+	const isLocal=(window.location.host == "localhost");											// Running locally?
+	const goPath=isLocal ? "/./" : "/go/";															// Path to go folder
+
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
 
 	window.addEventListener("beforeunload",  ()=>{ 													// ON CLOSE
@@ -90,7 +105,7 @@ GRUP
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		if (isMobile) document.documentElement.style.setProperty("--mobileOff","100px"); 			// Set CSS mobile var
 		var url=window.location.search.substring(1);						   						// Get query string
-		let meetingId=url ? url : 1;																// Set meeting id
+		let meetingId=url ? url : "gdemo";																// Set meeting id
 		app=new App(meetingId);                                      								// Alloc app
 		$("#splashDiv").fadeIn();																	// Fade in splash
 	
@@ -124,7 +139,7 @@ GRUP
 	});	
  
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// APP
+// GRUP APP
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class App  {																					
@@ -142,8 +157,9 @@ class App  {
 		this.videoWin=null;																			// Video window
 		this.retryWS=false;																			// Reconnecting to web socket
 		this.KZ="";																					// Ks
-		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
-		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
+		this.curTopic="<b>Current topic:</b><br>Membership drive";									// Currwently discussed topic
+		if (isLocal) this.ws=new WebSocket('ws://'+window.location.host+':8080');					// Open insecure websocket											
+		else		 this.ws=new WebSocket('wss://'+window.location.host+':8080');					// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };					// ON CLOSE
 		this.ws.onerror=(e)=> { 																	// ON ERROR
@@ -170,8 +186,8 @@ class App  {
 			if ((this.secs%15) == 0)  this.ArrangePeople();											// Every 15 secs, arrange people
 																			
 			if (this.retryWS) {																		// If reconnectng to websocket
-				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
-				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
+				if (isLocal) this.ws=new WebSocket('ws://'+window.location.host+':8080');			// Open insecure websocket											
+				else		 this.ws=new WebSocket('wss://'+window.location.host+':8080');			// Secure											
 				this.ws.onmessage=(e)=>{ this.SocketIn(e); };										// ON INCOMING MESSAGE
 				this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };			// ON CLOSE
 				this.ws.onopen=()=>    { console.log('re-connected'); };							// ON OPEN  
@@ -222,13 +238,11 @@ class App  {
 		else if (v[0] == "L")	{																	// MOVE
 			if (meeting != this.meetingId)	return;													// Not this meeting
 			id=this.pIndex[v[1]];																	// Get index from id			
-			let f=v[2]-0;																			// Get floor
 			let x=v[3]/100*(this.bx-12);															// Calc x from %
 			let y=v[4]/100*(this.by-12);															// Y
 			x=Math.max(0,Math.min(this.bx-avSize,x));												// Cap x to screen
 			y=Math.max(0,Math.min(this.by-avSize*2,y));												// Y
-			this.people[id].f=f; this.people[id].x=x; this.people[id].y=y; this.people[id].stats=v[5]; // Update people object
-			if (this.curFloor != v[2])	{ $("#co-Av-"+id).css("display","none"); return; }	 		// We're not on the same floor
+			this.people[id].f=0; this.people[id].x=x; this.people[id].y=y; this.people[id].stats=v[5]; // Update people object
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
 			if (v[5] == "Q")							$("#co-Av-"+id).css("display","none");		// Hide this person if quiet
 			else if ($("#co-top").css("opacity") > 0)	$("#co-Av-"+id).css("display","block");		// Show them, if initted
@@ -255,9 +269,15 @@ class App  {
 	{
 		let i,link;
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
-		if (targetId.match(/co-coffee/)) {															// ON COFFEE BAR
-			let id=targetId.substr(10);                                                             // Which one?
-   		    this.status="B"+id;                                                  					// Update me
+		if (targetId.match(/co-coffee/)) {															// IN COFFEE BAR
+			this.status="B0";																		// Set status     
+			this.SetLink("japp.htm?/~"+this.meetingId+"~coffeebar-0-0"); 							// Go to the coffee bar 
+			}
+		else if (targetId.match(/co-room-/)) {														// IN A ROOM
+			let i=targetId.substr(8)
+			this.status="R"+i;																		// Set status     
+			this.SetLink("japp.htm?/~"+this.meetingId+"~room"+i+"~"+this.meetingId); 				// Go to room
+			for (i=0;i<this.people.length;++i) { this.people[i].stats="R1"; $("#co-Av-"+i).show() };													
 			}
 		else{																						// General click
 			this.CloseAll();																		// Close all open dialogs
@@ -270,10 +290,6 @@ class App  {
 		this.chat.curChat=-1;																		// Not chatting with anyone
 	}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// AVATAR MOVEMENT
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	GoToCenter()																				// MOVE TO CENTER HALL OR SPECIFIC SPOY
 	{
 		let x=(Math.random()*20+40)/100;															// Hover X in center
@@ -284,34 +300,74 @@ class App  {
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
+		let h,i,j,x2,inc,bar=[];
+     	let	x=$("#co-coffee").offset().left;                                    					// left side of bar
+       	let w=$("#co-coffee").width()-avSize;                                  						// Width of space
+       	let y=this.by-$("#co-coffee").height()-avSize+2;                       						// On top of bar area
+
+		for (i=0;i<this.people.length;++i) 															// For each person
+			if ((this.people[i].stats) == "B0") 	bar.push(i); 									// In a bar		
+			inc=avSize+2;                                                                          		// Spacing between barmates
+		if (bar.length > 1) inc=Math.min(inc,w/(bar.length-1));                                 	// Squeeze them in?
+		for (i=0;i<bar.length;++i) {                                                            	// For each barmate
+			if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  	// Move me
+			else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           	// Move them
+				$("#co-At-"+bar[i]).css("display","none");                                         	// Hide me tag
+			if (j)  y+=inc;    else x+=inc;                                                  		// Advance
+			}
+  
+		let o,n,ox,y2,rms=[ [],[],[],[] ];
+		for (i=0;i<this.people.length;++i) {														// For each person
+			o=this.people[i];																		// Point at stats
+			if (o.stats && (o.stats.charAt(0) == "R"))  rms[o.stats.substr(1)].push(i);				// If in a room, add person to it
+			}
+		
+		for (j=1;j<rms.length;++j) {																// For each room
+			ox=$("#co-room-"+j).offset().left+4;													// Left side
+			x=ox;																					// Start pos
+			x2=x+$("#co-room-"+j).width()-avSize-8;													// Width of space
+			w=avSize+2;																				// Full size spacing
+			n=rms[j].length;																		// Number of people
+			y2=$("#co-room-"+j).offset().top;														// Top
+			y=$("#co-room-"+j).offset().top+$("#co-room-"+j).height()-avSize;						// Bottom
+			w=Math.min(Math.sqrt(((x2-ox)*(y-y2)/n)),avSize+2);										// Set avatar spacing
+			if (this.people[this.myId].stats == "R"+j)												// If I'm in this room		
+				$("#co-AvMe").animate({ left:x, top:y},0),x+=w; 									// Move me in
+			for (i=0;i<n;++i) {																		// For person in room
+				if (rms[j][i] == this.myId)	continue;												// Skip me
+				$("#co-Av-"+rms[j][i]).animate({ left:x, top:y},0);									// Move there
+				$("#co-At-"+rms[j][i]).css("display","none");										// Hide me tag
+				x+=w;																				// Advance
+				if (x > x2)	{ x=ox;	 y-=w; }														// Next row
+				if (y < y2)	break;																	// Quit if too many
+				}
+			}
 		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// VENUE
+// GRUP VENUE
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	ReportLocation(x, y, status="A")															// REPORT LOCATION TO SERVER
 	{
 		x=(x*100).toFixed(2);																		// Scale x 0-100
 		y=(y*100).toFixed(2);																		// y
-		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${app.curFloor}|${x}|${y}|${status}`); // Send Location message
+		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|0|${x}|${y}|${status}`); // Send Location message
 	}
 	
  	CloseAll(mask=0)                                                                        	// CLOSE ALL OPEN DIALOGS
     {
 		$("#co-chat").remove();                                                                     // Close chat if open
         $("#co-card").remove();     																// Card                                                                
-         $("#co-people").remove();        															// People                                                           
 		let src=$("#co-iframeFrame").prop("src");													// Get iframe link		
-		if (src) mask=3;																			// If an open iframe close it
-		if (mask&1)	$("#co-iframe").remove();														// Remove iframe if flag set                                                                   
-		if (mask&2 && this.videoWin)  this.videoWin.close();										// Close open video window
-		else if (this.videoWin)		  this.videoWin.focus();										// Put it on front
+		this.SetLink("");																			// Close video window
+		if (mask&2 && this.videoWin)  		 this.videoWin.close();									// Close open video window
+		else if (this.videoWin)		  		 this.videoWin.focus();									// Put it on front
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// DATA
+// GRUP DATA
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	AddPeople(people)																				// ADD PEOPLE TO MEETING
@@ -347,7 +403,6 @@ class App  {
 		<div id="co-queue" class="co-qNum" style="margin:-15px 0 0 13px"></div></div>`;					// Add me
 		$("body").append(str);																			// Add to body
 		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
-
 		$("[id^=co-Av-]").on("click", (e)=>{ this.chat.ShowCard(e.currentTarget.id.substr(6)); }); 		// ON PERSON CLICK
 		$("#co-AvMe").on("click", (e)=>{ this.chat.ShowQueue();	}); 									// ON ME CLICK
 	}
@@ -356,12 +411,88 @@ class App  {
 	{
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
 		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
-		let str="main"		
-	
+		let str=`<div style="display:inline-block">
+				<div id="co-iframe" class="co-iframe">
+				<iframe id="co-iframeFrame" style="width:100%;height:100%;border-radius:4px;"
+				src="" allow=camera;microphone;autoplay frameborder="0" allowfullscreen>
+				</iframe></div><br>
+				<div id="agendaDiv" class="co-docs">
+					<div class="co-title">Todays's agenda</div>
+					<div id="agendaItems" class="co-items"></div>
+				</div>
+				<div id="docsDiv" class="co-docs" style="margin-left:12px">
+				<div class="co-title">Documents</div>
+					<div  id="docItems" class="co-items"></div>
+				</div>
+			</div>
+			<div id="co-hall" class="co-room">
+			<div id="co-room-0" class="co-table">
+				<img src="img/logo.png" style="width:20%;margin-top:10vw">
+				<div id="topicDiv" class="co-topic">${this.curTopic}</div>
+			</div>
+			<div style="margin-top:${avSize*2}px">
+				<div id="co-room-1" class="co-breakout">Room A</div>
+				<div id="co-room-2" class="co-breakout">Room B</div>
+				<div id="co-room-3" class="co-breakout">Room C</div>
+			</div>			
+		<img id="co-coffee" src="img/coffeebar.png" style="width:160px; 
+			position:absolute;top:calc(100vh - 80px);left:calc(84vw - 80px)">
+		</div>`;
+		
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
-		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   	// ON DROP ON COFFEE BAR
+		$("#co-hall").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id); }});   		// ON DROP ON ROOM
+		$("[id^=co-room-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON ROOM
+		$("#co-coffee").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id); }});   		// ON DROP ON COFFEE BAR
+		this.SetAgenda();																				// Set agenda
+		this.SetDocs();																					// Set docs
 	}
 
+	SetAgenda()
+	{
+		let str=`<b>Old business</b><br>
+		<br>New board members
+		<br><span style="color:#009900"><b>- Membership drive -</b></span>
+		<br>Holiday party
+		<br><br><b>New business</b><br>
+		<br>Treasurer's report
+		<br>Unison Day
+		<br>Mission statement`;
+
+		$("#agendaItems").html(str.replace(/\t|\n|\r/g,""));												// Add venue
+	}
+
+	SetDocs()
+	{
+		let str=`<a href="">This month's treasurer's report</a><br>
+		<a href="">Last month's treasurer's report</a><br>
+		<a href="">New brochure layout</a><br>
+		<a href="">Last meeting's minutes</a><br>`;
+		$("#docItems").html(str.replace(/\t|\n|\r/g,""));												// Add venue
+	}
+
+	SetLink(link)																					// SET IFRAME LINK
+	{
+		if (link.match(/zoom/i)) {																		// If Zoom
+			app.curZoom=link;																			// Save link
+			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");		// Open zoom link
+			setTimeout(function(){ myWin.close(); },10000);												// Close after 10 secs
+			}
+		else{																							// Use iframe
+			if (link.match(/zapp/i)) {																	// An embedded zoom link
+				let str="";
+				if (isMobile)	str="zoomus";															// Use mobile header
+				else if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="zoommtg";
+				if (str) {
+					str+="://zoom.us/join?confno="+link.split("?")[1];									// Make full url
+					app.sced.ShowLink(str);																// Open with native app							
+					return;																				// Quit
+					}
+			}
+		if (link.match(/zapp/i)) link=goPath+link+"&"+app.KZ;											// If zoom app, add k
+		if (link.match(/japp/i)) link=goPath+link+"&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName;		// If zoom app, add k
+		$("#co-iframeFrame").prop("src",link);															// Set iframe link
+		}
+	}
 
 } // APP CLASS CLOSURE
 

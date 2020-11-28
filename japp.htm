@@ -35,7 +35,7 @@
 		};
 	const api = new JitsiMeetExternalAPI(domain, options);
 	api.executeCommand('displayName',v[1] ? v[1] :"");
-	window.addEventListener("beforeunload",  ()=>{ api.displose();	});
+	window.addEventListener("beforeunload",  ()=>{ api.dispose();	});
 
 /*
 	api.addEventListeners({
