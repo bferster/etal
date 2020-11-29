@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
+	<meta name="viewport" content="width=device-width, initial-scale=.5, shrink-to-fit=yes">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -14,10 +14,9 @@
 	<title>èt•al Meeting</title>
 </head>
 <style>
-	:root 		{ 	--mobileOff:0px;}
 	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:0; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
-	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0;}
+	.co-top		{	opacity:0; overflow:hidden; height:100vh; z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
 	.co-room 	{	background-repeat:repeat; border-radius:0px; font-size:18px; color:#fff; }
 	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; pointer-events:none; }
@@ -90,7 +89,6 @@
 
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
-		if (isMobile) document.documentElement.style.setProperty("--mobileOff","100px"); 			// Set CSS mobile var
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url : 1;																// Set meeting id
 		app=new App(meetingId);                                      								// Alloc app
@@ -531,7 +529,6 @@ class App  {
 		let p=this.venue[this.curFloor][0].params;														// Point at all params
 		if (p.avSize)		avSize=p.avSize-0;															// Use size if set
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
-		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
 		
 		let menu=`<div style="width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px" title="Go private">

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
+	<meta name="viewport" content="width=device-width, initial-scale=.5, shrink-to-fit=yes">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -18,12 +18,10 @@ GRUP
 	
 </head>
 <style>
-	:root 		{ 	--mobileOff:0px;}
 	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:14px; padding:0; box-sizing:content-box; margin:0; }
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
-	.co-top		{	opacity:0; overflow:hidden;height:calc(100vh - var(--mobileOff)); z-index:0;}
-	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
- 	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none;
+	.co-top		{	opacity:0; overflow:hidden;height:100vh; z-index:0; }
+	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none;
 	 				line-height:1.2em; -webkit-user-select:none; }
 	.co-me 		{	position:absolute; cursor:url(img/move.cur),auto; left:50%; top:50%; border-radius:64px; user-select:none; -webkit-user-select:none; }
 	.co-qNum 	{	position:relative;color:#fff; text-align:center; font-size:9px; border-radius:16px; background-color:#ff0000; 
@@ -38,10 +36,6 @@ GRUP
 					border:1px solid #666; padding:12px; text-align:center; font-size:12px; box-shadow:2px 2px 4px #999; }
 	.co-textR 	{	background-color:#dddddd; border-radius:16px; padding:4px 8px; width:fit-content; max-width: 66%; margin:4px 6px; clear:both; float:left;  text-align:left; }
 	.co-textS 	{	background-color:#0099ff; border-radius:16px; padding:4px 8px; width:fit-content; max-width: 66%; margin:4px 6px; clear:both; float:right; text-align:right; color:#fff; }
-	.co-people 	{	position:absolute; width:274px; height:50vh; background-color:#fff; border-radius:8px; z-index:2;
-					border:1px solid #666; padding:12px; font-size:12px; box-shadow:3px 3px 6px #666; }
-	.co-video	{	position:absolute; background-color:#fff; border-radius:4px; width:40%;
-					border:1px solid #666; padding:8x; box-shadow:3px 3px 6px #666}
 	.co-is 		{	border-radius:16px; padding:0 8px; width:250px; height: 24px; border:1px solid #999; font-size: 13px; }
 	.co-logon 	{	border-radius:16px; padding:0 8px; width:200px; height: 24px; border:1px solid #999; font-size: 13px; text-align:center; }
 	.co-confirm {	position: absolute;  width: 300px; padding: 16px; left: calc(50% - 300px); top: calc(50% - 150px); user-select: none;	
@@ -52,15 +46,17 @@ GRUP
 					cursor:pointer; z-index:2; padding-bottom:1px; color:#fff}
 	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
 					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
-	.co-iframe 	{	display:inline-block; width:66vw; height:calc(66vw * .5265); border-radius:4px; vertical-align:top; background-color:#444;} 
-	.co-room	{	display:inline-block; width:calc(34vw - 36px); height:calc(100vh - 24px); border-radius:4px; 
-					background-color:#d8c4ae; margin-left:12px; text-align:center; vertical-align:top; }
-	.co-table	{	display:inline-block; width:23vw; height:23vw; border-radius:1000px; background-color:#a2733f; 
-					margin-top:9vh; text-align:center; color:#fff }
-	.co-breakout{	display:inline-block; width:9vw; height:150px; border-radius:8px; 
+	.co-iframe 	{	display:inline-block; width:60vw; height:calc(60vw * .5265); border-radius:4px; vertical-align:top; background-color:#444;} 
+	.co-hall	{	display:inline-block; width:calc(40vw - 36px); height:calc(100vh - 24px); border-radius:4px; 
+					background-color:#d8c4ae; margin-left:12px; text-align:center; vertical-align:top; 
+					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+	.co-mroom	{	display:inline-block; width:100%; height:calc(60vw * .5265); }
+	.co-table	{	display:inline-block; width:20vw; height:20vw; border-radius:1000px; background-color:#a2733f; 
+					margin-top:80px; text-align:center; color:#fff }
+	.co-breakout{	display:inline-block; width:10vw; height:100px; border-radius:8px; 
 					border:2px solid #a2733f; margin:6px; text-align:center; color:#a2733f}
 	.co-topic	{	width:calc(100% - 48px); color:#fff; text-align:center; padding:24px; font-size:16px; }
-	.co-docs	{	display:inline-block; width:calc(33vw - 6px); height:calc(100vh - 66vw * .5265 - 36px); border-radius:4px; 
+	.co-docs	{	display:inline-block; width:calc(30vw - 6px); height:calc(100vh - 60vw * .5265 - 36px); border-radius:4px; 
 					background-color:#ddd; margin-top:12px; text-align:center; vertical-align:top; }
 	.co-title	{	color:#333; text-align:center; font-size:24px; margin: 6px 0; }
 	.co-items	{	color:#333; text-align:center; font-size:16px; margin-top:12px;
@@ -103,9 +99,8 @@ GRUP
 
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
-		if (isMobile) document.documentElement.style.setProperty("--mobileOff","100px"); 			// Set CSS mobile var
 		var url=window.location.search.substring(1);						   						// Get query string
-		let meetingId=url ? url : "gdemo";																// Set meeting id
+		let meetingId=url ? url : "gdemo";															// Set meeting id
 		app=new App(meetingId);                                      								// Alloc app
 		$("#splashDiv").fadeIn();																	// Fade in splash
 	
@@ -240,7 +235,7 @@ class App  {
 			id=this.pIndex[v[1]];																	// Get index from id			
 			let x=v[3]/100*(this.bx-12);															// Calc x from %
 			let y=v[4]/100*(this.by-12);															// Y
-			x=Math.max(0,Math.min(this.bx-avSize,x));												// Cap x to screen
+			x=Math.max($("#co-iframe").width()+24,Math.min(this.bx-avSize,x));						// Cap x to hall
 			y=Math.max(0,Math.min(this.by-avSize*2,y));												// Y
 			this.people[id].f=0; this.people[id].x=x; this.people[id].y=y; this.people[id].stats=v[5]; // Update people object
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
@@ -248,7 +243,7 @@ class App  {
 			else if ($("#co-top").css("opacity") > 0)	$("#co-Av-"+id).css("display","block");		// Show them, if initted
 			if (v[5].match(/^[B|R]/))	this.ArrangePeople();										// Arrange people at bar and rooms
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
-			$("#co-At-"+id).css("display",v[5].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
+			$("#co-At-"+id).css("display",v[5].match(/^[B|R1|R2|R3]/) ? "none" : "block");			// Hide or show name tag
 			}
 		else if (v[0] == "P") {																		// Add/update people
 			this.AddPeople(JSON.parse(v[1]));														// Set data								
@@ -274,10 +269,10 @@ class App  {
 			this.SetLink("japp.htm?/~"+this.meetingId+"~coffeebar-0-0"); 							// Go to the coffee bar 
 			}
 		else if (targetId.match(/co-room-/)) {														// IN A ROOM
-			let i=targetId.substr(8)
+			i=targetId.substr(8);																	// Get id
 			this.status="R"+i;																		// Set status     
 			this.SetLink("japp.htm?/~"+this.meetingId+"~room"+i+"~"+this.meetingId); 				// Go to room
-			for (i=0;i<this.people.length;++i) { this.people[i].stats="R1"; $("#co-Av-"+i).show() };													
+			for (i=0;i<this.people.length;++i) { this.people[i].stats="R0"; $("#co-Av-"+i).show() };													
 			}
 		else{																						// General click
 			this.CloseAll();																		// Close all open dialogs
@@ -285,15 +280,14 @@ class App  {
 			}
 		x=Math.max(0,Math.min(this.bx,x-avSize/2));													// Cap x to screen
 		y=Math.max(0,Math.min(this.by,y-avSize/2));													// Y
-		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
 		this.ReportLocation(x/(this.bx-12),y/(this.by-12),this.status);								// Report my move
 		this.chat.curChat=-1;																		// Not chatting with anyone
 	}
 
 	GoToCenter()																				// MOVE TO CENTER HALL OR SPECIFIC SPOY
 	{
-		let x=(Math.random()*20+40)/100;															// Hover X in center
-		let y=(Math.random()*20+40)/100;															// Y
+		let x=(Math.random()*10+80)/100;															// Hover X in center
+		let y=(Math.random()*10+75)/100;															// Y
 		app.ReportLocation(x,y);																	// Report location
 		$("#co-AvMe").animate({ left:this.bx*x, top:this.by*y });									// Animate me there	
 	}
@@ -307,12 +301,12 @@ class App  {
 
 		for (i=0;i<this.people.length;++i) 															// For each person
 			if ((this.people[i].stats) == "B0") 	bar.push(i); 									// In a bar		
-			inc=avSize+2;                                                                          		// Spacing between barmates
+			inc=avSize+2;                                                                          	// Spacing between barmates
 		if (bar.length > 1) inc=Math.min(inc,w/(bar.length-1));                                 	// Squeeze them in?
 		for (i=0;i<bar.length;++i) {                                                            	// For each barmate
 			if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  	// Move me
 			else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           	// Move them
-				$("#co-At-"+bar[i]).css("display","none");                                         	// Hide me tag
+			$("#co-At-"+bar[i]).css("display","none");                                         		// Hide me tag
 			if (j)  y+=inc;    else x+=inc;                                                  		// Advance
 			}
   
@@ -321,14 +315,42 @@ class App  {
 			o=this.people[i];																		// Point at stats
 			if (o.stats && (o.stats.charAt(0) == "R"))  rms[o.stats.substr(1)].push(i);				// If in a room, add person to it
 			}
-		
+
+		if (rms[0].length) {																		// ARRANGE MAIN TABLE
+			let h=-1;
+			for (i=0;i<rms[0].length;++i) 															// For person in main room
+				if (this.people[rms[0][i]].role.match(/host/i))	h=i;								// Get host
+			let d=360/rms[0].length;																// Angle spacing
+			if (h < 0)  d=360/(rms[0].length+1);													// Leave room for host if absent
+			let cx=$("#co-table").offset().left+$("#co-table").width()/2;							// Table center X
+			let cy=$("#co-table").offset().top+$("#co-table").height()/2;							// Y
+			let rad=$("#co-table").width()/2+avSize+16;
+			j=-90+d;
+			
+			for (i=0;i<rms[0].length;++i) {															// For person in main room 
+				x=Math.cos(j*0.01745329252)*rad+cx-(avSize/2);										// Get member x
+				y=Math.sin(j*0.01745329252)*rad+cy-(avSize/2);										// y
+				if (this.people[rms[0][i]].role.match(/host/i))	continue; 							// Skip host
+				if (rms[0][i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0); 				// If me
+				else 					  	$("#co-Av-"+rms[0][i]).animate({ left:x, top:y},0);		// Other person												
+				$("#co-At-"+rms[0][i]).css("display", "block");										// Show name tag
+				j+=d;																				// Next spot
+				}
+			if (h > 0) {																			// If host is at the table
+				x=Math.cos(-90*0.01745329252)*rad+cx-(avSize/2);									// Get host x
+				y=Math.sin(-90*0.01745329252)*rad+cy-(avSize/2);									// y
+				if (h == this.myId) $("#co-AvMe").animate({ left:x, top:y},0); 						// If host is me
+				else 				$("#co-Av-"+rms[0][h]).animate({ left:x, top:y},0);				// Other person												
+				}
+			}
+
 		for (j=1;j<rms.length;++j) {																// For each room
 			ox=$("#co-room-"+j).offset().left+4;													// Left side
 			x=ox;																					// Start pos
 			x2=x+$("#co-room-"+j).width()-avSize-8;													// Width of space
 			w=avSize+2;																				// Full size spacing
 			n=rms[j].length;																		// Number of people
-			y2=$("#co-room-"+j).offset().top;														// Top
+			y2=$("#co-room-"+j).offset().top-24;													// Top
 			y=$("#co-room-"+j).offset().top+$("#co-room-"+j).height()-avSize;						// Bottom
 			w=Math.min(Math.sqrt(((x2-ox)*(y-y2)/n)),avSize+2);										// Set avatar spacing
 			if (this.people[this.myId].stats == "R"+j)												// If I'm in this room		
@@ -351,8 +373,8 @@ class App  {
 
 	ReportLocation(x, y, status="A")															// REPORT LOCATION TO SERVER
 	{
-		x=(x*100).toFixed(2);																		// Scale x 0-100
-		y=(y*100).toFixed(2);																		// y
+		x=Math.min(Math.max(0,(x*100).toFixed(2)),100);											// Scale x 0-100
+		y=Math.min(Math.max(0,(y*100).toFixed(2)),100);											// y
 		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|0|${x}|${y}|${status}`); // Send Location message
 	}
 	
@@ -402,7 +424,7 @@ class App  {
 		<img src="img/avme.png" width="100%">
 		<div id="co-queue" class="co-qNum" style="margin:-15px 0 0 13px"></div></div>`;					// Add me
 		$("body").append(str);																			// Add to body
-		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
+		$("#co-AvMe").draggable({ containment:"#co-hall" });												// I'm draggable
 		$("[id^=co-Av-]").on("click", (e)=>{ this.chat.ShowCard(e.currentTarget.id.substr(6)); }); 		// ON PERSON CLICK
 		$("#co-AvMe").on("click", (e)=>{ this.chat.ShowQueue();	}); 									// ON ME CLICK
 	}
@@ -410,9 +432,9 @@ class App  {
 	DrawVenue()																						// DRAW VENUE
 	{
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-		$("#co-top").css("height",`calc(100vh - var(--mobileOff))`);									// Height 
 		let str=`<div style="display:inline-block">
 				<div id="co-iframe" class="co-iframe">
+				<div id="co-vMsg" style="margin-top:20vh;text-align:center;width:100%;color:#ddd"><br>Video will appear here<br>when you drag your icon to<br>the table, a room, or the coffeebar</div>
 				<iframe id="co-iframeFrame" style="width:100%;height:100%;border-radius:4px;"
 				src="" allow=camera;microphone;autoplay frameborder="0" allowfullscreen>
 				</iframe></div><br>
@@ -425,18 +447,21 @@ class App  {
 					<div  id="docItems" class="co-items"></div>
 				</div>
 			</div>
-			<div id="co-hall" class="co-room">
-			<div id="co-room-0" class="co-table">
-				<img src="img/logo.png" style="width:20%;margin-top:10vw">
-				<div id="topicDiv" class="co-topic">${this.curTopic}</div>
+			<div id="co-hall" class="co-hall">
+				<div id="co-room-0" class="co-mroom">
+					<div id="co-table" class="co-table">
+						<img src="img/logo.png" style="width:33%;margin-top:8vw">
+						<div id="topicDiv" class="co-topic">${this.curTopic}
+					</div>
+				</div>
 			</div>
-			<div style="margin-top:${avSize*2}px">
+			<div style="margin-top:12px">
 				<div id="co-room-1" class="co-breakout">Room A</div>
 				<div id="co-room-2" class="co-breakout">Room B</div>
 				<div id="co-room-3" class="co-breakout">Room C</div>
 			</div>			
 		<img id="co-coffee" src="img/coffeebar.png" style="width:160px; 
-			position:absolute;top:calc(100vh - 80px);left:calc(84vw - 80px)">
+			position:absolute;top:calc(100vh - 80px);left:calc(80vw - 80px)">
 		</div>`;
 		
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
@@ -457,7 +482,6 @@ class App  {
 		<br>Treasurer's report
 		<br>Unison Day
 		<br>Mission statement`;
-
 		$("#agendaItems").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 	}
 
@@ -472,6 +496,7 @@ class App  {
 
 	SetLink(link)																					// SET IFRAME LINK
 	{
+		$("#co-vMsg").css("display",link ? "none" : "block");											// Hide show message
 		if (link.match(/zoom/i)) {																		// If Zoom
 			app.curZoom=link;																			// Save link
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");		// Open zoom link
