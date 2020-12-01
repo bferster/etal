@@ -54,8 +54,8 @@ class App  {
 
 	InitSpreadSheets()																			// INIT JSGRID
 	{
-		this.pFields=[{ name:"firstName", type:"text", width:100, validate:"required" },
-			{ name:"lastName", type:"text", width:100, validate:"required" },
+		this.pFields=[{ name:"firstName", type:"text", width:100 },
+			{ name:"lastName", type:"text", width:100 },
 			{ name:"email", type:"text", width:100, validate:"required"},
 			{ name:"title", type:"text", width:100 },
 			{ name:"org", type:"text",width:100 },

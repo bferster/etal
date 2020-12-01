@@ -10,6 +10,7 @@
 	<script src="chat.js"></script>
 	<script src="schedule.js"></script>
 	<script src="venue.js"></script>
+	<script src="register.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
 	<title>èt•al Meeting</title>
 </head>
@@ -50,6 +51,8 @@
 	.co-is 		{	border-radius:16px; padding:0 8px; height: 24px; border:1px solid #999; font-size: 13px; }
 	.co-bs 		{	display:inline-block; border-radius:16px; padding:0 8px; border:1px solid #eee; font-size: 13px; 
 					cursor:pointer; z-index:2; padding-bottom:1px; color:#fff}
+	.co-bsg		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
+					font-size: 13px; background-color: #999; padding: 2px 8px 2px 8px; }
 	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
 					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
 
@@ -113,15 +116,11 @@
 				alert("This email was not found, please try again, or contact your meeting host"); // Alert
 				return;																				// Quit																				
 				}
-			app.meetingId=""+meetingId;																// Project id
-			app.myId=i;																				// My id
-			app.myEmail=app.people[i].email;														// Get my email
-			app.DrawVenue();																		// Draw venue		
-			app.DrawPeople();																		// Draw people avatars
-			app.Draw();																				// Draw screen
-			app.GoToCenter();																		// Go to center of room
-			$("#splashDiv").fadeOut();																// Fade out splash
-			$("#co-top").animate({opacity:1},1000,()=>{ app.ArrangePeople() });						// Fade in main, the arrange people
+			if (!app.people[i].firstName) {															// If no name
+				let reg=new Register(app.people[i]);												// Run registration code
+				return;																				// Quit
+				}
+			app.JoinMeeting(app.people[i].id);														// Join meeting
 			});
 	
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
@@ -214,6 +213,20 @@ class App  {
 		$("#co-AvMe").offset({left:x,top:y });														// Move icon there
 	}
 
+	JoinMeeting(id)																				// JOIN MEETING
+	{
+		id=this.pIndex[id];																			// Turn id into inde		
+		this.myId=id;																				// My id
+		this.myEmail=this.people[id].email;															// Get my email
+		this.DrawVenue();																			// Draw venue		
+		this.DrawPeople();																			// Draw people avatars
+		this.Draw();																				// Draw screen
+		this.GoToCenter();																			// Go to center of room
+		$("#splashDiv").fadeOut();																	// Fade out splash
+		$("#co-top").animate({opacity:1},1000,()=>{ app.ArrangePeople(); $("#splashDiv").html("") }); // Fade in main, the arrange people
+		if (app.reg) delete app.reg;																// Delete reg if there
+	}
+
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
 		let id,meeting="";
@@ -279,6 +292,13 @@ class App  {
 				}
 			Popup(`<b style="color:#990000">A message<br>from your meeting host</b><hr><br>${v[2]}<br><br>`,6000);	// Alert them
 			Sound("ding");																			// Ding
+			}
+		else if (v[0] == "MP") {																	// Update person
+			let d=JSON.parse(v[2]);																	// Objectify
+			let i=this.pIndex[d.id];																// Get index
+			if (d) this.people[i]=d;																// Set data								
+			$("#co-At-"+i).html(`${d.firstName}<br>${d.lastName}`);									// Set label
+			$("#co-Av-"+i).prop("src",d.pic ? d.pic : "img/avyou.png") ;							// Set image
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
 		}
