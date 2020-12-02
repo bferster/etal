@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=.5, shrink-to-fit=yes">
+	<meta name="viewport" content="width=device-width, initial-scale=.66, shrink-to-fit=yes">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 	<script src="/go/lib/jquery.ui.touch-punch.min.js"></script>
 	<script src="/go/chat.js"></script>
+	<script src="/go/register.js"></script>
 	<script src="/./chat.js"></script>
 	<script src="/./register.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
@@ -49,7 +50,7 @@ GRUP
 					font-size: 13px; background-color: #999; padding: 2px 8px 2px 8px; }
 	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
 					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
-	.co-iframe 	{	display:inline-block; width:60vw; height:calc(60vw * .5265); border-radius:4px; vertical-align:top; background-color:#444;} 
+	.co-iframe 	{	display:inline-block; width:60vw; height:calc(60vw * .5265); border-radius:4px; vertical-align:top; background-color:#444; } 
 	.co-hall	{	display:inline-block; width:calc(40vw - 36px); height:calc(100vh - 24px); border-radius:4px; 
 					background-color:#d8c4ae; margin-left:12px; text-align:center; vertical-align:top; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
@@ -606,6 +607,7 @@ class App  {
 	function trace2(msg, p1, p2, p3, p4)															// MOBILE CONSOLE 
 	{
 		trace(msg);
+		alert(msg)
 		$("#co-Rm-2").html(">"+msg+"<")
 	}
 

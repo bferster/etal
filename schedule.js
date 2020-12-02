@@ -213,7 +213,7 @@ class Schedule  {
 					}
 				if (link.match(/zapp/i)) link+="&"+app.KZ;												// If zoom app, add k
 			if (link.match(/japp/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName;		// If zoom app, add k
-			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
+			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px">
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">

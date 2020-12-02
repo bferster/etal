@@ -2,128 +2,55 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=.75, shrink-to-fit=yes">
+	<meta name="viewport" content="width=device-width, initial-scale=.66, shrink-to-fit=yes">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+	<script src="/go/lib/jquery.ui.touch-punch.min.js"></script>
+	<script src="/go/register.js"></script>
+	<script src="/./register.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
-	<title>èt•al Registration</title>
+	<title>grūp meeting</title>
 </head>
 <style>
 	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:14px; padding:0px;
 					box-sizing:content-box; margin:16px;background-color: #fafafa; }
-	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:150px; }
-	.co-bs 		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
-					font-size: 13px; background-color:  #999; padding: 2px 8px 2px 8px; }
-	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
-					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
-					font-size: 14px; text-align:center; display: none; }
+	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; font-size:12px; }
+	.co-is 		{	border-radius:16px; padding:0 8px; height: 24px; border:1px solid #999; font-size: 13px; }
+	.co-bs 		{	display:inline-block; border-radius:16px; padding:0 8px; border:1px solid #eee; font-size: 13px; 
+					cursor:pointer; z-index:2; padding-bottom:1px; color:#fff}
+	.co-bsg		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
+					font-size: 13px; background-color: #999; padding: 2px 8px 2px 8px; }
+	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
+					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
 	.body ::-webkit-input-placeholder { color: #bbb; text-align:center } ::placeholder { color: #bbb; text-align:center }
 
 </style>
 <body>
-<div style="text-align:center">
-	<img src="img/logo.png" alt="" style="width:150px"><br>
-	<div style="font-size:24px"><b>ATTENDEE REGISTRATION</b></div>
-	<table style="display:inline-block;border-spacing:4px;text-align:left">
-		<tr><td colspan='4'><hr></td></tr>
-		<tr><td>First name</td><td><input class='co-is' type='text' id='firstName' placeholder='required'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>Last name</td><td><input class='co-is' type='text' id='lastName' placeholder='required'></td></tr>
-		<tr><td>Email</td><td><input class='co-is' type='text' id='email' placeholder='required'></td></tr>
-		<tr><td>Title</td><td><input class='co-is' type='text' id='title'></td><td>Organization</td><td><input class='co-is' type='text' id='org'></td></tr>
-		<tr><td>Linked-In</td><td><input class='co-is' type='text' id='li'></td><td>Website</td><td><input class='co-is' type='text' id='web'></td></tr>
-		<tr><td>Interests</td><td><input class='co-is' type='text' id='ints'></td></tr>
-		<tr><td>Picture</td><td>Capture a picture<br>from your webcam,<br>type in the full url,<br>or load a picture<br>from your computer.<br><br><input class='co-is' type='text' id='pic'><br><br>
-		<div class='co-bs' id='loadImage' onclick=''>Load from computer</div></td>
-		<td colspan='2' style='text-align:center'>
-			<div id="streamBox" style="overflow:hidden;width:240px;height:180px;display:inline-block;border:1px solid #999">
-				<div id="snapshot"><img id="snapimg" width="240"></div>
-				<video id="stream" width="240" height="180"></video>
-			</div>
-			<canvas id="capture" width="240" height="180" style="display:none;overflow:hidden"></canvas>
-			<div><div class='co-bs' id='camBut' onclick='StartStreaming()'>Start webcam</div></div><div>
-		</td></tr>
-		<tr><td colspan='4'><hr></td></tr>
-		</table>
-	<br><div class='co-bs' id='send'>Register</div>
-	<input type="file" id="co-imageUpload" style="display:none">
-</div>
+
+	<div id="splashDiv" class="co-splash"></div>
+
 
 <script>
 
-	let cameraStream=null;
-	let meetingId="3";
-	$("#send").on("click",()=>{ SaveToForm("https"); });
-	$("#loadImage").on("click",()=>{ $("#co-imageUpload").trigger("click") })								// ON ADD IMAGE	
+	let app={};
+	let p={firstName:"",lastName:""}
+	let reg=new Register(p);											
 
-	function SaveToForm(link)																				// SAVE DATA TO FORM
+	// HELPERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+
+	function trace(msg, p1, p2, p3, p4)										// CONSOLE 
 	{
-		let d={};
-	
-	link="https://docs.google.com/forms/d/e/1FAIpQLScyAlHFxNUMtSvQK0HasOW7vV63o2GUG5nU3VtCzyVOEVc5gg/viewform?usp=pp_url&entry.331175376=firstName&entry.1150747530=lastName&entry.1466567109=email&entry.1229598408=title&entry.663689923=org&entry.1319953108=li&entry.897093569=web&entry.151157528=ints&entry.353733358=pic"
-		let url=link.split("/viewform?")[0]+"/formResponse";												// Extract post url
-		let firstName=link.match(/entry.[0-9]*=firstName/i)[0].split("=")[0];								// Extract data
-		let lastName=link.match(/entry.[0-9]*=lastName/i)[0].split("=")[0];									
-		let email=link.match(/entry.[0-9]*=email/i)[0].split("=")[0];										
-		let org=link.match(/entry.[0-9]*=org/i)[0].split("=")[0];									
-		let title=link.match(/entry.[0-9]*=title/i)[0].split("=")[0];									
-		let li=link.match(/entry.[0-9]*=li/i)[0].split("=")[0];									
-		let web=link.match(/entry.[0-9]*=web/i)[0].split("=")[0];									
-		let ints=link.match(/entry.[0-9]*=ints/i)[0].split("=")[0];									
-		let pic=link.match(/entry.[0-9]*=pic/i)[0].split("=")[0];									
-
-		d[firstName]=$("#firstName").val();		d[lastName]=$("#lastName").val();
-		d[email]=$("#email").val();				d[title]=$("#title").val();
-		d[org]=$("#org").val();					d[ints]=$("#ints").val();
-		d[li]=$("#li").val();					d[web]=$("#web").val();
-		d[pic]=$("#pic").val();
-
-		if (!$("#firstName").val()) 			{ PopUp("First name is required!"); return; }
-		if (!$("#lastName").val()) 				{ PopUp("Last name is required!");  return; }
-		if (!$("#email").val()) 				{ PopUp("Email is required!");      return; }
-
-//		let s=meetingId+"/"+$("#email").val();														// Make up file name
-//		app.ws.send("IMG|"+s+"|"+snapimg.src);														// Send base64 to server
-//		app.S3Images.push(s);																		// Add to list	
-	
-		let reqData={ url: url, data: d,  type: "POST",  dataType: "xml" };							// Request
-		$.ajax(reqData);																			// May generate CORS error, but posts anyway
-	}
-
-	$("#co-imageUpload").on("change",(e)=>{															// ON IMAGE UPLOAD
-		let myReader=new FileReader();																// Alloc reader
-		myReader.onloadend=(e)=>{ snapimg.src=myReader.result; }									// When loaded
-		myReader.readAsDataURL(e.target.files[0]);													// Load file		
-		});
-	
-	function StartStreaming() 
-	{
-		if (cameraStream) {
-			$("#camBut").text("Start webcam");
-			var ctx=capture.getContext('2d');
-			var img=new Image();
-			ctx.drawImage(stream, 0, 0, 240, 180 );
-			snapimg.src=capture.toDataURL("image/png" );
-			$("#capture").hide();
-			$("#snapshot").show();
-			$("#stream").hide();
-			var track=cameraStream.getTracks()[0].stop();
-			stream.load();
-			cameraStream=null;
-			return;	
-			}
-		$("#camBut").text("Take picture");
-		var mediaSupport = 'mediaDevices' in navigator;
-		$("#stream").show();
-		$("#snapshot").hide();
-		if (mediaSupport && null == cameraStream ) {
-			navigator.mediaDevices.getUserMedia( { video: true } )
-			.then( function( mediaStream ) {
-				cameraStream = mediaStream;
-				stream.srcObject = mediaStream;
-				stream.play();
-				})
-			.catch( function( err ) {
-				console.log( "Unable to access camera: " + err );
-				});
-		}
+		if (p4 != undefined)
+			console.log(msg,p1,p2,p3,p4);
+		else if (p3 != undefined)
+			console.log(msg,p1,p2,p3);
+		else if (p2 != undefined)
+			console.log(msg,p1,p2);
+		else if (p1 != undefined)
+			console.log(msg,p1);
+		else
+			console.log(msg);
 	}
 
 	function PopUp(msg, time, div)														
@@ -137,6 +64,28 @@
 		$("#popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500);		
 	}
 
+	function Popup(msg, time, div)																	// TIMED POPUP
+	{
+		let str="";
+		$("#co-popupDiv").remove();																		// Kill old one, if any
+		if (document.fullscreenElement)	document.exitFullscreen();										// Force non-full screen 
+		str+="<div id='co-popupDiv' class='co-popup'>"; 												// Add div
+		if (time == -1) {																				// If has close but
+			time=100000;																				// Increase time
+			str+="<img id='pu-close' src='img/closedot.gif' style='float:right;cursor:pointer'>";		// Add close button
+			}
+		str+=msg+"</div>"; 																				// Add div
+		$(div ? "#"+div : "body").append(str);															// Add popup to div or body
+		$("#pu-close").click(function() { $("#co-popupDiv").remove(); });								// Remove on click of close but
+		$("#co-popupDiv").fadeIn(500).delay(time ? time : 2000).fadeOut(500)							// Animate in and out		
+	}
+
+	function trace2(msg, p1, p2, p3, p4)															// MOBILE CONSOLE 
+	{
+		trace(msg);
+		alert(msg)
+		$("#co-Rm-2").html(">"+msg+"<")
+	}
 
 </script>
 

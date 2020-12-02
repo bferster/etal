@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=.5, shrink-to-fit=yes">
+	<meta name="viewport" content="width=device-width, initial-scale=.66, shrink-to-fit=yes">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -349,7 +349,7 @@ class App  {
 			}
 		x=Math.max(0,Math.min(this.bx,x-avSize/2));													// Cap x to screen
 		y=Math.max(0,Math.min(this.by,y-avSize/2));													// Y
-		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
+//		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
 		this.ReportLocation(x/(this.bx-12),y/(this.by-12),this.status);								// Report my move
 		this.chat.curChat=-1;																		// Not chatting with anyone
 	}
