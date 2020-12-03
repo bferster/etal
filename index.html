@@ -590,14 +590,13 @@ class App  {
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 
 		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON PERSON
-		$("#co-grid").droppable({     		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON GRID 
 		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON ROOM
 		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON QUIET AREA
 		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   	// ON DROP ON COFFEE BAR
 		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });						// ON SCHEDULE BUT
 		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infoDesk"); });		// ON HELP BUT
 		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); 	// ON PEOPLE BUT
-	}
+		}
 
 
 } // APP CLASS CLOSURE
