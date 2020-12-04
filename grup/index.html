@@ -534,7 +534,7 @@ class App  {
 					}
 			}
 		if (link.match(/zapp/i)) link=goPath+link+"&"+app.KZ;											// If zoom app, add k
-		if (link.match(/japp/i)) link=goPath+link+"&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName;		// If zoom app, add k
+		if (link.match(/japp/i)) link=goPath+link+"&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;;		// If zoom app, add k
 		$("#co-iframeFrame").prop("src",link);															// Set iframe link
 		}
 	}

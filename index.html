@@ -113,7 +113,7 @@
 				if (app.people[i].email.trim().toLowerCase() == pid.trim().toLowerCase())			// If a match
 					break;																			// Quit looking
 			if (i == app.people.length) {															// Email not found
-				alert("This email was not found, please try again, or contact your meeting host"); // Alert
+				alert("This email was not found, please try again, or contact your meeting host"); 	// Alert
 				return;																				// Quit																				
 				}
 			if (!app.people[i].firstName) {															// If no name
@@ -362,14 +362,13 @@ class App  {
 	{
 		let x=(Math.random()*20+40)/100;															// Hover X in center
 		let y=(Math.random()*20+40)/100;															// Y
-//		if (this.curFloor > 0)	{x=.5; y=16/this.by; }												// Go to top of screen on upper floors
 		app.ReportLocation(x,y);																	// Report location
 		$("#co-AvMe").animate({ left:this.bx*x, top:this.by*y });									// Animate me there	
 	}
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-		let x,w,y,h,i,j,x2,inc,bar=[];
+		let x,w,y,h,i,j,x2,inc,bar=[];					
 		let cf=this.curFloor;																		// Current floor
 		let nf=this.venue.length																	// Number of floors
 		let nr=this.venue[cf].length;																// Number of rooms on current floor
@@ -404,7 +403,7 @@ class App  {
                 }
    			}
 
-		let o,n,ox,y2,rms=[]
+		let o,n,ox,y2,rms=[];																		// ARRANGE ROOMS
 		for (i=0;i<this.venue[cf].length;++i) rms.push([]); 										// For each room, make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at stats
@@ -565,7 +564,7 @@ class App  {
 		let str=`<div id="co-grid" class="co-venue" style="
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
 			grid-template-rows:repeat(${o.params.rows}, 1fr);
-			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`
+			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`;							// Grid base
 		
 		this.roomPortals=[];																			// Clear portals
 		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
@@ -578,9 +577,9 @@ class App  {
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
 			${o.link ? ";cursor:pointer" : ""}${o.css ? ";"+o.css : ""}">
 			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
-			if (!i && (this.curFloor == 0))	str+=menu;													// Add menu to hallway first floor
+			if (!i && (this.curFloor == 0))	str+=menu;															// Add menu to hallway first floor
  			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
-			if (sc.content)																				// If content
+			if (sc.content)																						// If content
 				str+="<div style='pointer-events:none;display:inline-block;width:100%'>"+sc.content+"</div>";	// Add conten wrapped in no-event div
 			if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            	if (sc.live > 0)    		str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
@@ -589,13 +588,13 @@ class App  {
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 
-		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON PERSON
-		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON ROOM
-		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON QUIET AREA
-		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }});   	// ON DROP ON COFFEE BAR
-		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });						// ON SCHEDULE BUT
-		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infoDesk"); });		// ON HELP BUT
-		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); 	// ON PEOPLE BUT
+		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON PERSON
+		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON ROOM
+		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON QUIET AREA
+		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON COFFEE BAR
+		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });					// ON SCHEDULE BUT
+		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infoDesk"); });	// ON HELP BUT
+		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); // ON PEOPLE BUT
 		}
 
 

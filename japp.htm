@@ -19,13 +19,16 @@
 	let isSafari=isIos && isWebkit && !ua.match(/CriOS/i);
 	let isAndroid=ua.match(/android/i);
 	let deep=(isAndroid || isSafari);
+
 	const domain = 'meet.jit.si';
+
+	
 	const options = {
 		roomName: v[0],
 		width: "100%",height:window.innerHeight,
 		interfaceConfigOverwrite:{ "TOOLBAR_BUTTONS": [
         							'microphone', 'camera', 'desktop', 'fullscreen',
-        							'hangup','settings', 'raisehand',
+        							'settings', 'raisehand', 
         							'videoquality', 'filmstrip', 'tileview' ],
 									"VIDEO_QUALITY_LABEL_DISABLED": true,
 									"SHOW_CHROME_EXTENSION_BANNER": false
@@ -33,6 +36,8 @@
 		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  disableDeepLinking:deep },
 		parentNode: document.querySelector('body'),
 		};
+
+	if (v[2] && v[2].match(/host|panel|admin/i)) options.interfaceConfigOverwrite["TOOLBAR_BUTTONS"].push("mute-everyone");
 	const api = new JitsiMeetExternalAPI(domain, options);
 	api.executeCommand('displayName',v[1] ? v[1] :"");
 	window.addEventListener("beforeunload",  ()=>{ api.dispose();	});
