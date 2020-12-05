@@ -503,6 +503,7 @@ class App  {
 			o.start=this.sced.TimeToMins(o.start,off-0);												// Start to mins
 			o.end=this.sced.TimeToMins(o.end,0);														// Duration to mins
 			}		
+		this.sced.offset=off;																			// Set offset
 		this.sced.schedule=sced;																		// Set data
 		if (s[0].start.charAt(0) == "*")	this.sced.meetingStart=new Date();							// Use today
 		else								this.sced.meetingStart=new Date(s[0].start);				// Set start date

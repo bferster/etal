@@ -3,12 +3,12 @@ class Schedule  {
 	constructor()   																		// CONSTRUCTOR
 	{
 		this.meetingStart="";																	// Meeting start
-		this.now=0;																				// Now for meeting
 		this.schedule=[];																		// Holds schedule
 		this.curZoom="";																		// Current zoom link
-		this.timeZone="";																		// Time zone
+		this.timeZone=Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g," ");		// Time zone													// Time zone
 		this.day=1;																				// Day in conference
 		this.mins=0;																			// Minutes in conference
+		this.offset=0;																			// Time offset from UTC
 	}
 
 	GetDate(time, format="Mon Day, Year")													// GET FORMATTED DATE
@@ -26,10 +26,11 @@ class Schedule  {
 
 	GetTime(time)																			// GET FORMATTED TIME
 	{
-		time=time.split(":");																	// Hours/minutes
-		let t=(time[0] > 12) ? time[0]%12 : time[0];											// Set 12 hour time
-		t+=":"+time[1]+" ";																		// Add minutes
-		t+=(time[0] >= 12) ? "PM" : "AM";														// AM/PM
+		time-=this.offset;																		// To local time
+		let t=Math.floor((time/60))%12+":";														// Get hours
+		if (time%60 < 10)	t+="0";																// Add leading 0
+		t+=time%60;																				// Add minutes
+		t+=(time/60 >= 12) ? " PM" : " AM";														// AM/PM
 		return t;																				// Return time
 	}
 
@@ -98,14 +99,14 @@ class Schedule  {
 				str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">Open all day</div><br>`
 			else str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
 			${this.GetDate(this.meetingStart.getTime()+((j-1)*24*60*60*1000))}${this.timeZone ? " - "+this.timeZone : ""}</div>`;
-			str+="<table style='width:100%'>";														// Add table of events
+			str+="<table style='width:100%;margin-top:12px'>";										// Add table of events
 			s="";
 			for (i=0;i<days[j].length;++i) {														// For each event that day
 				sc=days[j][i];																		// Point at day's event
 				if (sc.day != j)				continue;											// Not this day
 				if (!sc.desc)					continue;											// No text
 				if (sc.desc.charAt(0) == "*")	continue;											// Hidden text text
-				if ((sc.start != s) && (j != "*")) {												// New timeslot
+				if ((sc.start != s) && (sc.start != "*") && (j != "*")) {							// New timeslot
 					str+=`<tr><td colspan='3'><b>${this.GetTime(sc.start)}</b></td></tr>`;  		// Add time
 					s=sc.start;																		// Now is then
 					}
