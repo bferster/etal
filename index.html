@@ -128,10 +128,18 @@
 			if ((e.which == 66) && e.altKey && e.ctrlKey) {											// Broadcast key (Ctrl+Alt+B)
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s)});	// Broadcast
 				}
+			if ((e.which == 87) && e.altKey && e.ctrlKey) {											// Time key (Ctrl+Alt+W)
+				GetTextBox("Set time and day", "Type time/day to show. (Day is optional)","",(s)=>{	// Type time
+					let v=s.split("/");																// Split time/day
+					app.sced.mins=app.sced.TimeToMins(v[0],new Date().getTimezoneOffset());			// Set minutes
+					if (v[1]) app.sced.day=v[1]-0;													// Set minutes
+					app.DrawVenue();																// Draw venue
+					app.ArrangePeople();	
+					});
+					}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
 				app.sced.day++;
 				app.DrawVenue();
-				app.ArrangePeople();	
 				}
 			});
 	});	

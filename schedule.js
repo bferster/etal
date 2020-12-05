@@ -39,7 +39,6 @@ class Schedule  {
 		let mins=time.replace(/\D/g,"");														// Only digits
 		if (mins.length < 3) mins+="00";														// Only hour spec'd, add minutes
 		if (mins.length < 4) mins="0"+mins;														// Add leading 0 to hours
-		trace(time,(mins.substr(0,2)*60)+(mins.substr(2)*1)+(offset-0))
 		return (mins.substr(0,2)*60)+(mins.substr(2)*1)+(offset-0);								// Get minutes
 	}
 

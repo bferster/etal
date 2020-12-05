@@ -126,9 +126,6 @@
 			});	
 	
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
-			if ((e.which == 85) && e.altKey && e.ctrlKey) {											// Update key (Ctrl+Alt+U)
-				app.GDriveLoad(GetCookie(`${app.meetingId}-${app.curTable}-gdoc`), app.curTable,true); 	// Load table from gdocs and send to server
-				}
 			if ((e.keyCode == 90) && !e.shiftKey && e.ctrlKey) 	{									// UNDO KEY (Ctrl+Z)  
 				if (app.curTable == "schedule")		app.sced.Undo();								// Schedule		
 				else if (app.curTable == "venue")	app.ven.Undo();									// Venue

@@ -139,7 +139,11 @@ class App  {
 			for (i=0;i<d.length;++i)																		// For each room
 				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object
 			}
-		else if (table == "people")		d=$("#jsGrid-"+table).jsGrid("option","data");						// Get from grid													
+		else if (table == "people")	{	
+			d=$("#jsGrid-"+table).jsGrid("option","data");													// Get from grid													
+			let fields=["firstName","lastName","email","title","org","ints","pic","li","web", "role" ];		// Fields
+			for (i=0;i<fields.length;++i)	if (!d[0][fields[i]]) d[0][fields[i]]="";						// Make sure all fields are in 1st row for CSV export															// Make sure it exists
+			}
 		else if (table == "schedule") {
 			d=JSON.parse(JSON.stringify(this.schedule));													// Clone schedule data
 			let fields=["day","start","end","desc","floor","room","link","content"];						// Fields
