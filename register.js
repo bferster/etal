@@ -28,7 +28,7 @@ class Register  {
 				<div class='co-bsg' id='co-regLoad' onclick=''>Load from computer</div></td>
 				<td colspan='2' style='text-align:center'>
 					<div id="streamBox" style="overflow:hidden;width:240px;height:180px;display:inline-block;border:1px solid #999">
-						<div id="coRegSnapShot"><img id="regSnapimg" width="240" src="img/avyou.png"></div>
+						<div id="coRegSnapShot"><img id="regSnapimg" width="240" src="${this.person.pic ? this.person.pic : "img/avyou.png"}"></div>
 						<video id="stream" width="240" height="180"></video>
 					</div>
 					<canvas id="coRegCapture" width="240" height="180" style="display:none;overflow:hidden"></canvas>
@@ -42,8 +42,14 @@ class Register  {
 		</div>`;
 
 	$("#splashDiv").css("margin-top","24px");														// Shrink margin
-
 	$("#splashDiv").html(str.replace(/\t|\n|\r/g,""));												// Add registration form
+	$("#lastName").val(this.person.lastName ? this.person.lastName: ""); 							// Last
+	$("#title").val(this.person.title ? this.person.title: ""); 									// Title
+	$("#org").val(this.person.org ? this.person.org: ""); 											// Org
+	$("#li").val(this.person.li ? this.person.li: ""); 												// Li
+	$("#web").val(this.person.web ? this.person.ints: ""); 											// Web
+	$("#ints").val(this.person.ints ? this.person.ints: ""); 										// Ints
+
 	$("#co-regSend").on("click",()=>{ this.Send() });												// ON SEND
 	$("#co-regLoad").on("click",()=>{ $("#co-regUpload").trigger("click") })						// ON ADD IMAGE	
 	$("#co-regUpload").on("change",(e)=>{															// ON IMAGE UPLOAD
@@ -93,7 +99,7 @@ class Register  {
 			return;	
 			}
 	
-		$("#camBut").text("Take picture");
+		$("#co-regCam").text("Take picture");
 		let mediaSupport = 'mediaDevices' in navigator;
 		$("#stream").show();
 		$("#coRegSnapShot").hide();
