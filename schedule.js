@@ -7,8 +7,8 @@ class Schedule  {
 		this.schedule=[];																		// Holds schedule
 		this.curZoom="";																		// Current zoom link
 		this.timeZone="";																		// Time zone
-		this.offset=0;																			// Time from start
 		this.day=1;																				// Day in conference
+		this.mins=0;																			// Minutes in conference
 	}
 
 	GetDate(time, format="Mon Day, Year")													// GET FORMATTED DATE
@@ -33,6 +33,16 @@ class Schedule  {
 		return t;																				// Return time
 	}
 
+	TimeToMins(time, offset)																// CONVERT TIME TO MINUTES
+	{
+		if (!time || (time == "*"))	 return "*";												// Wild card
+		let mins=time.replace(/\D/g,"");														// Only digits
+		if (mins.length < 3) mins+="00";														// Only hour spec'd, add minutes
+		if (mins.length < 4) mins="0"+mins;														// Add leading 0 to hours
+		trace(time,(mins.substr(0,2)*60)+(mins.substr(2)*1)+(offset-0))
+		return (mins.substr(0,2)*60)+(mins.substr(2)*1)+(offset-0);								// Get minutes
+	}
+
 	GeEventByRoom(floor, room)																// GET EVENT FOR A ROOM
 	{
 		let i,o;
@@ -40,7 +50,8 @@ class Schedule  {
 			o=this.schedule[i];																	// Point at it
 			if ((o.room == room) && 															// Room match
 				(o.floor == floor) && 															// Floor match
-				((o.day == this.day) || (o.day == "*"))) 										// Day match
+				((o.day == this.day) || (o.day == "*")) && 										// Day match
+				((this.mins < (o.start-0+o.end-0) && (this.mins >= o.start)) || (o.start == "*"))) 	// Time match
 					return o;																	// Return room event
 			}
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
@@ -48,8 +59,9 @@ class Schedule  {
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
 	{
-		let today=new Date().getDate()+50;													 	// Get today in days												
-		this.day=today-(this.meetingStart.getDate()+49);										// Days into meeting
+		let today=new Date();
+		this.day=(today.getDate()+50)-(this.meetingStart.getDate()+49);							// Days into meeting
+		this.mins=(today.getUTCHours()*60)+(today.getUTCMinutes()*1);							// Get UTC time in minutes
 		app.DrawVenue();																		// Redraw venue
 	}
 
@@ -76,14 +88,13 @@ class Schedule  {
 		let days=[];
 		for (i=0;i<this.schedule.length;++i) {														// For each event
 			sc=this.schedule[i];																	// Point at schedule
-			sc.stn=sc.start.split(":")[0]*60+(sc.start.split(":")[1]-1);							// As minutes
 			if (days[sc.day] == undefined) 				days[sc.day]=[];							// A new day													
 			if (sc.desc && (sc.desc.charAt(0) != "*"))	days[sc.day].push(sc);						// Add event to day		
 			}
 		for (j in days) {																			// For each day
 			if (!days[j].length)	continue;														// Skip if no events
 			if (j-0 < (this.day-0))	continue;														// Start on today
-			days[j].sort((a,b)=>{ return (a.stn > b.stn) ? 1 : -1 });								// Sort by minutes
+			days[j].sort((a,b)=>{ return (a.start > b.start) ? 1 : -1 });							// Sort by minutes
 			if ((j == "*") && (days[j].length)) 													// No date and some takers
 				str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">Open all day</div><br>`
 			else str+=`<div style="background-color:#5b66cb;width:calc(100% - 8px);padding:4px;color:#fff;text-align:center">
@@ -95,9 +106,9 @@ class Schedule  {
 				if (sc.day != j)				continue;											// Not this day
 				if (!sc.desc)					continue;											// No text
 				if (sc.desc.charAt(0) == "*")	continue;											// Hidden text text
-				if ((sc.stn != s) && (j != "*")) {													// New timeslot
+				if ((sc.start != s) && (j != "*")) {												// New timeslot
 					str+=`<tr><td colspan='3'><b>${this.GetTime(sc.start)}</b></td></tr>`;  		// Add time
-					s=sc.stn;																		// Now is then
+					s=sc.start;																		// Now is then
 					}
 				str+=`<tr style="vertical-align:top;cursor:pointer">`
 				if (j != "*") str+=`<td style="width:30px">&nbsp;&nbsp;<input type="checkbox" id="co-Sc-${i}" ${sc.going ? " checked" : ""}></td>`;

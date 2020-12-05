@@ -174,17 +174,23 @@ class Schedule  {
 	{
 		let o=app.schedule[num];																			// Point at event
 		let s=timeToMins(o.start)/15-24;																	// Set start
+		if (o.start == "*")	s=480/15-24;																	// All day
 		let e=s+timeToMins(o.end)/15;																		// End
+		if (o.end == "*")	e=s+720/15;																		// All day
 		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
 		cursor:pointer;overflow:hidden;font-size:11px;border-radius:8px;
 		text-align:center;color:#fff;border:1px solid #999;background-color:#004eff;opacity:.33;padding:6px">
 		${o.desc ? o.desc : ""}</div>`;
 		$("#co-sgrid").append(str)
 
-		function timeToMins(t) {																			// CONVERT TIME TO MINUTES
-			return t.split(":")[0]*60+(t.split(":")[1]-0); 
+		function timeToMins(time) {
+			if (!time)	return 0;																			// Invalid time
+			let mins=time.replace(/\D/g,"");																// Only digits
+			if (mins.length < 3) mins+="00";																// Only hour spec'd, add minutes
+			if (mins.length < 4) mins="0"+mins;																// Add leading 0 to hours
+			return mins.substr(0,2)*60+mins.substr(2,0)*1;													// Get minutes
 			}
-	}
+		}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UNDO

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -484,20 +485,21 @@ class App  {
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		let i,o;
+		let i,o,s,off=0;
 		for (i=0;i<sced.length;++i)	{																	// For each event
-		if (sced[i].day == 0) {																			// If setup event
-				o=sced.splice(i,1);																		// Copy and remove it
-				break;																					// Quit looking
-				}
+			if (sced[i].day == 0)  s=sced.splice(i,1);													// If setup, copy and remove it
+			}
+		if (s && s[0] && s[0].bar && s[0].bar.match(/UTC/i)) off=s[0].bar.substr(3)*-60;				// Get offset from UTC
+		for (i=0;i<sced.length;++i)	{																	// For each event
+			o=sced[i];																					// Point at it
+			o.start=this.sced.TimeToMins(o.start,off-0);												// Start to mins
+			o.end=this.sced.TimeToMins(o.end,0);														// Duration to mins
 			}		
 		this.sced.schedule=sced;																		// Set data
-		if (o[0].start.charAt(0) == "*")	this.sced.meetingStart=new Date();							// Use today
-		else								this.sced.meetingStart=new Date(o[0].start);				// Set start date
-		if (o[0].end.charAt(0) == "*")		this.sced.meetingEnd=new Date();							// Use today
-		else								this.sced.meetingEnd=new Date(o[0].end);					// Set end date
-		this.sced.timeZone=o[0].bar;																	// Set time zone
-		this.sced.offset=new Date(o[0].start)-this.sced.meetingStart;									// Time offset
+		if (s[0].start.charAt(0) == "*")	this.sced.meetingStart=new Date();							// Use today
+		else								this.sced.meetingStart=new Date(s[0].start);				// Set start date
+		if (s[0].end.charAt(0) == "*")		this.sced.meetingEnd=new Date();							// Use today
+		else								this.sced.meetingEnd=new Date(s[0].end);					// Set end date
 		this.sced.schedule.sort((a,b)=>{ return (a.day > b.day) ? 1 : -1 });							// Sort by day
 	}
 
