@@ -59,12 +59,12 @@ GRUP
 					margin-top:80px; text-align:center; color:#fff }
 	.co-breakout{	display:inline-block; width:10vw; height:100px; border-radius:8px; 
 					border:2px solid #a2733f; margin:6px; text-align:center; color:#a2733f}
-	.co-topic	{	width:calc(100% - 48px); color:#fff; text-align:center; padding:24px; font-size:16px; }
+	.co-topic	{	width:calc(100% - 48px); color:#fff; text-align:center; padding:12px 24px 0 24px; font-size:16px; }
 	.co-docs	{	display:inline-block; width:calc(30vw - 6px); height:calc(100vh - 60vw * .5265 - 36px); border-radius:4px; 
 					background-color:#ddd; margin-top:12px; text-align:center; vertical-align:top; }
 	.co-title	{	color:#333; text-align:center; font-size:24px; margin: 6px 0; }
-	.co-items	{	color:#333; text-align:center; font-size:16px; margin-top:12px;
-					width:calc(100% - 6px); overflow-x:hidden;overflow-y:auto; height:calc(100% - 70px); }
+	.co-items	{	color:#333; text-align:center; font-size:16px; margin-top:8px;
+					overflow-x:hidden;overflow-y:auto; height:calc(100% - 70px); }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
 	body ::-webkit-scrollbar-track { background: transparent; }
@@ -151,8 +151,8 @@ class App  {
 		this.status="";																				// My status
 		this.videoWin=null;																			// Video window
 		this.retryWS=false;																			// Reconnecting to web socket
+		this.curItem=2;																				// Current agenda item
 		this.KZ="";																					// Ks
-		this.curTopic="<b>Current topic:</b><br>Membership drive";									// Currwently discussed topic
 		if (isLocal) this.ws=new WebSocket('ws://'+window.location.host+':8080');					// Open insecure websocket											
 		else		 this.ws=new WebSocket('wss://'+window.location.host+':8080');					// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -170,6 +170,7 @@ class App  {
 		this.ws.onopen=()=> { 																		// ON OPEN
 			if (this.meetingId != "preview") {														// If not previewing
 				app.ws.send(`P|${app.meetingId}`);													// Request people data	
+				app.ws.send(`S|${app.meetingId}`);													// Request schedule data 
 				}
 			app.ws.send(`KZ|*`);																	// Request zk data	
 			console.log('connected');  
@@ -262,6 +263,10 @@ class App  {
 			this.AddPeople(JSON.parse(v[1]));														// Set data								
 			if (v[2] == "U")	app.DrawPeople();													// Redraw on update
 			}
+		else if (v[0] == "S") {																		// Add/update schedule
+			this.AddSchedule(JSON.parse(v[1]));														// Set data
+			this.DrawVenue();																			// Draw venue
+			}
 		else if (v[0] == "MP") {																	// Update person
 			let d=JSON.parse(v[2]);																	// Objectify
 			let i=this.pIndex[d.id];																// Get index
@@ -278,6 +283,11 @@ class App  {
 			Sound("ding");																			// Ding
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
+		else if (v[0] == "BT") {																	// NEW TOPIC
+			Sound("ding");																			// Ding
+			this.curItem=v[2];																		// Set item
+			this.ArrangePeople();																	// Show it
+			}
 		}
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
@@ -318,6 +328,10 @@ class App  {
      	let	x=$("#co-coffee").offset().left;                                    					// left side of bar
        	let w=$("#co-coffee").width()-avSize;                                  						// Width of space
        	let y=this.by-$("#co-coffee").height()-avSize+2;                       						// On top of bar area
+		
+	   	$("[id^=co-adj-]").css("background-color","");												// Reset all agendas
+		$("#co-adj-"+this.curItem).css("background-color","#d8c4ae");								// Hilite current one
+		$("#topicDiv").html(`<b>Current topic:</b><br>${$("#co-adj-"+this.curItem).text()}`);			// Table topic
 
 		for (i=0;i<this.people.length;++i) 															// For each person
 			if ((this.people[i].stats) == "B0") 	bar.push(i); 									// In a bar		
@@ -425,6 +439,12 @@ class App  {
 			}
 	}
 
+	AddSchedule(sced)																				// ADD SCHEDULE
+	{
+		this.sced=sced;																					// Set data
+		this.sced.sort((a,b)=>{ return (a.start-0 > b.start-0) ? 1 : -1 });								// Sort by start
+	}
+
 	DrawPeople(num)																					// ADD PEOPLE TO MEETING
 	{
 		let i,o,str="";
@@ -471,7 +491,7 @@ class App  {
 				<div id="co-room-0" class="co-mroom">
 					<div id="co-table" class="co-table">
 						<img src="img/logo.png" style="width:33%;margin-top:8vw">
-						<div id="topicDiv" class="co-topic">${this.curTopic}
+						<div id="topicDiv" class="co-topic">
 					</div>
 				</div>
 			</div>
@@ -492,28 +512,42 @@ class App  {
 		this.SetDocs();																					// Set docs
 	}
 
-	SetAgenda()
+	SetAgenda()																						// DRAW AGENDA ITEMS
 	{
-		let str=`<b>Old business</b><br>
-		<br>New board members
-		<br><span style="color:#009900"><b>- Membership drive -</b></span>
-		<br>Holiday party
-		<br><br><b>New business</b><br>
-		<br>Treasurer's report
-		<br>Unison Day
-		<br>Mission statement`;
-		$("#agendaItems").html(str.replace(/\t|\n|\r/g,""));												// Add venue
+		let i,k=0,o,str="<ul style='list-style-type:none;padding:24px;margin:0'>";
+		for (i=0;i<this.sced.length;++i) {																// For each item
+			o=this.sced[i];																				// Point at it
+			if (o.day == 1) {																			// An agenda item
+				str+=`<li id="co-adj-${k++}" style="margin-bottom:2px;border-radius:48px;cursor:pointer;padding-bottom:2px">`;	// Item head
+				if (o.bar == 1)	str+="<b>"+o.desc+"</b>";												// A bold item
+				else			str+=o.desc;															// Regular item
+				str+="</li>";																			// End item
+				}	
+			}
+		str+="</ul>";																					// End list
+		$("#agendaItems").html(str.replace(/\t|\n|\r/g,""));											// Add agenda
+		$("[id^=co-adj-]").on("click",(e)=>{															// ON AGENDA CLICK
+			app.ws.send(`BT|${app.meetingId}|${e.currentTarget.id.substr(7)}`);							// Broadcast item change
+			});
 	}
 
 	SetDocs()
 	{
-		let str=`<a href="https://washingtonpost.com" target="_blank">This month's treasurer's report</a><br>
-		<a href="https://washingtonpost.com" target="_blank">Last month's treasurer's report</a><br>
-		<a href="https://washingtonpost.com" target="_blank">New brochure layout</a><br>
-		<a href="https://washingtonpost.com" target="_blank">Last meeting's minutes</a><br>`;
-		$("#docItems").html(str.replace(/\t|\n|\r/g,""));												// Add venue
+		let i,k=0,o,str="<ul style='list-style-type:none;padding:24px;margin:0'>";
+		for (i=0;i<this.sced.length;++i) {																// For each item
+			o=this.sced[i];																				// Point at it
+			if (o.day == 2) {																			// A doc
+				str+=`<li id="co-doc-${k++}" style="margin-bottom:4px">`;								// Item head
+				str+=`<a href="${o.link}" target="_blank">`;											// Adf link
+				if (o.bar == 1)	str+="<b>"+o.desc+"</b>";												// A bold item
+				else			str+=o.desc;															// Regular item
+				str+="</a></li>";																		// End item
+				}	
+			}
+		str+="</ul>";																					// End list
+		$("#docItems").html(str.replace(/\t|\n|\r/g,""));											// Add agenda
 	}
-
+	
 	SetLink(link)																					// SET IFRAME LINK
 	{
 		$("#co-vMsg").css("display",link ? "none" : "block");											// Hide show message
