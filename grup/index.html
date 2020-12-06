@@ -339,7 +339,7 @@ class App  {
 		if (rms[0].length) {																		// ARRANGE MAIN TABLE
 			let h=-1;
 			for (i=0;i<rms[0].length;++i) 															// For person in main room
-				if (this.people[rms[0][i]].role.match(/host/i))	h=i;								// Get host
+				if (this.people[rms[0][i]].role.match(/host/i))	h=rms[0][i];						// Get host
 			let d=360/rms[0].length;																// Angle spacing
 			if (h < 0)  d=360/(rms[0].length+1);													// Leave room for host if absent
 			let cx=$("#co-table").offset().left+$("#co-table").width()/2;							// Table center X
