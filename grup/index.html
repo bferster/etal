@@ -65,6 +65,11 @@ GRUP
 	.co-title	{	color:#333; text-align:center; font-size:24px; margin: 6px 0; }
 	.co-items	{	color:#333; text-align:center; font-size:16px; margin-top:8px;
 					overflow-x:hidden;overflow-y:auto; height:calc(100% - 70px); }
+	.co-dash 	{	position:absolute; padding:24px; text-align:center;	width:calc(100vw - 72px); height:calc(100vh - 72px); top:12px; left:12px;
+					border-radius:4px;  text-align:center; background-color:#d8c4ae; border: 1px solid #999; }
+	.co-dashTable{ 	display:inline-block; width:calc(33% - 56px); border: 1px solid #999; padding:16px; vertical-align:top;
+					border-radius:8px; height:calc(66vh); margin:12px; background-color:#f8f8f8; overflow-y:auto; }
+	.co-dashText{	width:calc(100% - 36px); height:60%; padding:12px; font-size:15px; font-family:Segoe UI,sans-serif; }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
 	body ::-webkit-scrollbar-track { background: transparent; }
@@ -166,7 +171,9 @@ class App  {
 			};
 		
 		this.chat=new Chat();																		// Add chat class
-	
+		this.sced={}
+		this.sced.ShowLink=this.SetLink;
+
 		this.ws.onopen=()=> { 																		// ON OPEN
 			if (this.meetingId != "preview") {														// If not previewing
 				app.ws.send(`P|${app.meetingId}`);													// Request people data	
@@ -441,8 +448,8 @@ class App  {
 
 	AddSchedule(sced)																				// ADD SCHEDULE
 	{
-		this.sced=sced;																					// Set data
-		this.sced.sort((a,b)=>{ return (a.start-0 > b.start-0) ? 1 : -1 });								// Sort by start
+		this.sced.schedule=sced;																		// Set data
+		this.sced.schedule.sort((a,b)=>{ return (a.start-0 > b.start-0) ? 1 : -1 });					// Sort by start
 	}
 
 	DrawPeople(num)																					// ADD PEOPLE TO MEETING
@@ -502,12 +509,14 @@ class App  {
 			</div>			
 		<img id="co-coffee" src="img/coffeebar.png" style="width:160px; 
 			position:absolute;top:calc(100vh - 80px);left:calc(80vw - 80px)">
+		${this.people[this.myId].role.match(/host/i) ? "<img id='co-gear' src='img/gear.png' style='cursor:pointer;width:25px;position:absolute;top:calc(100vh - 50px);left:calc(100vw - 50px)'>" : ""}
 		</div>`;
 		
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 		$("#co-hall").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id); }});   		// ON DROP ON ROOM
 		$("[id^=co-room-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); 	// ON DROP ON ROOM
 		$("#co-coffee").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id); }});   		// ON DROP ON COFFEE BAR
+		$("#co-gear").on("click",()=>{ this.DrawDash(); });												// ON DASHBOARD	CLICK
 		this.SetAgenda();																				// Set agenda
 		this.SetDocs();																					// Set docs
 	}
@@ -515,12 +524,12 @@ class App  {
 	SetAgenda()																						// DRAW AGENDA ITEMS
 	{
 		let i,k=0,o,str="<ul style='list-style-type:none;padding:24px;margin:0'>";
-		for (i=0;i<this.sced.length;++i) {																// For each item
-			o=this.sced[i];																				// Point at it
+		for (i=0;i<this.sced.schedule.length;++i) {														// For each item
+			o=this.sced.schedule[i];																	// Point at it
 			if (o.day == 1) {																			// An agenda item
 				str+=`<li id="co-adj-${k++}" style="margin-bottom:2px;border-radius:48px;cursor:pointer;padding-bottom:2px">`;	// Item head
-				if (o.bar == 1)	str+="<b>"+o.desc+"</b>";												// A bold item
-				else			str+=o.desc;															// Regular item
+				if (o.desc.charAt(0) == "*")	str+="<b>"+o.desc.substr(1)+"</b>";						// A bold item
+				else							str+=o.desc;											// Regular item
 				str+="</li>";																			// End item
 				}	
 			}
@@ -534,8 +543,8 @@ class App  {
 	SetDocs()
 	{
 		let i,k=0,o,str="<ul style='list-style-type:none;padding:24px;margin:0'>";
-		for (i=0;i<this.sced.length;++i) {																// For each item
-			o=this.sced[i];																				// Point at it
+		for (i=0;i<this.sced.schedule.length;++i) {														// For each item
+			o=this.sced.schedule[i];																	// Point at it
 			if (o.day == 2) {																			// A doc
 				str+=`<li id="co-doc-${k++}" style="margin-bottom:4px">`;								// Item head
 				str+=`<a href="${o.link}" target="_blank">`;											// Adf link
@@ -563,7 +572,7 @@ class App  {
 				else if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="zoommtg";
 				if (str) {
 					str+="://zoom.us/join?confno="+link.split("?")[1];									// Make full url
-					app.sced.ShowLink(str);																// Open with native app							
+					this.SetLink(str);																	// Open with native app							
 					return;																				// Quit
 					}
 			}
@@ -571,6 +580,58 @@ class App  {
 		if (link.match(/japp/i)) link=goPath+link+"&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;;		// If zoom app, add k
 		$("#co-iframeFrame").prop("src",link);															// Set iframe link
 		}
+	}
+
+	DrawDash()																						// DRAW HOST DASHBOARD
+	{
+		let i;
+		$("#co-dash").remove();
+		let str=`<div id="co-dash" class="co-dash">
+			<span style="font-size:24px"><b>MEETING SETUP</b></span>
+			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-dash').remove()"><br><br>
+			<div style="display:inline-block; width:100%">
+				<div class="co-dashTable"><span style="font-size:18px"><b>People</b></span>
+					<br><br><textarea id="co-dash-people" class="co-dashText"></textarea>
+					<br><br><div style="width:100%;max-width:400px;text-align:left;display:inline-block">
+						Type or paste the email address of each person you want in the meeting on a separate line. 
+						The first time they attend, they will fill out their name tag information.
+						</div>
+					</div>
+				<div class="co-dashTable"><span style="font-size:18px"><b>Agenda</b></span>
+					<br><br><textarea id="co-dash-agenda" class="co-dashText"></textarea>
+					<br><br><div style="width:100%;max-width:400px;text-align:left;display:inline-block">
+						Type or paste the agenda items for the meeting, each on it's own line. 
+						If you want the item to appear<b> bold</b> 
+						start the item with a * (i.e. <i>*New business</i>).
+					</div>
+				</div>
+				<div class="co-dashTable"><span style="font-size:18px"><b>Resources</b></span>
+					<br><br><textarea id="co-dash-res" class="co-dashText"></textarea>
+					<br><br><div style="width:100%;max-width:400px;text-align:left;display:inline-block">
+						Type or paste the resources for the meeting. Each resource uses two lines.
+						The first of the pair is the title that is displayed, 
+						and the second is the full url including <i>http</i> or <i>https</i>.
+						</div>
+					</div>
+				</div>
+		<p><div class="co-bsg" style="float:right;margin-right:16px;font-size:24px;background-color:#a2733f;padding:0 12px 4px 12px;" 
+		id="co-dAdd">Save to meeting</div></p>
+		</div>`;
+		$("body").append(str.replace(/\t|\n|\r/g,""));
+	
+		str="";																						// Clear
+		for (i=0;i<this.people.length;++i) 	 str+=this.people[i].email+"\n";						// Add emails
+		$("#co-dash-people").val(str);																// Fill textarea
+		str="";																						// Clear
+		for (i=0;i<this.sced.schedule.length;++i) 													// For each item
+			if (this.sced.schedule[i].day == 1)														// If an agenda item
+				str+=this.sced.schedule[i].desc+"\n";												// Add it														
+		$("#co-dash-agenda").val(str);																// Fill textarea
+		str="";																						// Clear
+		for (i=0;i<this.sced.schedule.length;++i) 													// For each item
+			if (this.sced.schedule[i].day == 2)														// If a resource item
+				str+=this.sced.schedule[i].desc+"\n"+this.sced.schedule[i].link+"\n";				// Add it														
+		$("#co-dash-res").val(str);																	// Fill textarea
 	}
 
 } // APP CLASS CLOSURE
