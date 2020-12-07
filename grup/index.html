@@ -645,15 +645,20 @@ class App  {
 				if (v[i].length && v[i+1].length )													// If something there
 					d.push({ day:2, start:i/2, desc:v[i], link:v[i+1], meeting:this.meetingId, id:this.meetingId+"~"+(n+i/2) }); // Add to data
 			this.AddSchedule(d);																	// Add data to schedule
-	
+			app.ws.send(`WS|${this.meetingId}|${JSON.stringify(d)}`);								// Write to DB table
+			d=[];
 			v=$("#co-dash-people").val().replace(/\r/g,"").split("\n");								// Split people into lines
 			for (i=0;i<this.people.length;++i)														// For each person
-				if (v.includes(this.people[i].email)) d.push(i);									// Person already in
-																		
-
-			trace(d)
-			
+				if (v.includes(this.people[i].email)) 												// Person already in
+					d.push(this.people[i]);															// Add them	
+				for (i=0;i<v.length;++i) {															// For each person in list
+					if (!v[i]) continue;															// Skip if blank
+					if (!d.some((val,index)=>{return (val.email.toLowerCase() == v[i].toLowerCase())}))	// If a new person														
+						d.push({ email:v[i], stats:"Q", f:0, role:"",meeting:this.meetingId });		// Add them	
+					}
+			for (i=0;i<d.length;++i)	d[i].id=this.meetingId+"~"+i								// For each person, set id
 			this.AddPeople(d);																		// Set people data								
+			app.ws.send(`WP|${this.meetingId}|${JSON.stringify(d)}`);								// Write to DB table
 			this.DrawVenue();																		// Redraw
 			$("#co-dash").remove();																	// Kill dialog
 			Sound("ding");																			// Ding
