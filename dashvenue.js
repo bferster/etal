@@ -23,7 +23,8 @@ class Venue {
 			this.curUndo=0;																					// Reset undos
 			this.Do();																						// Set 1st undo
 			}
-		if (!app.venue[0]) app.venue.push([{ title:"Hallway", rug:"#ffffff", cs:1, ce:2, rs:1, re:2,room:0, floor:0, params:{ rows:4, cols:4, gap:0, avSize:36 }} ]);	// Init if blank
+		if (!app.venue[this.curFloor][0]) 		 app.venue[this.curFloor][0]={ title:"Hallway", rug:"#ffffff", cs:1, ce:2, rs:1, re:2,room:0, floor:0 };	// Init if blank
+		if (!app.venue[this.curFloor][0].params) app.venue[this.curFloor][0].params={ rows:4, cols:4, gap:0, avSize:36 };	// Init if blank
 		let d=app.venue[this.curFloor][0].params;
 		let r=app.venue[this.curFloor][this.curRoom];
 		let str=`<div style="margin-top:12px">
@@ -89,7 +90,7 @@ class Venue {
 
 		$("#evAddFloor").on("click",()=>{																	// ON ADD FLOOR
 			this.Do();																						// Set do 
-			this.curFloor=app.venue.length;																// Set new current floor
+			this.curFloor=app.venue.length;																	// Set new current floor
 			let o=[{ cs:1, ce:2, rs:1, re:2, rug:"#cccccc", title:"Hallway", floor: this.curFloor, room:this.curRoom, params:{ rows:4, cols:4, gap:0 } }];
 			app.venue.push(o);																				// Add floor
 			Sound("ding");																					// Ding

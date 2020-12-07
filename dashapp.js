@@ -10,7 +10,7 @@ class App  {
 		app=this;																					// App global pointer
 		this.people=[];																				// Holds people
 		this.schedule=[];																			// Holds schedule
-		this.venue=[];																				// Holds venue
+		this.venue=[[]];																			// Holds venue/1st floor
 		this.S3Images=[];																			// Holds S3 images
 		this.curTable="people";																		// Current db table
 		this.InitSpreadSheets();																	// Init jsGrid

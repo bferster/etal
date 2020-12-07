@@ -640,21 +640,20 @@ class App  {
 			for (i=0;i<v.length;++i) 																// For each agenda item
 				if (v[i].length)																	// If something there
 					d.push({ day:1, start:i, desc:v[i], meeting:this.meetingId, id:this.meetingId+"~"+i }); // Add to data
-	
 			v=$("#co-dash-res").val().replace(/\r/g,"").split("\n");								// Split resources into lines
 			for (i=0;i<v.length;i+=2)																// For each
 				if (v[i].length && v[i+1].length )													// If something there
 					d.push({ day:2, start:i/2, desc:v[i], link:v[i+1], meeting:this.meetingId, id:this.meetingId+"~"+(n+i/2) }); // Add to data
+			this.AddSchedule(d);																	// Add data to schedule
 	
 			v=$("#co-dash-people").val().replace(/\r/g,"").split("\n");								// Split people into lines
 			for (i=0;i<this.people.length;++i)														// For each person
-				if ((v[i] != this.myEmail) && !v.includes(this.people[i].email))					// Person not in current list or me
-					this.people.splice(i,1);														// Remove them
+				if (v.includes(this.people[i].email)) d.push(i);									// Person already in
+																		
 
-			trace(this.people)
+			trace(d)
 			
-			this.AddPeople(JSON.parse(JSON.stringify(this.people)));								// Set data								
-			this.AddSchedule(d);																	// Add data to schedule
+			this.AddPeople(d);																		// Set people data								
 			this.DrawVenue();																		// Redraw
 			$("#co-dash").remove();																	// Kill dialog
 			Sound("ding");																			// Ding
