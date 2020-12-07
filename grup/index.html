@@ -584,7 +584,7 @@ class App  {
 
 	DrawDash()																						// DRAW HOST DASHBOARD
 	{
-		let i;
+		let i,o;
 		$("#co-dash").remove();
 		let str=`<div id="co-dash" class="co-dash">
 			<span style="font-size:24px"><b>MEETING SETUP</b></span>
@@ -632,9 +632,47 @@ class App  {
 			if (this.sced.schedule[i].day == 2)														// If a resource item
 				str+=this.sced.schedule[i].desc+"\n"+this.sced.schedule[i].link+"\n";				// Add it														
 		$("#co-dash-res").val(str);																	// Fill textarea
+	
+		$("#co-dAdd").on("click", ()=>{																// ON SAVE 
+			let d=[];																				
+			let v=$("#co-dash-agenda").val().replace(/\r/g,"").split("\n");							// Split agenda into lines
+			let n=v.length;																			// Save length
+			for (i=0;i<v.length;++i) 																// For each agenda item
+				if (v[i].length)																	// If something there
+					d.push({ day:1, start:i, desc:v[i], meeting:this.meetingId, id:this.meetingId+"~"+i }); // Add to data
+	
+			v=$("#co-dash-res").val().replace(/\r/g,"").split("\n");								// Split resources into lines
+			for (i=0;i<v.length;i+=2)																// For each
+				if (v[i].length && v[i+1].length )													// If something there
+					d.push({ day:2, start:i/2, desc:v[i], link:v[i+1], meeting:this.meetingId, id:this.meetingId+"~"+(n+i/2) }); // Add to data
+	
+			v=$("#co-dash-people").val().replace(/\r/g,"").split("\n");								// Split people into lines
+			for (i=0;i<this.people.length;++i)														// For each person
+				if ((v[i] != this.myEmail) && !v.includes(this.people[i].email))					// Person not in current list or me
+					this.people.splice(i,1);														// Remove them
+
+			trace(this.people)
+			
+			this.AddPeople(JSON.parse(JSON.stringify(this.people)));								// Set data								
+			this.AddSchedule(d);																	// Add data to schedule
+			this.DrawVenue();																		// Redraw
+			$("#co-dash").remove();																	// Kill dialog
+			Sound("ding");																			// Ding
+			});
 	}
 
 } // APP CLASS CLOSURE
+
+/*
+*Old business
+New board members
+Membership drive
+Holiday party
+*New Business
+Treasurer's report
+Unison Day
+New mission statement
+*/
 
 // HELPERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
