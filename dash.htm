@@ -64,6 +64,7 @@
 
 <body>
 	<img style="float:right;width:80px" src="img/logo.png">
+	<img id="co-dashHelp" style="float:left;width:20px;margin-top:8px;cursor:pointer" src="img/help.png">
 	<div id="co-meetingName" style="text-align:center;font-size:30px;color:#999;font-weight:bold;margin:-8px 0 4px 0"></div>
 	<div id="co-tab">
 		<ul>
@@ -124,7 +125,15 @@
 			app.schedule[app.sced.curEvent].content=CKEDITOR.instances.editor1.getData();			// Set new content
 			app.sced.ShowEventDetails(app.sced.curEvent);											// Redraw html
 			});	
+		$("#co-dashHelp").on("click",()=> { 														// ON HELP
+			window.open("https://docs.google.com/document/d/1MzQp9xoYiREUsb3iE94WZAV1gybIZNz4XZKLWg_YHek","_blank");
+			});
+
 	
+	
+	on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
+
+
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.keyCode == 90) && !e.shiftKey && e.ctrlKey) 	{									// UNDO KEY (Ctrl+Z)  
 				if (app.curTable == "schedule")		app.sced.Undo();								// Schedule		

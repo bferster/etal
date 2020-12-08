@@ -11,7 +11,7 @@ class Schedule  {
 
 	EditSchedule(data)																					// MAKE SCHEDULE EDITOR
 	{
-		let i,o={ day:"0", start:"", end:"", bar:"", floor:"", desc:"", link:"", content:"" };
+		let i,o={ day:"0", start:"*", end:"*", bar:"0", floor:"", desc:"", link:"", content:"" };
 		if (data) {
 			this.curFloor=this.curEvent=0;																	// Resey
 			this.curDay=1;
@@ -59,7 +59,7 @@ class Schedule  {
 		$("#scEnd").on("change",()=>  { this.Do(); o.end=$("#scEnd").val(); });								// ON END CHANGE
 		$("#scZone").on("change",()=> { this.Do(); o.bar=$("#scZone").val(); });							// ON ZONE CHANGE
 		$("#scAddEvent").on("click",()=> {																	// ON ADD EVENT
-			let o={ day:this.curDay, start:"9:00", end:"1:00", bar:"0", room:"0", floor:this.curFloor, desc:"", link:"", content:"" };
+			let o={ day:this.curDay, start:"*", end:"*", bar:"0", room:"0", floor:this.curFloor, desc:"", link:"", content:"" };
 			this.curEvent=app.schedule.length;																// Set new number
 			app.schedule.push(o);																			// Add new event
 			this.DrawSchedule();																			// Draw schedule grid
