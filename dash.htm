@@ -129,11 +129,6 @@
 			window.open("https://docs.google.com/document/d/1MzQp9xoYiREUsb3iE94WZAV1gybIZNz4XZKLWg_YHek","_blank");
 			});
 
-	
-	
-	on("click", ()=>{ $("#editorDiv").hide(); });							// Hide rich text editor						
-
-
 		$(window).on("keydown",function(e) {														// HANDLE KEYPRESS
 			if ((e.keyCode == 90) && !e.shiftKey && e.ctrlKey) 	{									// UNDO KEY (Ctrl+Z)  
 				if (app.curTable == "schedule")		app.sced.Undo();								// Schedule		
@@ -187,7 +182,7 @@
 
 	$("[id^=co-clear]").on("click",(e)=>{															// ON CLEAR
 		ConfirmBox("Are you sure?","",()=>{															// Are we sure?
-			if (app.curTable == "venue") app.ven.EditVenue([]);										// Venue
+			if (app.curTable == "venue") app.ven.EditVenue([[]]);									// Venue
 			else if (app.curTable == "schedule") app.sced.EditSchedule([]);							// Schedule
 			else if (app.curTable == "people") $("#jsGrid-"+app.curTable).jsGrid("option", "data", []);	// People
 			}) 

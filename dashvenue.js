@@ -12,6 +12,7 @@ class Venue {
 	{
 		let i;
 		if (data) {																							// If new data
+			this.curFloor=this.curFloor=0;																	// Start fresh							
 			app.venue=[];																					// Fresh array
 			data.sort((a,b)=>{ return (a.floor-0 > b.floor-0) ? 1 : -1 });									// Sort by floor
 			for (i=0;i<data.length;++i) {																	// For each room
@@ -23,6 +24,7 @@ class Venue {
 			this.curUndo=0;																					// Reset undos
 			this.Do();																						// Set 1st undo
 			}
+		if (!app.venue[0]) app.venue[this.curFloor]=[];														// Add floor														
 		if (!app.venue[this.curFloor][0]) 		 app.venue[this.curFloor][0]={ title:"Hallway", rug:"#ffffff", cs:1, ce:2, rs:1, re:2,room:0, floor:0 };	// Init if blank
 		if (!app.venue[this.curFloor][0].params) app.venue[this.curFloor][0].params={ rows:4, cols:4, gap:0, avSize:36 };	// Init if blank
 		let d=app.venue[this.curFloor][0].params;

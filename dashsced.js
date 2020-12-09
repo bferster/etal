@@ -13,7 +13,7 @@ class Schedule  {
 	{
 		let i,o={ day:"0", start:"*", end:"*", bar:"0", floor:"", desc:"", link:"", content:"" };
 		if (data) {
-			this.curFloor=this.curEvent=0;																	// Resey
+			this.curFloor=this.curEvent=0;																	// ResetS
 			this.curDay=1;
 			app.schedule=data;																				// Set data
 			this.curUndo=0;																					// Reset undos
