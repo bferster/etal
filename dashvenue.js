@@ -25,7 +25,7 @@ class Venue {
 			this.Do();																						// Set 1st undo
 			}
 		if (!app.venue[0]) app.venue[this.curFloor]=[];														// Add floor														
-		if (!app.venue[this.curFloor][0]) 		 app.venue[this.curFloor][0]={ title:"Hallway", rug:"#ffffff", cs:1, ce:2, rs:1, re:2,room:0, floor:0 };	// Init if blank
+		if (!app.venue[this.curFloor][0]) 		 app.venue[this.curFloor][0]={ title:"Hallway", rug:"#ccc", cs:1, ce:2, rs:1, re:2,room:0, floor:0 };	// Init if blank
 		if (!app.venue[this.curFloor][0].params) app.venue[this.curFloor][0].params={ rows:4, cols:4, gap:0, avSize:36 };	// Init if blank
 		let d=app.venue[this.curFloor][0].params;
 		let r=app.venue[this.curFloor][this.curRoom];
@@ -53,8 +53,7 @@ class Venue {
 				<div id='ev-rugc' class='co-colChip' style='background-color:${(r.rug ? r.rug : "#ffffff")}'></td></tr>	
 				<tr><td>Room title</td><td><input class='co-is' type='text' id='ev-title' value='${(r.title ? r.title : "")}'></td></tr>	
 				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
-				<tr><td>Link</td><td><input class='co-is' type='text' id='ev-link' value='${(r.link ? r.link : "")}'></td></tr>	
-				<tr><td>Children</td><td><input class='co-is' type='text' id='ev-por' value='${(r.portal ? r.portal : "")}'></td></tr>	
+				<tr><td>Portal</td><td><input class='co-is' type='text' id='ev-por' value='${(r.portal ? r.portal : "")}'></td></tr>	
 				<tr><td>Room number</td><td><input class='co-is' type='text' id='ev-room' value='${r.room}'></td></tr>	
 				<tr><td colspan='2'>&nbsp;</td></tr>	
 				<tr><td><div id='evAddRoom' class='co-bs'>Add room</div></td><td><img id='evDelRoom' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
@@ -69,7 +68,6 @@ class Venue {
 		d.gap=$("#ev-gap").val();																			// Gap
 		d.avSize=$("#ev-avs").val();																		// Avatar size 
 		r.portal=$("#ev-por").val();																		// Portal
-		r.link=$("#ev-link").val();																			// Linl
 		r.rug=$("#ev-rug").val();																			// Room rug
 		r.room=$("#ev-room").val();																			// Room number
 		r.css=$("#ev-css").val();																			// Room style
@@ -139,7 +137,6 @@ class Venue {
 			d.gap=$("#ev-gap").val();																		// Gap
 			d.avSize=$("#ev-avs").val();																	// Avatar size
 			r.portal=$("#ev-por").val();																	// Portal
-			r.link=$("#ev-link").val();																		// Link
 			r.rug=$("#ev-rug").val();																		// Room rug
 			r.room=$("#ev-room").val();																		// Room number
 			r.css=$("#ev-css").val();																		// Room style

@@ -69,8 +69,8 @@
 	<div id="co-tab">
 		<ul>
 			<li id="co-tab1"><a href="#jsGrid-people">PEOPLE</a></li>
-			<li id="co-tab2"><a href="#scheduleEditor">SCHEDULE</a></li>
-			<li id="co-tab3"><a href="#venueEditor">VENUE</a></li>
+			<li id="co-tab2"><a href="#venueEditor">VENUE</a></li>
+			<li id="co-tab3"><a href="#scheduleEditor">SCHEDULE</a></li>
 			<li id="co-tab4"><a href="#liveEditor">LIVE</a></li>
 		</ul>
 		<div id="jsGrid-people"></div>
@@ -155,8 +155,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	$("#co-tab1").on("click",()=>{ app.curTable="people"; 	$("#co-tData").css("display","block"); });
-	$("#co-tab2").on("click",()=>{ app.curTable="schedule"; $("#co-tData").css("display","block"); app.sced.EditSchedule(); });
-	$("#co-tab3").on("click",()=>{ app.curTable="venue";  	$("#co-tData").css("display","block"); app.ven.DrawVenue(); });
+	$("#co-tab2").on("click",()=>{ app.curTable="venue";  	$("#co-tData").css("display","block"); app.ven.DrawVenue(); });
+	$("#co-tab3").on("click",()=>{ app.curTable="schedule"; $("#co-tData").css("display","block"); app.sced.EditSchedule(); });
 	$("#co-tab4").on("click",()=>{ app.curTable="live";  	$("#co-tData").css("display","none");  app.DrawLive();  });
 
 	$("[id^=co-load]").on("change", function(e) {													// ON LOAD

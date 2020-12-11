@@ -167,6 +167,7 @@ class Schedule  {
 		let t=CKEDITOR.instances.editor1.container.$.clientHeight;											// Get toolbar height
 		CKEDITOR.instances.editor1.resize(w,h+t);															// Set size
 		CKEDITOR.instances.editor1.setData(app.schedule[num].content);										// Set editor
+		CKEDITOR.instances.editor1.document.getBody().setStyle("background-color",col);						// Set color
 		});
 	}
 
