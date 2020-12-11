@@ -223,10 +223,11 @@ class Schedule  {
 				return;																				// Quit
 				}
 			if (link.match(/zapp/i)) link+="&"+app.KZ;												// If zoom app, add k
-			if (link.match(/japp/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;		// If jitsi
+			if (link.match(/japp/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// If jitsi
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px">
+			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:4px;font-size:11px;left:calc(100% - 80px);color:#fff">Minimize</div>
 			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
 			<iframe id="co-iframeFrame" style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
@@ -235,6 +236,16 @@ class Schedule  {
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
 				$("#co-iframe").remove();															// Close window
 				app.GoToCenter();																	// Go to center
+				});	
+			
+			$("#co-ifSmall").on("click", ()=>{														// ON SMALLER BUT
+				let w=$(app.vr).width(),h=$(app.vr).width()*.5625;									// Default size
+				if ($("#co-ifSmall").text() == "Minimize")	{										// If reducing
+					w=128;	h=256;																	// Small size
+					$("#co-ifSmall").text("Maximize");												// Change title
+					}
+				else $("#co-ifSmall").text("Minimize");												// Restore title		
+				$("#co-iframe").css({width:w+"px", height:h+"px"});									// Hide/show iframe
 				});	
 			}
 	}
