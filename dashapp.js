@@ -221,10 +221,11 @@ class App  {
 		let str=`<br><table style="border-spacing:8px">
 		<tr><td><b>Meeting</b></td><td><div class="co-bs" id="co-start">Start meeting</div></td></tr>
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
-		<div class="co-bs" id="co-updschedule">Schedule</div>&nbsp;&nbsp;&nbsp;
-		<div class="co-bs" id="co-updvenue">Venue</div></td></tr>
+		<div class="co-bs" id="co-updvenue">Venue</div>&nbsp;&nbsp;&nbsp;
+		<div class="co-bs" id="co-updschedule">Schedule</div></td></tr>
 		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
-		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div></td></tr>
+		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div>
+		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.ShowS3Images()">Refresh</div></td></tr>
 		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
 
@@ -233,15 +234,7 @@ class App  {
 			s=app.schedule[i].desc;																		// Get description
 			$("#dlEvent").append(`<option>${i+". "+s}</option>`);										// Add to select
 			}
-
-		str="";
-		for (i=0;i<app.S3Images.length;++i) {															// For each image
-			str+=`<div id="co-pic-${i}", class="co-pic">`;
-			if (app.S3Images[i].match(/gif|png|jpeg|jpg/i)) str+=`<img src="https://etalimages.s3.amazonaws.com/${app.S3Images[i]}" width="100%">`;
-			else											str+="<br>"+app.S3Images[i];
-			str+="</div>";
-			}
-		$("#co-images").html(str.replace(/\t|\n|\r/g,""));
+		this.ShowS3Images();																					// Show images
 		
 		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
 			let id=e.currentTarget.id.substr(7);														// Get id
@@ -271,5 +264,17 @@ class App  {
 			Sound("ding"); 																				// Ding
 			});
 	}
+
+	ShowS3Images()
+	{
+		let i,str="";
+		for (i=0;i<app.S3Images.length;++i) {															// For each image
+			str+=`<div id="co-pic-${i}", class="co-pic">`;
+			if (app.S3Images[i].match(/gif|png|jpeg|jpg/i)) str+=`<img src="https://etalimages.s3.amazonaws.com/${app.S3Images[i]}" width="100%">`;
+			else											str+="<br>"+app.S3Images[i];
+			str+="</div>";
+			}
+		$("#co-images").html(str.replace(/\t|\n|\r/g,""));
+		}
 
 } // Class closure
