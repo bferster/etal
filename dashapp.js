@@ -236,14 +236,6 @@ class App  {
 			}
 		this.ShowS3Images();																					// Show images
 		
-		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
-			let id=e.currentTarget.id.substr(7);														// Get id
-			PopUp(app.S3Images[id]+"<br>Copied to clipboard");											// Show it
-			$("#clipOutputDiv").val("https://etalimages.s3.amazonaws.com/"+app.S3Images[id]);			// Copy to shill
-			$("#clipOutputDiv")[0].select();															// Select
-			try { if (document.execCommand('copy'))	Sound("ding");	} catch (e) {}						// Copy to clipboard
-			});
-
 		$("#co-addImage").on("click",()=>{ 	  $("#co-imageUpload").trigger("click") })						// ON ADD IMAGE	
 		$("#co-updpeople").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|people`); Sound("ding"); });	// ON UDATE PEOPLE
 		$("#co-updschedule").on("click",()=>{ app.ws.send(`U|${app.meetingId}|schedule`); Sound("ding"); }); // SCHEDULE
@@ -275,6 +267,15 @@ class App  {
 			str+="</div>";
 			}
 		$("#co-images").html(str.replace(/\t|\n|\r/g,""));
+		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
+			trace(e)
+			
+			let id=e.currentTarget.id.substr(7);														// Get id
+			PopUp(app.S3Images[id]+"<br>Copied to clipboard");											// Show it
+			$("#clipOutputDiv").val("https://etalimages.s3.amazonaws.com/"+app.S3Images[id]);			// Copy to shill
+			$("#clipOutputDiv")[0].select();															// Select
+			try { if (document.execCommand('copy'))	Sound("ding");	} catch (e) {}						// Copy to clipboard
+			});
 		}
 
 } // Class closure
