@@ -111,7 +111,10 @@ class Register  {
 				stream.play();
 				})
 			.catch( function( err ) {
-				console.log( "Unable to access camera: " + err );
+				$("#coRegCapture").hide();
+				$("#coRegSnapShot").show();
+				$("#stream").hide();
+					console.log( "Unable to access camera: " + err );
 				});
 		}
 	}

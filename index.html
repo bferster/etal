@@ -307,7 +307,7 @@ class App  {
 			let i=this.pIndex[d.id];																// Get index
 			if (d) this.people[i]=d;																// Set data								
 			$("#co-At-"+i).html(`${d.firstName}<br>${d.lastName}`);									// Set label
-			$("#co-Av-"+i).prop("src",d.pic ? d.pic : "img/avyou.png") ;							// Set image
+			$("#co-Ap-"+i).prop("src",d.pic ? d.pic : "img/avyou.png") ;							// Set image
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
 		}
