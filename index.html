@@ -75,7 +75,7 @@
 		<div id="co-splash2"><input type="text" id="co-logon" class="co-logon" placeholder="Type email to join"></div>
 		<br><br>
 		<b>For the best experience</b><br>Please use the Chrome or FoxFox browser<br>Use Safari on iPad
-		<br><br>Click <a href="https://www.youtube.com/embed/7pI4bLNXrqE?rel=0&autoplay=1" target="_blank">here</a> to view a 90-second intro video
+		<br><br>Click <a href="https://www.youtube.com/embed/_sBqnfkBNVI?rel=0&autoplay=1" target="_blank">here</a> to view a 90-second intro video
 	</div>
 
 <script>
@@ -342,8 +342,9 @@ class App  {
 				}
 			}
 		else if (targetId.match(/co-quiet/)) {														// ON QUIET AREA
-			x=$("#co-quiet").offset().left+(avSize/2)+4;											// Center x
-			y=$("#co-quiet").offset().top+(avSize/2)+4;												// Y
+			x=$("#co-quiet").offset().left+4;														// Center x
+			y=$("#co-quiet").offset().top+4;														// Y
+			$("#co-AvMe").animate({ left:x, top:y });												// Animate me there		
 			this.status="Q";																		// In quiet mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
@@ -358,7 +359,6 @@ class App  {
 			}
 		x=Math.max(0,Math.min(this.bx,x-avSize/2));													// Cap x to screen
 		y=Math.max(0,Math.min(this.by,y-avSize/2));													// Y
-//		$("#co-AvMe").animate({ left:x, top:y });													// Animate me there		
 		this.ReportLocation(x/(this.bx-12),y/(this.by-12),this.status);								// Report my move
 		this.chat.curChat=-1;																		// Not chatting with anyone
 	}

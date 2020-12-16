@@ -170,7 +170,7 @@ class Schedule  {
 				if (room) {																		// If filtering by room
 					if ((room == 1) && (o.stats != "A"))				continue;				// Only active people in hallway
 					else if ((room == 2) && (o.stats != "B0-0"))		continue;				// Only active people in main coffee bat
-					else if ((room > 3) && ("R"+(room-2) != o.stats))	continue;				// Show only people in the room
+					else if ((room > 2) && ("R"+(room-2) != o.stats))	continue;				// Show only people in the room
 					}
 				selects.push({index:i, org:o.org, name:o.lastName });							// Add to selects
 				}

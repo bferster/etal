@@ -86,7 +86,7 @@ class Schedule  {
 			}
 		for (i=0;i<19;++i) {																				// For each hour
 			s=i+6;
-			if (i < 10)	s="0"+s;																			// Pad
+			if (s < 10)	s="0"+s;																			// Pad
 			str+=`<div class="co-slot" style="grid-column-start:0;grid-column-end:1;width:60px;
 				grid-row-start:${i*4};grid-row-end:${i*4+1}">${s}:00</div>`;								
 			}
@@ -168,6 +168,7 @@ class Schedule  {
 		CKEDITOR.instances.editor1.resize(w,h+t);															// Set size
 		CKEDITOR.instances.editor1.setData(app.schedule[num].content);										// Set editor
 		CKEDITOR.instances.editor1.document.getBody().setStyle("background-color",col);						// Set color
+		CKEDITOR.instances.editor1.document.getBody().setStyle("background-color",col);						// Set color
 		});
 	}
 
@@ -183,6 +184,17 @@ class Schedule  {
 		text-align:center;color:#fff;border:1px solid #999;background-color:#004eff;opacity:.33;padding:6px">
 		${o.desc ? o.desc : ""}</div>`;
 		$("#co-sgrid").append(str)
+	
+		$("#co-ev-"+num).draggable({ containment:"parent", grid:[154,12], distance:16, stop:()=>{			// ON DRAG EVENT
+			this.Do();																						// Undo
+			o.room=Math.floor(($("#co-ev-"+num).position().left-66)/154);									// Get new room
+			let s=(Math.floor(($("#co-ev-"+num).position().top-$("#co-sgrid").position().top)/12)+24)*15;	// Get new start
+			o.start=Math.floor(s/60)+":";																	// Set hours
+			if (!(s%60)) o.start+="00";																		// No minutes
+			else		 o.start+=s%60;																		// Minutes
+			this.ShowEventDetails(num);																		// Show
+			} 
+			});
 
 		function timeToMins(time) {
 			if (!time)	return 0;																			// Invalid time
