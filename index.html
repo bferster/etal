@@ -138,8 +138,17 @@
 					});
 					}
 			if ((e.which == 84) && e.altKey && e.ctrlKey) {											// Test key (Ctrl+Alt+T)
-				app.sced.day++;
-				app.DrawVenue();
+				let i,o,x=400,y=300;
+				for (i=0;i<app.people.length;++i) {
+					$("#co-Av-"+i).css("display","none")
+					if (app.people[i].pic == "img/avyou.png") continue;
+					if (app.people[i].stats.charAt(0) == "R")	continue;
+					$("#co-Av-"+i).css("display","block")
+					if (!(i%9))	x=400,y+=80;
+					x+=80;
+					$("#co-Av-"+i).animate({ left:x+"px", top:y+"px"});
+					$("#co-Av-"+i).draggable();
+					}
 				}
 			});
 	});	

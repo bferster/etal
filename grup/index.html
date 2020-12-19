@@ -471,7 +471,7 @@ class App  {
 		<img src="img/avme.png" width="100%">
 		<div id="co-queue" class="co-qNum" style="margin:-15px 0 0 13px"></div></div>`;					// Add me
 		$("body").append(str);																			// Add to body
-		$("#co-AvMe").draggable({ containment:"#co-hall" });												// I'm draggable
+		$("#co-AvMe").draggable({ containment:"#co-hall" });											// I'm draggable
 		$("[id^=co-Av-]").on("click", (e)=>{ this.chat.ShowCard(e.currentTarget.id.substr(6)); }); 		// ON PERSON CLICK
 		$("#co-AvMe").on("click", (e)=>{ this.chat.ShowQueue();	}); 									// ON ME CLICK
 	}
@@ -594,7 +594,8 @@ class App  {
 					<br><br><textarea id="co-dash-people" class="co-dashText"></textarea>
 					<br><br><div style="width:100%;max-width:400px;text-align:left;display:inline-block">
 						Type or paste the email address of each person you want in the meeting on a separate line. 
-						The first time they attend, they will fill out their name tag information.
+						The first time they attend, they will fill out their name tag information. 
+						You do not need to add your own email.
 						</div>
 					</div>
 				<div class="co-dashTable"><span style="font-size:18px"><b>Agenda</b></span>
@@ -614,11 +615,22 @@ class App  {
 						</div>
 					</div>
 				</div>
-		<p><div class="co-bsg" style="float:right;margin-right:16px;font-size:24px;background-color:#a2733f;padding:0 12px 4px 12px;" 
-		id="co-dAdd">Save to meeting</div></p>
+	
+			<p><div class="co-bsg" style="float:right;margin-right:16px;font-size:24px;background-color:#a2733f;padding:0 12px 4px 12px;" 
+			id="co-dAdd">Save to meeting</div></p>
+			<input type="text" class="co-is" id="co-dash-btext" placeholder="Type message to broadcast here"
+			style="text-align:center;width:300px;margin-left:200px">
+			&nbsp;&nbsp;Send voice too? <input type="checkbox" id="co-dash-btts"> 
 		</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
-	
+		
+		$("#co-dash-btext").on("change", ()=>{														// ON BROADCAST
+			let s=$("#co-dash-btext").val();														// Get text
+			if ($("#co-dash-btts").prop("checked"))	s="*"+s;										// Add TTS prefix
+			$("#co-dash-btext").val("");															// Clear
+			app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s);						// Broadcast
+			});
+
 		str="";																						// Clear
 		for (i=0;i<this.people.length;++i) 	 str+=this.people[i].email+"\n";						// Add emails
 		$("#co-dash-people").val(str);																// Fill textarea
@@ -648,6 +660,7 @@ class App  {
 			app.ws.send(`WS|${this.meetingId}|${JSON.stringify(d)}`);								// Write to DB table
 			d=[];
 			v=$("#co-dash-people").val().replace(/\r/g,"").split("\n");								// Split people into lines
+			v.push(this.myEmail);																	// Add me
 			for (i=0;i<this.people.length;++i)														// For each person
 				if (v.includes(this.people[i].email)) 												// Person already in
 					d.push(this.people[i]);															// Add them	
