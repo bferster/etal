@@ -12,7 +12,7 @@
 	<script src="/./chat.js"></script>
 	<script src="/./register.js"></script>
 	<link REL="SHORTCUT ICON" HREF="img/favicon.ico">
-	<title>èt•al <small></small></title>
+	<title>èt•al small</title>
 
 <!-- ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SMALL
@@ -338,7 +338,7 @@ class App  {
 		
 	   	$("[id^=co-adj-]").css("background-color","");												// Reset all agendas
 		$("#co-adj-"+this.curItem).css("background-color","#d8c4ae");								// Hilite current one
-		$("#topicDiv").html(`<b>Current topic:</b><br>${$("#co-adj-"+this.curItem).text()}`);			// Table topic
+		$("#topicDiv").html(`<b>Current topic:</b><br>${$("#co-adj-"+this.curItem).text()}`);		// Table topic
 
 		for (i=0;i<this.people.length;++i) 															// For each person
 			if ((this.people[i].stats) == "B0") 	bar.push(i); 									// In a bar		
@@ -377,7 +377,7 @@ class App  {
 				$("#co-At-"+rms[0][i]).css("display", "block");										// Show name tag
 				j+=d;																				// Next spot
 				}
-			if (h > 0) {																			// If host is at the table
+				if (h > -1) {																			// If host is at the table
 				x=Math.cos(-90*0.01745329252)*rad+cx-(avSize/2);									// Get host x
 				y=Math.sin(-90*0.01745329252)*rad+cy-(avSize/2);									// y
 				if (h == this.myId) $("#co-AvMe").animate({ left:x, top:y},0); 						// If host is me
@@ -490,7 +490,7 @@ class App  {
 					<div id="agendaItems" class="co-items"></div>
 				</div>
 				<div id="docsDiv" class="co-docs" style="margin-left:12px">
-				<div class="co-title">Documents</div>
+				<div class="co-title">Resources</div>
 					<div  id="docItems" class="co-items"></div>
 				</div>
 			</div>
