@@ -20,8 +20,8 @@
 	let isAndroid=ua.match(/android/i);
 	let deep=(isAndroid || isSafari);
 
-	const domain = 'meet.jit.si';
-
+	let domain='meet.jit.si';
+	if (window.location.search.substring(1) && window.location.search.substring(1).match(/\&server=/))	domain='caboosehouse.com';
 	
 	const options = {
 		roomName: v[0],
