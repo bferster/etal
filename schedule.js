@@ -194,10 +194,12 @@ class Schedule  {
 			}
 	}
 
-	ShowLink(link)																				// SHOW LINK
+	ShowLink(link, center)																		// SHOW LINK
 	{
 		if (!link) return;
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
+		if (center) app.GoToCenter();																// Move to center?
+		
 		if (link.match(/zoom/i)) {																	// If Zoom
 			app.curZoom=link;																		// Save link
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
