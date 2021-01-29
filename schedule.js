@@ -132,8 +132,8 @@ class Schedule  {
 	{
 		let i,selects=[];
 		app.chat.curChat=-1;																		// Not chatting with anyone
-		let x=$("#co-attendees").offset().left-133;													// Left
-		let y=$("#co-attendees").offset().top-50-app.by/2											// Top
+		let x=$("#co-attendees").offset().left-222;													// Left
+		let y=$("#co-attendees").offset().top-40-app.by/2											// Top
 		let str=`<div id="co-people" class="co-people" style="left:${x}px;top:${y}px;background-color:#eee">
 			<img style="float:right;cursor:pointer;margin-top:5px" src="img/closedot.png" onclick="$('#co-people').remove()">
 			<div style='text-align:center;font-size:18px'><b>Attendees</b></div><br>
@@ -224,6 +224,8 @@ class Schedule  {
 				window.open(link.substr(1),"_blank","width=99%");									// Open in new tab
 				return;																				// Quit
 				}
+			
+			$(window).scrollTop(0)	
 			if (link.match(/zapp/i)) link+="&"+app.KZ;												// If zoom app, add k
 			if (link.match(/japp/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// If jitsi
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;

@@ -22,7 +22,7 @@ class Chat  {
 		let y=$("#co-AvMe").css("top").replace("px","")-326-12;										// Y
 		if (y < 12) flip=true,y=y-0+avSize+326+24;													// Flip it
 		if (x < 12)	x=12;																			// Too far left
-		if (x > app.bx-312)	x=app.bx-312;														// Too far right
+		if (x > app.bx-312)	x=app.bx-312;															// Too far right
 		let str=`<div id='co-card' class='co-qlist' style='left:${x}px;top:${y}px'>
 			<img style="float:right;cursor:pointer;margin-top:5px" src="img/closedot.png" onclick="$('#co-card').remove()">
 			<b style='font-size:18px'>Missed messages</b><hr><br>

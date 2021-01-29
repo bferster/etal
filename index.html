@@ -62,6 +62,10 @@
 	body ::-webkit-scrollbar-thumb { border-radius:8px ;background:#a4baec }
 	body ::-webkit-scrollbar-thumb:hover { background: #a4baec }
 
+	@media only screen and (max-width:800px) {
+		.co-top 	{ height:auto; overflow:auto }
+		}
+
 </style>
 <body>
 
@@ -82,7 +86,7 @@
 
 	let app=null;																					// Holds app
 	let	avSize=36;																					// Avatar size
-	let butCol="#5b66cb"																			// Color  of vutton and ui
+	isSmall=false;																					// Mobile size flag
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
 
@@ -93,6 +97,7 @@
 
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
+		
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url.split("&")[0] : 1;													// Set meeting id
 	
@@ -223,10 +228,11 @@ class App  {
 	Draw()																						// REDRAW
     {
         this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
-        $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
+        isSmall=(this.bx < 801);																	// Set mobile flag
 		let vr=$(app.vr).offset();																	// Point at video room box									
 		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()+"px",height:$(this.vr).width()*.5625+"px" });
-	    this.ArrangePeople();                                                                       // Arrange people               
+		this.DrawVenue();																			// Redraw venue
+		this.ArrangePeople();                                                                       // Arrange people               
 		let x=Math.max(0,Math.min(this.bx-avSize,$("#co-AvMe").offset().left));						// Cap me x to screen
 		let y=Math.max(0,Math.min(this.by-avSize*2,$("#co-AvMe").offset().top));					// Y
 		$("#co-AvMe").offset({left:x,top:y });														// Move icon there
@@ -237,7 +243,6 @@ class App  {
 		id=this.pIndex[id];																			// Turn id into inde		
 		this.myId=id;																				// My id
 		this.myEmail=this.people[id].email;															// Get my email
-		this.DrawVenue();																			// Draw venue		
 		this.DrawPeople();																			// Draw people avatars
 		this.Draw();																				// Draw screen
 		this.GoToCenter();																			// Go to center of room
@@ -399,9 +404,9 @@ class App  {
 		let nr=this.venue[cf].length;																// Number of rooms on current floor
 		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
       		x=$("#co-coffee-"+cf+"-0").offset().left;                                    			// left side of bar
-       		w=$("#co-coffee-"+cf+"-0").width()-avSize;                                  			// Width of space
-       		y=this.by-$("#co-coffee-"+cf+"-0").height()-avSize+24;                       			// On top of bar area
-			}
+       		y=$("#co-coffee-"+cf+"-0").offset().top-8;                      			 			// On top of bar area
+    		w=$("#co-coffee-"+cf+"-0").width()-avSize;                                  			// Width of space
+   			}
 		for (i=0;i<this.people.length;++i) {														// For each person
 			if (cf != this.people[i].f) 			$("#co-Av-"+i).css("display","none");			// Hide people not on this floor
 			else if (this.people[i].stats != "Q")	$("#co-Av-"+i).css("display","block")			// Show unless quiet
@@ -564,14 +569,14 @@ class App  {
 
 		$("[id^=co-Av-]").on("click", (e)=>{ this.chat.ShowCard(e.currentTarget.id.substr(6)); }); 		// ON PERSON CLICK
 		$("[id^=co-Av-]").droppable( { drop:(e)=>{ this.chat.ShowCard(e.target.id.substr(6)); }}); 		// ON DROP ON PERSON
-		$("#co-AvMe").draggable({ containment:"window" });												// I'm draggable
+		$("#co-AvMe").draggable({ containment:"body" });												// I'm draggable
 		$("#co-AvMe").on("click", (e)=>{ this.chat.ShowQueue();	}); 									// ON ME CLICK
 	}
 	
 	DrawVenue()																						// DRAW VENUE
 	{
 		let i,j,o,row,n,x,sc;
-		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
+		this.bx=$("body").width(),		this.by=window.innerHeight;										// Body size
 		let p=this.venue[this.curFloor][0].params;														// Point at all params
 		if (p.avSize)		avSize=p.avSize-0;															// Use size if set
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
@@ -588,19 +593,24 @@ class App  {
 		sc=this.sced.GeEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
 
-		let str=`<div id="co-grid" class="co-venue" style="
+		let str=`<div id="co-grid" class="co-venue" style="`;
+		if (!isSmall) str+=`
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
-			grid-template-rows:repeat(${o.params.rows}, 1fr);
-			grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`;							// Grid base
+			grid-template-rows:repeat(${o.params.rows}, 1fr);`;
+		str+=`grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`;							// Grid base
 		
+		let rs=0,re=1,cs=1,ce=2;																		// Mobile size positions
 		this.roomPortals=[];																			// Clear portals
 		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
 			o=this.venue[this.curFloor][i];																// Point at room
+			if (isSmall) { rs++; re++ }																	// Advance rows for mobile
+			else		 { rs=o.rs; re=o.re; cs=o.cs; ce=o.ce; };										// Use set values
 			app.roomPortals+="R"+i+"="+o.portal;														// Add portal info
 			sc=this.sced.GeEventByRoom(this.curFloor,i)													// Point at schedule room																		
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
-			str+=`<div class="co-room" style=";grid-column-start:${o.cs};grid-column-end:${o.ce};grid-row-start:${o.rs};grid-row-end:${o.re};
+			str+=`<div class="co-room" style=";grid-column-start:${cs};grid-column-end:${ce};grid-row-start:${rs};grid-row-end:${re};
+			${(i == 0) ? "height:100vh;" : ""}
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
 			${o.link ? ";cursor:pointer" : ""}${o.css ? ";"+o.css : ""}">
 			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
