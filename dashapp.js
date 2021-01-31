@@ -133,23 +133,26 @@ class App  {
 
 	SaveToCSV(table)																					// SAVE TO CSV FILE
 	{
-		let i,d=[];
+		let i,d=[],fields;
 		if (table == "venue") {																				// If a venue
+			fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css"];				// Fields
 			for (i=0;i<this.venue.length;++i) d=d.concat(JSON.parse(JSON.stringify(this.venue[i])))			// Flatten floors into single array
 			for (i=0;i<d.length;++i)																		// For each room
 				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object
 			}
 		else if (table == "people")	{	
+			fields=["firstName","lastName","email","title","org","ints","pic","li","web", "role" ];			// Fields
 			d=$("#jsGrid-"+table).jsGrid("option","data");													// Get from grid													
-			let fields=["firstName","lastName","email","title","org","ints","pic","li","web", "role" ];		// Fields
 			for (i=0;i<fields.length;++i)	if (!d[0][fields[i]]) d[0][fields[i]]="";						// Make sure all fields are in 1st row for CSV export															// Make sure it exists
-			}
+		}
 		else if (table == "schedule") {
+			fields=["day","start","end","desc","floor","bar","room","link","content"];						// Fields
 			d=JSON.parse(JSON.stringify(this.schedule));													// Clone schedule data
-			let fields=["day","start","end","desc","floor","room","link","content"];						// Fields
 			for (i=0;i<fields.length;++i)	if (!d[0][fields[i]]) d[0][fields[i]]="";						// Make sure all fields are in 1st row for CSV export															// Make sure it exists
 			}
-		let str=Papa.unparse(d,{ header:true, skipEmptyLines:true });										// Make CSV using lib
+		
+		
+		let str=Papa.unparse(d,{ header:true, skipEmptyLines:true, columns:fields });						// Make CSV using lib
 		SaveTextAsFile(this.meetingId+"-"+table+".csv",str);												// Write file	
 		Sound("ding");																						// Ding
 	}

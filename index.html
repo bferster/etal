@@ -62,7 +62,7 @@
 	body ::-webkit-scrollbar-thumb { border-radius:8px ;background:#a4baec }
 	body ::-webkit-scrollbar-thumb:hover { background: #a4baec }
 
-	@media only screen and (max-width:800px) {
+	@media only screen and (max-width:600px) {
 		.co-top 	{ height:auto; overflow:auto }
 		}
 
@@ -236,7 +236,7 @@ class App  {
 		this.hallPos.h=$("#co-Rm-0").height();														// Height
 		this.hallPos.x2=this.hallPos.x+this.hallPos.w;												// Right
 		this.hallPos.y2=this.hallPos.y+this.hallPos.h;												// Bottom
-		isSmall=(this.bx < 801);																	// Set mobile flag
+		isSmall=(this.bx < 600);																	// Set mobile flag
 		let vr=$(app.vr).offset();																	// Point at video room box									
 		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()+"px",height:$(this.vr).width()*.5625+"px" });
 		this.DrawVenue();																			// Redraw venue
@@ -401,13 +401,12 @@ class App  {
 	ReportLocation(x, y, status, pixels)													// REPORT LOCATION TO SERVER
 	{
 		if (pixels) {																				// If reporting from pixels
-			x=(x-this.hallPos.x)/this.hallPos.w;													// As % of width
-			y=(y-this.hallPos.y)/this.hallPos.h;													// Height
+			x=(x-this.hallPos.x)/(this.hallPos.w-avSize);											// As % of width
+			y=(y-this.hallPos.y)/(this.hallPos.h-avSize);											// Height
 			}
 		x=(x*100).toFixed(2);																		// Scale x 0-100
 		y=(y*100).toFixed(2);																		// y
-		trace("SENT",x,y)
-		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${app.curFloor}|${x}|${y}|${status}`); // Send Location message
+		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${app.curFloor}|${x}|${y}|${status}`);// Send Location message
 	}
 	
 
@@ -642,7 +641,7 @@ class App  {
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 
 		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON PERSON
-		$("[id^=co-Rm-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON ROOM
+		$("[id^=co-Rm-]").droppable({		drop:(e,ui)=>{ this.OnMeMove(ui.position.left,ui.position.top,e.target.id) }}); // ON DROP ON ROOM OR HALL
 		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON QUIET AREA
 		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON COFFEE BAR
 		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });					// ON SCHEDULE BUT
