@@ -43,7 +43,7 @@ class Schedule  {
 		return (mins.substr(0,2)*60)+(mins.substr(2)*1)+(offset-0);								// Get minutes
 	}
 
-	GeEventByRoom(floor, room)																// GET EVENT FOR A ROOM
+	GetEventByRoom(floor, room)																// GET EVENT FOR A ROOM
 	{
 		let i,o;
 		for (i=0;i<this.schedule.length;++i) {													// For each event
@@ -65,18 +65,49 @@ class Schedule  {
 		app.DrawVenue();																		// Redraw venue
 	}
 
-	GoToRoom(floor, room)																	// ENTER A ROOM DIRECTLY
+	GetGalleryData(link, room)																// GET GALLERY DATA FROM SPREADSHEET
 	{
-		app.CloseAll(3);																		// Close video windows
-		if (floor != app.curFloor) {															// If a different floor
-			app.curFloor=floor-0;																// Get floor index
-			app.DrawVenue();																	// Draw new floor
-			}
-		app.OnMeMove(app.bx/2,app.by/2,"co-Rm-"+room);											// Join room	
-		app.ArrangePeople();																	// Reaarange the people
+		let i,col,row,con,o,s=[];
+		let id=link.match(/d\/(.*)\//i)[1];															// Extract id
+		let str="https://spreadsheets.google.com/feeds/cells/"+id+"/1/public/values?alt=json";		// Make url
+		$.ajax( { url:str, dataType:'jsonp' }).done((data)=> {										// Get data				
+				let cells=data.feed.entry;																// Point at cells
+			for (i=0;i<cells.length;++i) {															// For each cell
+				o=cells[i];																			// Point at it
+				col=o.gs$cell.col-1; 	row=o.gs$cell.row-1;										// Get cell coords
+				con=o.content.$t;																	// Get content
+				if (!con) 				continue;													// Skip blank cells
+				if (!s[row])			s[row]=["","","",""];										// Add new row if not there already
+				if (col < 5)			s[row][col]=con;											// Add cell to array
+				}
+			this.CreateGallery(s,room);																// Create gallery view
+			}).fail((msg)=>{ trace("Can't load Gallery data") });		
 	}
 
-	ShowSchedule()																			// SHOW EVENT SCHEDULE
+	CreateGallery(s, room)																		// CREATE GALLERY
+	{
+		let h=Math.max($("#co-Rm-"+room).height()-60,200);											// Get hgt, min of 200 for mobile
+		let i,str=`<div style='overflow-y:auto;height:${h}px;margin:0 8px 0 18px'>`;				// Base div
+		for (i=1;i<s.length;++i) {																	// For each pic									
+			str+=`<div class="co-galleryItem"><img src="${s[i][2]}" width="50%">
+			<br>${s[i][1]}<br><br></div>`;															// Add it 
+			}
+		$("#co-roomContent-"+room).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
+		$("#co-roomContent-"+room).html(str.replace(/\t|\n|\r/g,"")+"</div>");						// Draw
+	}
+
+	GoToRoom(floor, room)																		// ENTER A ROOM DIRECTLY
+	{
+		app.CloseAll(3);																			// Close video windows
+		if (floor != app.curFloor) {																// If a different floor
+			app.curFloor=floor-0;																	// Get floor index
+			app.DrawVenue();																		// Draw new floor
+			}
+		app.OnMeMove(app.bx/2,app.by/2,"co-Rm-"+room);												// Join room	
+		app.ArrangePeople();																		// Reaarange the people
+	}
+
+	ShowSchedule()																				// SHOW EVENT SCHEDULE
 	{
 		let i,j,s,sc;
 		let str=`<div id="co-sched" class="co-sched" style=";
@@ -197,6 +228,7 @@ class Schedule  {
 	ShowLink(link, center)																		// SHOW LINK
 	{
 		if (!link) return;
+		if (link.match(/gallery:/i)) return;														// Skip gallery links
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
 		
