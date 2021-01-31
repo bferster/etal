@@ -86,14 +86,30 @@ class Schedule  {
 
 	CreateGallery(s, room)																		// CREATE GALLERY
 	{
-		let h=Math.max($("#co-Rm-"+room).height()-60,200);											// Get hgt, min of 200 for mobile
+		let h=Math.max($("#co-Rm-"+room).height()-60, isSmall? 300 : 0);							// Get hgt, min of 300 for mobile
 		let i,str=`<div style='overflow-y:auto;height:${h}px;margin:0 8px 0 18px'>`;				// Base div
 		for (i=1;i<s.length;++i) {																	// For each pic									
-			str+=`<div class="co-galleryItem"><img src="${s[i][2]}" width="50%">
+			str+=`<div  id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][2]}" width="50%">
 			<br>${s[i][1]}<br><br></div>`;															// Add it 
 			}
 		$("#co-roomContent-"+room).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
 		$("#co-roomContent-"+room).html(str.replace(/\t|\n|\r/g,"")+"</div>");						// Draw
+	
+		$("[id^=co-gItem-]").on("click", (e)=>{ 													// ON PIC CLICK
+			$("#co-gItemD").remove();																// Kill exisring
+			let id=e.currentTarget.id.substr(9);													// Get id
+			let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
+			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
+			width:${$(app.vr).width()-32}px;height:fit-content">
+			<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
+			<b>${s[id][1]}</b><br><br>
+			<img src="${s[id][2]}" style="width:50%;border:1px solid #999;vertical-align:top;float:left">
+			<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(50% - 32px);">
+			${s[id][3] ? s[id][3] : "No details..."}
+			</div></div>`;
+			$("body").append(str.replace(/\t|\n|\r/g,""));								// Draw
+			$("#co-igc").on("click", ()=>{ $("#co-gItemD").remove(); });				// ON CLOSE BUT
+			});
 	}
 
 	GoToRoom(floor, room)																		// ENTER A ROOM DIRECTLY
