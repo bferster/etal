@@ -184,6 +184,7 @@ class App  {
 		this.KZ="";																					// Ks
 		this.roomPortals=[];																		// Portals for this room
 		this.hallPos={};																			// Hallway position
+		this.updatePeople=false;																	// Update people
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -212,7 +213,10 @@ class App  {
 		this.secs=0;	
 		this.pollTimer= window.setInterval( ()=>{													// Init polling timer
 			++this.secs;																			// Another second 
-			if ((this.secs%15) == 0)  this.ArrangePeople();											// Every 15 secs, arrange people
+			if ((this.secs%15) == 0)  {																// Every 15 secs,
+				if (this.updatePeople) this.DrawPeople();											// Refresh icons	
+				this.ArrangePeople();																// Arrange people
+				}
 			if ((this.secs%60) == 10) this.sced.CheckSchedule();									// On every minute, check the schedule
 																			
 			if (this.retryWS) {																		// If reconnectng to websocket
@@ -308,7 +312,7 @@ class App  {
 		else if (v[0] == "P") {																		// Add/update people
 			let pn=this.people.length;																// Number of people before
 			this.AddPeople(JSON.parse(v[1]));														// Set data								
-			if (v[2] == "U")	app.DrawPeople();													// Redraw on update
+			if (v[2] == "U")	app.DrawPeople(),this.updatePeople=true;							// Redraw on update
 			}
 		else if (v[0] == "V") 	{ 																	// Add/update venue
 			this.AddVenue(JSON.parse(v[1]));														// Set data				
@@ -567,6 +571,7 @@ class App  {
 	DrawPeople()																					// ADD PEOPLE TO MEETING
 	{
 		let i,o,str="";
+		this.updatePeople=false;																		// No neede to update anymore
 		$("[id^=co-Av-]").remove();		$("#co-AvMe").remove();											// Remove existing people
 		for (i=0;i<this.people.length;++i) {															// For each person
 			o=this.people[i];																			// Point at them
