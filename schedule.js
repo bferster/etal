@@ -77,10 +77,10 @@ class Schedule  {
 				o[i]=o[i].replace(/\)<\/p>/i,"");													// Remove trailing tag
 				v=o[i].split(",");																	// Extract fields
 				s[i+1]=[];																			// Add row
-				s[i+1][0]=v[0].substr(11) ? v[0].substr(11) : "";									// Get title
-				s[i+1][1]=v[1] ? v[1].replace(/<u>|<\/u>/ig,"") : "";								// Url
+				s[i+1][0]=v[0].substr(11) ? v[0].substr(11).trim() : "";							// Get title
+				s[i+1][1]=v[1] ? v[1].replace(/<u>|<\/u>/ig,"").trim() : "";						// Url
 				for (j=3;j<v.length;++j) v[2]+=","+v[j];											// Add back comma breaks													
-				s[i+1][2]=v[2] ? v[2] : "";															// Desc
+				s[i+1][2]=v[2] ? v[2].trim() : "";													// Desc
 				}
 			return { data:s, content:this.CreateGallery(s,sc.room) };								// Return content
 			}
