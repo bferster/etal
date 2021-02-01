@@ -65,13 +65,28 @@ class Schedule  {
 		app.DrawVenue();																		// Redraw venue
 	}
 
-	GetGalleryData(link, room)																// GET GALLERY DATA FROM SPREADSHEET
+	GetGalleryData(sc)																		// GET GALLERY DATA FROM SPREADSHEET
 	{
-		let i,col,row,con,o,s=[];
-		let id=link.match(/d\/(.*)\//i)[1];															// Extract id
+		let i,j,v,col,row,con,o,s=[["title","url","desc"]];
+		let id=sc.link.match(/d\/(.*)\//i);															// Extract id
+		if (id) id=id[1];																			// Get actual id
+		else{																						// Get implicit data
+			if (!sc.content)	return "";															// Quiit if no content													
+			o=sc.content.match(/<p>gallery\((.*)<\/p>/ig);											// Get data from content
+			for (i=0;i<o.length;++i) {																// For each item
+				o[i]=o[i].replace(/\)<\/p>/i,"");													// Remove trailing tag
+				v=o[i].split(",");																	// Extract fields
+				s[i+1]=[];																			// Add row
+				s[i+1][0]=v[0].substr(11) ? v[0].substr(11) : "";									// Get title
+				s[i+1][1]=v[1] ? v[1].replace(/<u>|<\/u>/ig,"") : "";								// Url
+				for (j=3;j<v.length;++j) v[2]+=","+v[j];											// Add back comma breaks													
+				s[i+1][2]=v[2] ? v[2] : "";															// Desc
+				}
+			return { data:s, content:this.CreateGallery(s,sc.room) };								// Return content
+			}
 		let str="https://spreadsheets.google.com/feeds/cells/"+id+"/1/public/values?alt=json";		// Make url
 		$.ajax( { url:str, dataType:'jsonp' }).done((data)=> {										// Get data				
-				let cells=data.feed.entry;																// Point at cells
+				let cells=data.feed.entry;															// Point at cells
 			for (i=0;i<cells.length;++i) {															// For each cell
 				o=cells[i];																			// Point at it
 				col=o.gs$cell.col-1; 	row=o.gs$cell.row-1;										// Get cell coords
@@ -80,37 +95,44 @@ class Schedule  {
 				if (!s[row])			s[row]=["","","",""];										// Add new row if not there already
 				if (col < 5)			s[row][col]=con;											// Add cell to array
 				}
-			this.CreateGallery(s,room);																// Create gallery view
+			str=this.CreateGallery(s,sc.room);														// Create gallery 
+			$("#co-roomContent-"+sc.room).html(str.replace(/\t|\n|\r/g,""));						// Draw
+			this.GalleryEvents(s,sc.room);															// Set events
 			}).fail((msg)=>{ trace("Can't load Gallery data") });		
-	}
+		return { data:null, content:"" };															// No content yet
+		}
 
 	CreateGallery(s, room)																		// CREATE GALLERY
 	{
-		let h=Math.max($("#co-Rm-"+room).height()-60, isSmall? 300 : 0);							// Get hgt, min of 300 for mobile
-		let i,str=`<div style='overflow-y:auto;height:${h}px;margin:0 8px 0 18px'>`;				// Base div
+		let i,h=Math.max($("#co-Rm-"+room).height()-60, isSmall? 300 : 0);							// Get hgt, min of 300 for mobile
+		let str=`<div style='overflow-y:auto;height:${h}px;margin:0 8px 0 18px'>`;					// Base div
 		for (i=1;i<s.length;++i) {																	// For each pic									
-			str+=`<div  id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][2]}" width="50%">
-			<br>${s[i][1]}<br><br></div>`;															// Add it 
+			str+=`<div id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][1]}" width="50%">
+			<br>${s[i][0]}<br><br></div>`;															// Add it 
 			}
+		str+="</div>";																				// Close div
+		return str;																					// Return gallery HTML	
+	}
+
+	GalleryEvents(s, room)																			// ADD GALLERY EVENTS
+	{
 		$("#co-roomContent-"+room).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
-		$("#co-roomContent-"+room).html(str.replace(/\t|\n|\r/g,"")+"</div>");						// Draw
-	
 		$("[id^=co-gItem-]").on("click", (e)=>{ 													// ON PIC CLICK
-			$("#co-gItemD").remove();																// Kill exisring
+			$("#co-gItemD").remove();																// Kill existing
 			let id=e.currentTarget.id.substr(9);													// Get id
 			let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()-32}px;height:fit-content">
 			<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
-			<b>${s[id][1]}</b><br><br>
-			<img src="${s[id][2]}" style="width:50%;border:1px solid #999;vertical-align:top;float:left">
+			<b>${s[id][0]}</b><br><br>
+			<img src="${s[id][1]}" style="width:50%;border:1px solid #999;vertical-align:top;float:left">
 			<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(50% - 32px);">
-			${s[id][3] ? s[id][3] : "No details..."}
+			${s[id][2] ? s[id][2] : "No details..."}
 			</div></div>`;
-			$("body").append(str.replace(/\t|\n|\r/g,""));								// Draw
-			$("#co-igc").on("click", ()=>{ $("#co-gItemD").remove(); });				// ON CLOSE BUT
+			$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
+			$("#co-igc").on("click", ()=>{ $("#co-gItemD").remove(); });							// ON CLOSE BUT
 			});
-	}
+		}
 
 	GoToRoom(floor, room)																		// ENTER A ROOM DIRECTLY
 	{
@@ -244,7 +266,7 @@ class Schedule  {
 	ShowLink(link, center)																		// SHOW LINK
 	{
 		if (!link) return;
-		if (link.match(/gallery:/i)) return;														// Skip gallery links
+		if (link.match(/^gallery/i)) return;														// Skip gallery links
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
 		

@@ -616,7 +616,8 @@ class App  {
 			grid-template-rows:repeat(${o.params.rows}, 1fr);`;
 		str+=`grid-gap:${o.params.gap}px;background-color:${o.params.bcol}">`;							// Grid base
 		
-		let rs=0,re=1,cs=1,ce=2;																		// Mobile size positions
+		let rs=0,re=1,cs=1,ce=2,content;																/// Mobile size positions
+		let gals=[];
 		this.roomPortals=[];																			// Clear portals
 		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
 			o=this.venue[this.curFloor][i];																// Point at room
@@ -624,7 +625,11 @@ class App  {
 			else		 { rs=o.rs; re=o.re; cs=o.cs; ce=o.ce; };										// Use set values
 			app.roomPortals+="R"+i+"="+o.portal;														// Add portal info
 			sc=this.sced.GetEventByRoom(this.curFloor,i)												// Point at schedule room																		
-			if (sc.link && sc.link.match(/gallery:/i)) this.sced.GetGalleryData(sc.link,i)				// If a gallery, get data from spreadsheet
+			content=sc.content ? sc.content : "";														// Set content if any
+			if (sc.link && sc.link.match(/^gallery/i)) {												// If a gallery, 
+				gals[sc.room]=this.sced.GetGalleryData(sc); 											// Get gallery data
+				content=gals[sc.room].content;															/// Set content
+				}
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 			str+=`<div class="co-room" style=";grid-column-start:${cs};grid-column-end:${ce};grid-row-start:${rs};grid-row-end:${re};
@@ -634,13 +639,15 @@ class App  {
 			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
 			if (!i && (this.curFloor == 0))	str+=menu;															// Add menu to hallway first floor
  			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
-			str+="<div id='co-roomContent-"+i+"' style='pointer-events:none;display:inline-block;width:100%'>"+(sc.content ? sc.content :" ")+"</div>";	// Add conten wrapped in no-event div
+			str+="<div id='co-roomContent-"+i+"' style='pointer-events:none;display:inline-block;width:100%'>"+content+"</div>";	// Add conten wrapped in no-event div
 			if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${avSize/2+9}px);top:14px;width:16px" src="img/coffeecup.png">`;
            	if (sc.live > 0)    		str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
           	str+="</div></div>";		
 			}
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
+		
+		for (i=0;i<gals.length;++i)	if (gals[i])  this.sced.GalleryEvents(gals[i].data,i);				// Set events															// Set events
 
 		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON PERSON
 		$("[id^=co-Rm-]").droppable({		drop:(e,ui)=>{ this.OnMeMove(ui.position.left,ui.position.top,e.target.id) }}); // ON DROP ON ROOM OR HALL
