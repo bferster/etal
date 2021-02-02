@@ -301,9 +301,10 @@ class Schedule  {
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px">
-			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:4px;font-size:11px;left:calc(100% - 80px);color:#fff">Minimize</div>
-			<div style="position:absolute;top:4px; left:calc(100% - 24px);background-color:#fff;width:18px;height:18px;border-radius:180px">
+			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
+			<div style="position:absolute;background-color:#fff;width:18px;height:18px;border-radius:18px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
+			<span id="co-ift" style="padding-left:24px">Minimize</span></div>
 			<iframe id="co-iframeFrame" style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
 			
@@ -314,11 +315,11 @@ class Schedule  {
 			
 			$("#co-ifSmall").on("click", ()=>{														// ON SMALLER BUT
 				let w=$(app.vr).width(),h=$(app.vr).width()*.5625;									// Default size
-				if ($("#co-ifSmall").text() == "Minimize")	{										// If reducing
+				if ($("#co-ift").text() == "Minimize")	{											// If reducing
 					w=128;	h=256;																	// Small size
-					$("#co-ifSmall").text("Maximize");												// Change title
+					$("#co-ift").text("Maximize");													// Change title
 					}
-				else $("#co-ifSmall").text("Minimize");												// Restore title		
+				else $("#co-ift").text("Minimize");													// Restore title		
 				$("#co-iframe").css({width:w+"px", height:h+"px"});									// Hide/show iframe
 				});	
 			}
