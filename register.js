@@ -71,13 +71,14 @@ class Register  {
 		this.person.li=$("#li").val() ? $("#li").val() : "";										// LinkedIn
 		this.person.web=$("#web").val() ? $("#web").val() : "";										// Web
 		this.person.ints=$("#ints").val() ? $("#ints").val() : "";									// It
-		
+
 		if (!$("#co-regPic").val() && (regSnapimg.src.length > 100)) {								// Not directly spec'd and nothing loaded
 			let s=this.person.meeting+"/"+this.person.email+".png";									// Make up file name
 			app.ws.send("IMG|"+s+"|"+regSnapimg.src);												// Send base64 to server
 			this.person.pic="https://etalimages.s3.amazonaws.com/"+s;								// Get AWS S3 url
 			}
-		else this.person.pic=$("#co-regPic").val();													// Set pic
+		else 
+		this.person.pic=$("#co-regPic").val();													// Set pic
 		app.ws.send("MP|"+this.person.id+"|"+JSON.stringify(this.person));							// Update server record
 		app.JoinMeeting(this.person.id);															// Join meeting
 	}
