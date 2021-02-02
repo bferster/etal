@@ -20,7 +20,7 @@
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden; height:100vh; z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-room 	{	background-repeat:repeat; border-radius:0px; font-size:18px; color:#fff; }
+	.co-room 	{	background-repeat:repeat; border-radius:0px; font-size:18px; color:#fff; overflow:hidden; }
 	.co-roomHdr	{	width:calc(100% - 24px); text-align:center; color:#fff; padding:12px; font-size:16px; pointer-events:none; }
 	.co-roomTitle {	font-size:18px;  color:#fff; pointer-events:none; margin-top:12px; }
  	.co-avatar 	{	position:absolute; cursor:pointer; left:50%; top:50%; font-size:12px; text-align:center; user-select:none;
@@ -63,7 +63,7 @@
 	body ::-webkit-scrollbar-thumb { border-radius:8px ;background:#a4baec }
 	body ::-webkit-scrollbar-thumb:hover { background: #a4baec }
 
-	@media only screen and (max-width:600px) {
+	@media only screen and (max-width:700px) {
 		.co-top 	{ height:auto; overflow:auto }
 		}
 
@@ -237,7 +237,7 @@ class App  {
 		this.hallPos.h=$("#co-Rm-0").height();														// Height
 		this.hallPos.x2=this.hallPos.x+this.hallPos.w;												// Right
 		this.hallPos.y2=this.hallPos.y+this.hallPos.h;												// Bottom
-		isSmall=(this.bx < 600);																	// Set mobile flag
+		isSmall=(this.bx < 700);																	// Set mobile flag
 		let vr=$(app.vr).offset();																	// Point at video room box									
 		$("#co-iframe").css({ left:vr.left+"px",top:vr.top+"px",width:$(this.vr).width()+"px",height:$(this.vr).width()*.5625+"px" });
 		this.DrawVenue();																			// Redraw venue

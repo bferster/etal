@@ -99,7 +99,10 @@ class Schedule  {
 			this.DrawEvent(i);																				// Draw it
 			}
 	
-		$("[id^=co-ev-]").on("click",(e)=>{	this.ShowEventDetails(e.target.id.substr(6)); });				// ON EVENT CLICK
+		$("[id^=co-ev-]").on("click",(e)=>{																	// ON EVENT CLICK
+			if ($("#editorDiv").css("display") == "none") this.ShowEventDetails(e.target.id.substr(6)); 	// Show details if editor is closed
+			else										  Sound("delete");									// Error	
+			});			
 	}
 
 	ShowEventDetails(num)																				// SHOW EVENT DETAILS
@@ -185,13 +188,16 @@ class Schedule  {
 		${o.desc ? o.desc : ""}</div>`;
 		$("#co-sgrid").append(str)
 	
-		$("#co-ev-"+num).draggable({ containment:"parent", grid:[154,12], distance:16, stop:()=>{			// ON DRAG EVENT
+		$("#co-ev-"+num).draggable({ containment:"parent", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
 			this.Do();																						// Undo
-			o.room=Math.floor(($("#co-ev-"+num).position().left-66)/154);									// Get new room
-			let s=(Math.floor(($("#co-ev-"+num).position().top-$("#co-sgrid").position().top)/12)+24)*15;	// Get new start
-			o.start=Math.floor(s/60)+":";																	// Set hours
-			if (!(s%60)) o.start+="00";																		// No minutes
-			else		 o.start+=s%60;																		// Minutes
+			if (ui.originalPosition.left != ui.position.left) 												// Moved room
+				o.room=Math.floor(($("#co-ev-"+num).position().left-66)/154);								// Get new room
+			if (ui.originalPosition.top != ui.position.top) {												// Moved start
+				let s=(Math.floor(($("#co-ev-"+num).position().top-$("#co-sgrid").position().top)/12)+24)*15;// Get new start
+				o.start=Math.floor(s/60)+":";																// Set hours
+				if (!(s%60)) o.start+="00";																	// No minutes
+				else		 o.start+=s%60;																	// Minutes
+				}
 			this.ShowEventDetails(num);																		// Show
 			} 
 			});
