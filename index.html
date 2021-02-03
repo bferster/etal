@@ -91,7 +91,7 @@
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
 
-	window.addEventListener("beforeunload",  ()=>{ 													// ON CLOSE
+	window.addEventListener("unload",  ()=>{ 													// ON CLOSE
 		if (app.videoWin)	app.videoWin.close();													// Close video window if open
 		app.ReportLocation(.5,.5, "Q", false); 														// Close me out from server
 		});
@@ -727,6 +727,7 @@ class App  {
 	function trace2(msg, p1, p2, p3, p4)															// MOBILE CONSOLE 
 	{
 		trace(msg);
+		Popup(msg,10000)
 		$("#co-Rm-2").html(">"+msg+"<")
 	}
 

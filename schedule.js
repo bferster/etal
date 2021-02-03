@@ -270,7 +270,7 @@ class Schedule  {
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
 		
-		if (link.match(/zoom/i)) {																	// If Zoom
+		if (link.match(/https:..zoom/i)) {															// If Zoom
 			app.curZoom=link;																		// Save link
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
@@ -278,10 +278,14 @@ class Schedule  {
 		else{																						// Use iframe
 			if (link.match(/zapp/i)) {																// An embedded zoom link
 				let str="";
-				if (isMobile)	str="zoomus";														// Use mobile header
-				else if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="";
-				if (str) {
-					str+="://zoom.us/join?confno="+link.split("?")[1];								// Make full url
+				let ua=window.navigator.userAgent;													// Get user agent
+				let isAndroid=ua.match(/android/i);													// If Android
+				let isChromeIOS=ua.match(/crIOS/i);													// If Chrome IOS
+				if (isMobile && !isAndroid)	str="zoomus://";										// If IOS												// Use mobile header
+				else if (ua.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="";
+				if (str) {																			// If needing native app
+					if (isAndroid || isChromeIOS)	str="zoomus://zoom.us/join?confno="+link.split("?")[1];			
+					else							str="https://zoom.us/j/"+link.split("?")[1].replace(/\&/,"?");
 					app.sced.ShowLink(str);															// Open with native app							
 					return;																			// Quit
 					}
@@ -294,7 +298,7 @@ class Schedule  {
 				window.open(link.substr(1),"_blank","width=99%");									// Open in new tab
 				return;																				// Quit
 				}
-			
+		
 			$(window).scrollTop(0)	
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
 			if (link.match(/.app.htm/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	//  and name 

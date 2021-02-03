@@ -26,6 +26,7 @@
 	let meetingPW=v[1] ? v[1].substr(4) : ""; 
 	ZoomMtg.preLoadWasm();
 	ZoomMtg.prepareJssdk();
+
 	ZoomMtg.generateSignature({
         meetingNumber: meetingNumber,
 		isSupportAV: true,
