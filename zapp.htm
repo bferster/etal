@@ -9,14 +9,15 @@
 </head>
 
 <body>
-    <script src="https://source.zoom.us/1.8.1/lib/vendor/react.min.js"></script>
+ <div id="xxx">   
+ 	<script src="https://source.zoom.us/1.8.1/lib/vendor/react.min.js"></script>
     <script src="https://source.zoom.us/1.8.1/lib/vendor/react-dom.min.js"></script>
     <script src="https://source.zoom.us/1.8.1/lib/vendor/redux.min.js"></script>
     <script src="https://source.zoom.us/1.8.1/lib/vendor/redux-thunk.min.js"></script>
     <script src="https://source.zoom.us/1.8.1/lib/vendor/jquery.min.js"></script>
     <script src="https://source.zoom.us/1.8.1/lib/vendor/lodash.min.js"></script>
     <script src="https://source.zoom.us/zoom-meeting-1.9.0.min.js"></script>
- 
+</div> 
 <script>
 
 	var API_KEY="hVg9IpPVTCOqYaelSmL-cw";
@@ -31,24 +32,29 @@
 		apiKey: API_KEY,
         apiSecret: v[2],
         role:0,
-        success(res) { Join(res.result); }
-	     });
+		success(res) { Join(res.result); },
+		});
 	
+	window.addEventListener("unload",  ()=>{ ZoomMtg.leaveMeeting({}) });
+
+		 
 	function Join(signature)
 	{
 		ZoomMtg.init({
 			disableInvite: true,
-			leaveUrl:"zapp.htm"+window.location.search,
+			leaveUrl:"x",
 			success: function () {
 //         		$.i18n.reload("en-US");
 				ZoomMtg.join({
 					meetingNumber: meetingNumber,  passWord: meetingPW,
-					userName:"èt • al meeting room", userEmail: "",
+					userName:v[3], userEmail: "",
 					signature: signature, apiKey: API_KEY,
 					success: function (res) { }, }); },
 					error: function (res) { console.log(res); },
 					});
 	}
+
+	
 
 </script>
 </body></html>

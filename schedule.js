@@ -279,7 +279,7 @@ class Schedule  {
 			if (link.match(/zapp/i)) {																// An embedded zoom link
 				let str="";
 				if (isMobile)	str="zoomus";														// Use mobile header
-				else if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="zoommtg";
+				else if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="";
 				if (str) {
 					str+="://zoom.us/join?confno="+link.split("?")[1];								// Make full url
 					app.sced.ShowLink(str);															// Open with native app							
@@ -296,8 +296,8 @@ class Schedule  {
 				}
 			
 			$(window).scrollTop(0)	
-			if (link.match(/zapp/i)) link+="&"+app.KZ;												// If zoom app, add k
-			if (link.match(/japp/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// If jitsi
+			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
+			if (link.match(/.app.htm/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	//  and name 
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px">
