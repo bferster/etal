@@ -263,6 +263,9 @@ class Schedule  {
 			}
 	}
 
+
+	//zapp.htm?84779667720?pwd=SXJxeTBWTlpsb0NQdEQvVDJ1aVBMQT09&hUyEoq3nznc8szIammrFjgISe776rJzlENVK&Bill-Ferster&admin
+
 	ShowLink(link, center)																		// SHOW LINK
 	{
 		if (!link) return;
@@ -270,7 +273,7 @@ class Schedule  {
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
 		
-		if (link.match(/https:..zoom/i)) {															// If Zoom
+		if (link.match(/https:..zoom|zoomus:/i)) {													// If Zoom
 			app.curZoom=link;																		// Save link
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
 			setTimeout(function(){ myWin.close(); },10000);											// Close after 10 secs
@@ -280,12 +283,11 @@ class Schedule  {
 				let str="";
 				let ua=window.navigator.userAgent;													// Get user agent
 				let isAndroid=ua.match(/android/i);													// If Android
-				let isChromeIOS=ua.match(/crIOS/i);													// If Chrome IOS
 				if (isMobile && !isAndroid)	str="zoomus://";										// If IOS												// Use mobile header
 				else if (ua.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) str="";
 				if (str) {																			// If needing native app
-					if (isAndroid || isChromeIOS)	str="zoomus://zoom.us/join?confno="+link.split("?")[1];			
-					else							str="https://zoom.us/j/"+link.split("?")[1].replace(/\&/,"?");
+					str="zoomus://zoom.us/join?confno="+link.split("?")[1];
+					str+="&zc=0&uname="+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName;
 					app.sced.ShowLink(str);															// Open with native app							
 					return;																			// Quit
 					}
@@ -298,10 +300,10 @@ class Schedule  {
 				window.open(link.substr(1),"_blank","width=99%");									// Open in new tab
 				return;																				// Quit
 				}
-		
-			$(window).scrollTop(0)	
+				$(window).scrollTop(0)	
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
 			if (link.match(/.app.htm/i)) link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	//  and name 
+
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px">
