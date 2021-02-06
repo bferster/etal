@@ -127,7 +127,7 @@ class Venue {
 										$("#evRoom").prop("selectedIndex",0)
 										});	
 
-		$("#evRoom").on("change",()=>{	this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();})// On room change
+		$("#evRoom").on("change",()=>{	d.room=this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();})// On room change
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
 			this.Do();																						// Set do 

@@ -71,13 +71,15 @@ class Schedule  {
 		let id=sc.link.match(/d\/(.*)\//i);															// Extract id
 		if (id) id=id[1];																			// Get actual id
 		else{																						// Get implicit data
-			if (!sc.content)	return "";															// Quiit if no content													
-			o=sc.content.match(/<p>gallery\((.*)<\/p>/ig);											// Get data from content
+			if (!sc.content)	return "";															// Quit if no content													
+			sc.content=sc.content.replace(/\n|\r/g,"");												// Remove CR/LFs
+			o=sc.content.match(/gallery\((.*?)\)/ig);												// Get data from content
 			for (i=0;i<o.length;++i) {																// For each item
-				o[i]=o[i].replace(/\)<\/p>/i,"");													// Remove trailing tag
+				o[i]=o[i].substr(8);																// Remove 'GALLERY(' tag
+				o[i]=o[i].replace(/\)$/g,"");														// Remove closing paren
 				v=o[i].split(",");																	// Extract fields
 				s[i+1]=[];																			// Add row
-				s[i+1][0]=v[0].substr(11) ? v[0].substr(11).trim() : "";							// Get title
+				s[i+1][0]=v[0] ? v[0].trim() : "";													// Get title
 				s[i+1][1]=v[1] ? v[1].replace(/<u>|<\/u>/ig,"").trim() : "";						// Url
 				for (j=3;j<v.length;++j) v[2]+=","+v[j];											// Add back comma breaks													
 				s[i+1][2]=v[2] ? v[2].trim() : "";													// Desc
@@ -125,8 +127,8 @@ class Schedule  {
 			width:${$(app.vr).width()-32}px;height:fit-content">
 			<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
 			<b>${s[id][0]}</b><br><br>
-			<img src="${s[id][1]}" style="width:50%;border:1px solid #999;vertical-align:top;float:left">
-			<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(50% - 32px);">
+			<img src="${s[id][1]}" style="width:40%;border:1px solid #999;vertical-align:top;float:left;margin-left:5%">
+			<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(45% - 32px);">
 			${s[id][2] ? s[id][2] : "No details..."}
 			</div></div>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
