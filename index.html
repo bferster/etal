@@ -184,6 +184,7 @@ class App  {
 		this.KZ="";																					// Ks
 		this.roomPortals=[];																		// Portals for this room
 		this.hallPos={};																			// Hallway position
+		this.curContent="";																			// Current floor's content
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -619,16 +620,18 @@ class App  {
 		let rs=0,re=1,cs=1,ce=2,content;																/// Mobile size positions
 		let gals=[];
 		this.roomPortals=[];																			// Clear portals
+		this.curContent="";
 		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
 			o=this.venue[this.curFloor][i];																// Point at room
 			if (isSmall) { rs++; re++ }																	// Advance rows for mobile
 			else		 { rs=o.rs; re=o.re; cs=o.cs; ce=o.ce; };										// Use set values
 			app.roomPortals+="R"+i+"="+o.portal;														// Add portal info
 			sc=this.sced.GetEventByRoom(this.curFloor,i)												// Point at schedule room																		
+			this.curContent+=sc.link+sc.content;														// Add to current content hash
 			content=sc.content ? sc.content : "";														// Set content if any
 			if (sc.link && sc.link.match(/^gallery/i)) {												// If a gallery, 
 				gals[sc.room]=this.sced.GetGalleryData(sc); 											// Get gallery data
-				content=gals[sc.room].content;															/// Set content
+				content=gals[sc.room].content;															// Set content
 				}
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set

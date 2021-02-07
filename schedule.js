@@ -59,10 +59,16 @@ class Schedule  {
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
 	{
-		let today=new Date();
+		let i,sc,str="";	
+		let today=new Date();																	// Get today
 		this.day=(today.getDate()+50)-(this.meetingStart.getDate()+49);							// Days into meeting
 		this.mins=(today.getUTCHours()*60)+(today.getUTCMinutes()*1);							// Get UTC time in minutes
-		app.DrawVenue();																		// Redraw venue
+		for (i=0;i<app.venue[app.curFloor].length;++i) {										// For each room
+			sc=this.GetEventByRoom(app.curFloor,i);												// Point at event
+			if (sc.link && sc.link.match(/gallery:https:/i)) this.GetGalleryData(sc)			// If from a doc, update it
+			str+=sc.link+sc.content;															// Make content hash
+			}
+		if (app.curContent !== str)	app.DrawVenue();											// Redraw venue
 	}
 
 	GetGalleryData(sc)																		// GET GALLERY DATA FROM SPREADSHEET
@@ -97,11 +103,10 @@ class Schedule  {
 				if (!s[row])			s[row]=["","","",""];										// Add new row if not there already
 				if (col < 5)			s[row][col]=con;											// Add cell to array
 				}
-			str=this.CreateGallery(s,sc.room);														// Create gallery 
-			$("#co-roomContent-"+sc.room).html(str.replace(/\t|\n|\r/g,""));						// Draw
-			this.GalleryEvents(s,sc.room);															// Set events
-			}).fail((msg)=>{ trace("Can't load Gallery data") });		
-		return { data:null, content:"" };															// No content yet
+			v=this.CreateGallery(s,sc.room);														// Create gallery 
+			if (v != sc.content) { sc.content=v; this.CheckSchedule(); }							// If changed, set and trigger a redraw	
+		}).fail((msg)=>{ trace("Can't load Gallery data") });		
+		return { data:s, content:sc.content };														// No content yet
 		}
 
 	CreateGallery(s, room)																		// CREATE GALLERY
@@ -264,9 +269,6 @@ class Schedule  {
 				});
 			}
 	}
-
-
-	//zapp.htm?84779667720?pwd=SXJxeTBWTlpsb0NQdEQvVDJ1aVBMQT09&hUyEoq3nznc8szIammrFjgISe776rJzlENVK&Bill-Ferster&admin
 
 	ShowLink(link, center)																		// SHOW LINK
 	{
