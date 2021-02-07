@@ -96,9 +96,18 @@
 		app.ReportLocation(.5,.5, "Q", false); 														// Close me out from server
 		});
 
+	function HTML5eventHandler(e)																// ON HTML5 EVENT
+	{
+		if (e.data && e.data.match(/VideoQuit/)) { $("#co-iframe").remove();  app.GoToCenter();	}	//  Quit video
+	}
+
 	$(document).ready(function() {								           							// ON PAGE LOADED
+		if (window.addEventListener) 																// If supported this way
+			window.addEventListener("message",HTML5eventHandler,false);								// Add event handler
+		else																						// Use other method
+			window.attachEvent("message",HTML5eventHandler);										// Add handler
+
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
-		
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url.split("&")[0] : 1;													// Set meeting id
 	

@@ -38,7 +38,6 @@
 	
 	window.addEventListener("unload",  ()=>{ ZoomMtg.leaveMeeting({}) });
 
-		 
 	function Join(signature)
 	{
 		ZoomMtg.init({
@@ -50,10 +49,19 @@
 					meetingNumber: meetingNumber,  passWord: meetingPW,
 					userName:v[3], userEmail: "",
 					signature: signature, apiKey: API_KEY,
-					success: function (res) { }, }); },
+					success: function (res) { 
+///////////// CLOSE BUTTON
+	let button = document.querySelectorAll('button'); 
+	for (var x in button) 
+    	if (button[x].outerText == "Leave") 
+			button[x].addEventListener("click", () => { window.parent.postMessage("VideoQuit") });
+/////////////////////////////////
+					}, }); },
 					error: function (res) { console.log(res); },
 					});
-	}
+
+
+}
 
 	
 
