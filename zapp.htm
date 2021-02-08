@@ -50,7 +50,7 @@
 					signature: signature, apiKey: API_KEY,
 					success: function (res) { 
 						let buttons=document.querySelectorAll('button'); 
-						for (let b in button) 
+						for (let b in buttons) 
 							if (buttons[b].outerText == "Leave") 
 								buttons[b].addEventListener("click", ()=> { window.parent.postMessage("VideoQuit") });
 					}, }); },
