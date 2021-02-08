@@ -703,10 +703,11 @@ class App  {
 		str+="<div id='dialogCancel' class='co-bs' style='margin-left:8px;background-color:#999'>Cancel</div></div>";
 		$("#confirmBoxDiv").html(str);																	// Add to div
 		$("#co-revText").focus();																		// Focus on button
-		$("#co-talkBut").on("click", ()=>{app.chat.Listen()});											// Start STT
-		$("#co-revText").on("change", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ONE ENTER
-		$("#dialogOK").on("click", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ON OK 
-		$("#dialogCancel").on("click", function() {	$("#confirmBoxDiv").remove(); });								// ON CANCEL
+		
+		$("#co-talkBut").on("click", ()=>{app.chat.Listen()});															// Start STT
+		$("#co-revText").on("change", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });	// ON ENTER
+		$("#dialogOK").on("click", function() {	callback($("#co-revText").val()); $("#confirmBoxDiv").remove(); });		// ON OK 
+		$("#dialogCancel").on("click", function() {	$("#confirmBoxDiv").remove(); });									// ON CANCEL
 		}
 
 	function Sound(sound, mute)																		// PLAY SOUND

@@ -44,26 +44,19 @@
 			disableInvite: true,
 			leaveUrl:"x",
 			success: function () {
-//         		$.i18n.reload("en-US");
 				ZoomMtg.join({
 					meetingNumber: meetingNumber,  passWord: meetingPW,
 					userName:v[3], userEmail: "",
 					signature: signature, apiKey: API_KEY,
 					success: function (res) { 
-///////////// CLOSE BUTTON
-	let button = document.querySelectorAll('button'); 
-	for (var x in button) 
-    	if (button[x].outerText == "Leave") 
-			button[x].addEventListener("click", () => { window.parent.postMessage("VideoQuit") });
-/////////////////////////////////
+						let buttons=document.querySelectorAll('button'); 
+						for (let b in button) 
+							if (buttons[b].outerText == "Leave") 
+								buttons[b].addEventListener("click", ()=> { window.parent.postMessage("VideoQuit") });
 					}, }); },
 					error: function (res) { console.log(res); },
 					});
-
-
-}
-
-	
+	}
 
 </script>
 </body></html>

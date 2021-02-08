@@ -128,14 +128,20 @@ class Schedule  {
 			$("#co-gItemD").remove();																// Kill existing
 			let id=e.currentTarget.id.substr(9);													// Get id
 			let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
-			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
+			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
 			width:${$(app.vr).width()-32}px;height:fit-content">
 			<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
-			<b>${s[id][0]}</b><br><br>
-			<img src="${s[id][1]}" style="width:40%;border:1px solid #999;vertical-align:top;float:left;margin-left:5%">
-			<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(45% - 32px);">
-			${s[id][2] ? s[id][2] : "No details..."}
-			</div></div>`;
+			<b>${s[id][0]}</b><br><br>`;
+			if (s[id][2] && s[id][2].match(/^http/i)) { 
+				str+=`<iframe id="co-iframeFrame" style="width:100%;height:${$(app.vr).height()-78}px" src="${s[id][2]}" 
+				allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe></div>`;
+				}
+			else{		
+				str+=`<img src="${s[id][1]}" style="width:40%;border:1px solid #999;vertical-align:top;float:left;margin-left:5%">
+				<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(45% - 32px);">
+				${s[id][2] ? s[id][2] : "No details..."}</div></div>`;
+				}
+			
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
 			$("#co-igc").on("click", ()=>{ $("#co-gItemD").remove(); });							// ON CLOSE BUT
 			});
