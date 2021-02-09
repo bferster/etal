@@ -50,18 +50,19 @@ SMALL
 					font-size: 13px; background-color: #999; padding: 2px 8px 2px 8px; }
 	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
 					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
-	.co-iframe 	{	display:inline-block; width:60vw; height:calc(60vw * .5265); border-radius:4px; vertical-align:top; background-color:#444; } 
-	.co-hall	{	display:inline-block; width:calc(40vw - 36px); height:calc(100vh - 24px); border-radius:4px; 
-					background-color:#d8c4ae; margin-left:12px; text-align:center; vertical-align:top; 
+	.co-iframe 	{	width:100%; height:calc(50vw * .5265); border-radius:4px; vertical-align:top; background-color:#444; } 
+	.co-info	{	width:100%; height:100% }
+	.co-hall	{	width:calc(100% - 24px); height:calc(100vh - 24px); border-radius:4px; 
+					background-color:#d8c4ae; text-align:center; vertical-align:top; 
 					user-select:none; -webkit-user-select:none; -ms-user-select:none; }
-	.co-mroom	{	display:inline-block; width:100%; height:calc(60vw * .5265); }
+	.co-mroom	{	width:100%; height:calc(60vw * .5265); }
 	.co-table	{	display:inline-block; width:20vw; height:20vw; border-radius:1000px; background-color:#a2733f; 
-					margin-top:80px; text-align:center; color:#fff }
-	.co-breakout{	display:inline-block; width:10vw; height:100px; border-radius:8px; 
+					margin:80px 0; text-align:center; color:#fff }
+	.co-breakout{	display:inline-block; width:12vw; height:120px; border-radius:8px; 
 					border:2px solid #a2733f; margin:6px; text-align:center; color:#a2733f}
 	.co-topic	{	width:calc(100% - 48px); color:#fff; text-align:center; padding:12px 24px 0 24px; font-size:16px; }
-	.co-docs	{	display:inline-block; width:calc(30vw - 6px); height:calc(100vh - 60vw * .5265 - 36px); border-radius:4px; 
-					background-color:#ddd; margin-top:12px; text-align:center; vertical-align:top; }
+	.co-docs	{	display:inline-block; width:calc(50% - 6px); height:calc(100vh - 50vw * .5265 - 36px); border-radius:4px; 
+					background-color:#ddd; text-align:center; vertical-align:top; }
 	.co-title	{	color:#333; text-align:center; font-size:24px; margin: 6px 0; }
 	.co-items	{	color:#333; text-align:center; font-size:16px; margin-top:8px;
 					overflow-x:hidden;overflow-y:auto; height:calc(100% - 70px); }
@@ -75,6 +76,11 @@ SMALL
 	body ::-webkit-scrollbar-track { background: transparent; }
 	body ::-webkit-scrollbar-thumb { border-radius:8px ;background:#a4baec }
 	body ::-webkit-scrollbar-thumb:hover { background: #a4baec }
+
+	@media only screen and (max-width:700px) {
+		.co-top 	{ height:auto; overflow:auto }
+		}
+
 
 </style>
 <body>
@@ -95,18 +101,28 @@ SMALL
 <script>
 
 	var	avSize=36;																					// Avatar size
+	isSmall=false;																					// Mobile size flag
 	var app=null;																					// Holds app
 	const isLocal=(window.location.host == "localhost");											// Running locally?
 	const goPath=isLocal ? "/./" : "/go/";															// Path to go folder
 
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
 
-	window.addEventListener("beforeunload",  ()=>{ 													// ON CLOSE
+	window.addEventListener("unload",  ()=>{ 													// ON CLOSE
 		if (app.videoWin)	app.videoWin.close();													// Close video window if open
 		app.ReportLocation(.5,.5, "Q"); 															// Close me out from server
 		});
 
+	function HTML5eventHandler(e)																// ON HTML5 EVENT
+	{
+		if (e.data && e.data.match(/VideoQuit/)) { $("#co-iframe").remove();  app.GoToCenter();	}	//  Quit video
+	}
+
 	$(document).ready(function() {								           							// ON PAGE LOADED
+		if (window.addEventListener) 																// If supported this way
+			window.addEventListener("message",HTML5eventHandler,false);								// Add event handler
+		else																						// Use other method
+			window.attachEvent("message",HTML5eventHandler);										// Add handler
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url : "gdemo";															// Set meeting id
@@ -202,10 +218,14 @@ class App  {
 	Draw()																						// REDRAW
     {
         this.bx=$("body").width(),      this.by=$("body").height();                                 // Body size
-        $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
+		isSmall=(this.bx < 700);																	// Set mobile flag
+     	 $("#co-main").width(this.bx);   $("#co-main").height(this.by);                              // Set div
 	    this.ArrangePeople();                                                                       // Arrange people               
 		let x=Math.max(0,Math.min(this.bx-avSize,$("#co-AvMe").offset().left));						// Cap me x to screen
 		let y=Math.max(0,Math.min(this.by-avSize*2,$("#co-AvMe").offset().top));					// Y
+		$("#co-info").css({ "grid-row": isSmall ? "3/4" : "2/3" });									// Set grid responsively
+		$("#co-hall").css({ "grid-row": isSmall ? "2/3" : "1/3", "grid-column":isSmall ? "1/2": "2/3" });			
+
 		$("#co-AvMe").offset({left:x,top:y });														// Move icon there
 	}
 
@@ -279,7 +299,7 @@ class App  {
 			let i=this.pIndex[d.id];																// Get index
 			if (d) this.people[i]=d;																// Set data								
 			$("#co-At-"+i).html(`${d.firstName}<br>${d.lastName}`);									// Set label
-			$("#co-Av-"+i).prop("src",d.pic ? d.pic : "img/avyou.png") ;							// Set image
+			setTimeout(()=>{ $("#co-Ap-"+i).prop("src",d.pic ? d.pic : "img/avyou.png"); },5000);	// Wait 5 secs so it's in S3 and set image
 			}
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS
@@ -479,37 +499,38 @@ class App  {
 	DrawVenue()																						// DRAW VENUE
 	{
 		this.bx=$("body").width(),		this.by=$("body").height();										// Body size
-		let str=`<div style="display:inline-block">
-				<div id="co-iframe" class="co-iframe">
-				<div id="co-vMsg" style="margin-top:20vh;text-align:center;width:100%;color:#ddd"><br>Video will appear here<br>when you drag your icon to<br>the table, a room, or the coffeebar</div>
-				<iframe id="co-iframeFrame" style="width:100%;height:100%;border-radius:4px;"
-				src="" allow=camera;microphone;autoplay frameborder="0" allowfullscreen>
-				</iframe></div><br>
-				<div id="agendaDiv" class="co-docs">
-					<div class="co-title">Todays's agenda</div>
-					<div id="agendaItems" class="co-items"></div>
+		let str=`<div style="display:grid;grid-gap:12px">
+				<div id="co-iframe" class="co-iframe" style="grid-column:1/2;grid-row:1/2">
+					<div id="co-vMsg" style="margin-top:20vh;text-align:center;width:100%;color:#ddd"><br>Video will appear here<br>when you drag your icon to<br>the table, a room, or the coffeebar</div>
+					<iframe id="co-iframeFrame" style="width:100%;height:100%;border-radius:4px;"
+					src="" allow=camera;microphone;autoplay frameborder="0" allowfullscreen>
+					</iframe>
 				</div>
-				<div id="docsDiv" class="co-docs" style="margin-left:12px">
-				<div class="co-title">Resources</div>
-					<div  id="docItems" class="co-items"></div>
-				</div>
-			</div>
-			<div id="co-hall" class="co-hall">
-				<div id="co-room-0" class="co-mroom">
-					<div id="co-table" class="co-table">
-						<img src="img/wlogo.png" style="width:33%;margin-top:8vw">
-						<div id="topicDiv" class="co-topic">
+				<div id="co-info" class="co-info" style="grid-column:1/2;grid-row:2/3">
+					<div id="agendaDiv" class="co-docs">
+						<div class="co-title">Todays's agenda</div>
+						<div id="agendaItems" class="co-items"></div>
+					</div>
+					<div id="docsDiv" class="co-docs" style="margin-left:12px">
+						<div class="co-title">Resources</div>
+						<div  id="docItems" class="co-items"></div>
 					</div>
 				</div>
+				<div id="co-hall" class="co-hall" style="grid-column:2/3;grid-row:1/3">
+					<div id="co-room-0" class="co-mroom">
+						<div id="co-table" class="co-table">
+							<img src="img/wlogo.png" style="width:33%;margin-top:8vw">
+							<div id="topicDiv" class="co-topic">
+						</div>
+					</div>
+				<div style="margin-top:12px">
+					<div id="co-room-1" class="co-breakout">Room A</div>
+					<div id="co-room-2" class="co-breakout">Room B</div>
+					<div id="co-room-3" class="co-breakout">Room C</div>
+				</div>
+				<img id="co-coffee" src="img/coffeebar.png" style="width:160px;margin-left:-80px;position:absolute;top:calc(100vh - 80px);">
+				${this.people[this.myId].role.match(/host/i) ? "<img id='co-gear' src='img/gear.png' style='cursor:pointer;width:25px;position:absolute;top:calc(100vh - 50px);left:calc(100vw - 50px)'>" : ""}
 			</div>
-			<div style="margin-top:12px">
-				<div id="co-room-1" class="co-breakout">Room A</div>
-				<div id="co-room-2" class="co-breakout">Room B</div>
-				<div id="co-room-3" class="co-breakout">Room C</div>
-			</div>			
-		<img id="co-coffee" src="img/coffeebar.png" style="width:160px; 
-			position:absolute;top:calc(100vh - 80px);left:calc(80vw - 80px)">
-		${this.people[this.myId].role.match(/host/i) ? "<img id='co-gear' src='img/gear.png' style='cursor:pointer;width:25px;position:absolute;top:calc(100vh - 50px);left:calc(100vw - 50px)'>" : ""}
 		</div>`;
 		
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
@@ -540,22 +561,42 @@ class App  {
 			});
 	}
 
-	SetDocs()
+	SetDocs()																						// SET DOCS
 	{
-		let i,k=0,o,str="<ul style='list-style-type:none;padding:24px;margin:0'>";
+		let i,p,o;
+		let str="<ul style='list-style-type:none;padding:24px;margin:0'>";								// List 							
 		for (i=0;i<this.sced.schedule.length;++i) {														// For each item
 			o=this.sced.schedule[i];																	// Point at it
-			if (o.day == 2) {																			// A doc
-				str+=`<li id="co-doc-${k++}" style="margin-bottom:4px">`;								// Item head
-				str+=`<a href="${o.link}" target="_blank">`;											// Adf link
-				if (o.bar == 1)	str+="<b>"+o.desc+"</b>";												// A bold item
-				else			str+=o.desc;															// Regular item
-				str+="</a></li>";																		// End item
-				}	
+			if (o.day == 2) 																			// A doc
+				str+=`<li id="co-doc-${i}" style="margin-bottom:4px;cursor:pointer">${o.desc}</li>`;	// Add doc title/link
 			}
 		str+="</ul>";																					// End list
-		$("#docItems").html(str.replace(/\t|\n|\r/g,""));											// Add agenda
+		$("#docItems").html(str.replace(/\t|\n|\r/g,""));												// Add agenda
+		$("[id^=co-doc-]").on("click",(e)=>{															// ON DOC CLICK
+			let id=e.currentTarget.id.substr(7);														// Get id
+			let o=this.sced.schedule[id];																// Point at it
+			if (o.link.charAt(0) == "=") {																// Show a web page
+				$("#co-docFrame").remove();																// Kill existing
+				let str=`<div id="co-docFrame" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
+				left:${$("#co-hall").offset().left}px;top:${$("#co-hall").offset().top}px;max-height:${$("#co-hall").height()-34}px;overflow:auto;
+				width:${$("#co-hall").width()-32}px;height:100vh">
+				<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
+				<b>${o.desc}<br><br></b>
+				<iframe id="co-iframeFrame" style="width:100%;height:${$("#co-hall").height()-78}px" src="${o.link.substr(1)}" 
+				allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe></div>`;
+				$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
+				$("#co-igc").on("click", ()=>{ $("#co-docFrame").remove(); });							// ON CLOSE BUT
+				}
+			else if (o.link.charAt(0) == "!") 																// Show a web page
+				window.open(o.link.substr(1),"_blank","width=99%");										// Open in new window
+				else	
+				window.open(o.link,"_blank");															// Open in new tab
+			});
+
+
+
 	}
+//				str+=`<a href="${o.link}" target="_blank">`;											// Add link
 	
 	SetLink(link)																					// SET IFRAME LINK
 	{
