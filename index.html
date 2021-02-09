@@ -315,7 +315,7 @@ class App  {
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
 			$("#co-At-"+id).css("display",v[5].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
-		else if (v[0] == "P") {																		// Add/update people
+		else if ((v[0] == "P") || (v[0] == "WP")) {													// Add/update people
 			let pn=this.people.length;																// Number of people before
 			this.AddPeople(JSON.parse(v[1]));														// Set data								
 			if (v[2] == "U")	app.DrawPeople();													// Redraw on update
