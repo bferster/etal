@@ -639,8 +639,8 @@ class App  {
 			this.curContent+=sc.link+sc.content;														// Add to current content hash
 			content=sc.content ? sc.content : "";														// Set content if any
 			if (sc.link && sc.link.match(/^gallery/i)) {												// If a gallery, 
-				gals[sc.room]=this.sced.GetGalleryData(sc); 											// Get gallery data
-				content=gals[sc.room].content;															// Set content
+				content=this.sced.GetGalleryData(sc).content; 											// Get gallery content
+				gals[sc.room]=1;																		// Flag to set sizing
 				}
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
@@ -659,8 +659,12 @@ class App  {
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 		
-		for (i=0;i<gals.length;++i)	if (gals[i])  this.sced.GalleryEvents(gals[i].data,i);				// Set events															// Set events
-
+		for (i=0;i<this.venue[this.curFloor].length;++i) 												// For each room
+			if (gals[i]) { 																				// If someting there
+				$("#co-roomContent-"+i).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
+				$("#co-galBase-"+i).height(Math.max($("#co-Rm-"+i).height()-60, isSmall? 300 : 0));		// Get hgt, min of 300 for mobile
+				}
+		
 		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON PERSON
 		$("[id^=co-Rm-]").droppable({		drop:(e,ui)=>{ this.OnMeMove(ui.position.left,ui.position.top,e.target.id) }}); // ON DROP ON ROOM OR HALL
 		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON QUIET AREA
