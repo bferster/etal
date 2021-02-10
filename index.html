@@ -392,7 +392,7 @@ class App  {
 			let id=targetId.substr(10);                                                             // Which one?
    		    this.status="B"+id;                                                  					// Update me
  			this.sced.ShowLink("japp.htm?/~"+this.meetingId+"~coffeebar-"+this.curFloor+"-"+id); 	// Go to the coffee bar 
-//			for (let i=0;i<this.people.length;++i) { this.people[i].stats="R2"; $("#co-Av-"+i).show() };													
+//			for (let i=0;i<this.people.length;++i) { this.people[i].stats="B0-0"; $("#co-Av-"+i).show() };													
 			}
 		else{																						// General click
 			this.CloseAll();																		// Close all open dialogs
@@ -435,9 +435,9 @@ class App  {
 		let nf=this.venue.length																	// Number of floors
 		let nr=this.venue[cf].length;																// Number of rooms on current floor
 		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
-      		x=$("#co-coffee-"+cf+"-0").offset().left;                                    			// left side of bar
+      		x=$("#co-coffee-"+cf+"-0").offset().left+30;                                    		// left side of bar
        		y=$("#co-coffee-"+cf+"-0").offset().top-8;                      			 			// On top of bar area
-    		w=$("#co-coffee-"+cf+"-0").width()-avSize;                                  			// Width of space
+    		w=$("#co-coffee-"+cf+"-0").width()-60-avSize;                                  			// Width of space
    			}
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at them
@@ -613,7 +613,7 @@ class App  {
 		
 		let menu=`<div style="width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px" title="Go private">
-			<img id="co-coffee-${this.curFloor}-0" style="width:200px;margin-left:calc(50% - 100px - ${avSize+16}px)" src="img/coffeebar.png">
+			<img id="co-coffee-${this.curFloor}-0" style="width:264px;margin-left:calc(50% - 132px - ${avSize+16}px)" src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See meeting schedule">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See other attendees">`;

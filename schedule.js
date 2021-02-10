@@ -242,7 +242,8 @@ class Schedule  {
 				}
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
-			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px">
+			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px
+			${link.match(/.app.htm/i) ? ";overflow:hidden" : ""}">
 			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
 			<div style="position:absolute;background-color:#fff;width:18px;height:18px;border-radius:18px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
