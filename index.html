@@ -224,7 +224,6 @@ class App  {
 			++this.secs;																			// Another second 
 			if ((this.secs%15) == 0)  this.ArrangePeople();											// Every 15 secs, arrange people
 			if ((this.secs%60) == 10) this.sced.CheckSchedule();									// On every minute, check the schedule
-																			
 			if (this.retryWS) {																		// If reconnectng to websocket
 				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -419,7 +418,7 @@ class App  {
 		y=(y*100).toFixed(2);																		// y
 		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${app.curFloor}|${x}|${y}|${status}`);// Send Location message
 	}
-	
+
 
 	GoToCenter()																				// MOVE TO CENTER HALL OR SPECIFIC SPOY
 	{
@@ -431,7 +430,7 @@ class App  {
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-		let x,w,y,h,i,j,x2,inc,bar=[];					
+		let x,w,y,h,i,j,x2,o,inc,bar=[];					
 		let cf=this.curFloor;																		// Current floor
 		let nf=this.venue.length																	// Number of floors
 		let nr=this.venue[cf].length;																// Number of rooms on current floor
@@ -441,8 +440,12 @@ class App  {
     		w=$("#co-coffee-"+cf+"-0").width()-avSize;                                  			// Width of space
    			}
 		for (i=0;i<this.people.length;++i) {														// For each person
-			if (cf != this.people[i].f) 			$("#co-Av-"+i).css("display","none");			// Hide people not on this floor
-			else if (this.people[i].stats != "Q")	$("#co-Av-"+i).css("display","block")			// Show unless quiet
+			o=this.people[i];																		// Point at them
+			if (cf != o.f) 				$("#co-Av-"+i).css("display","none");						// Hide people not on this floor
+			else if (o.stats != "Q")	$("#co-Av-"+i).css("display","block")						// Show unless quiet
+			$("#co-At-"+i).html(`${o.firstName}<br>${o.lastName}`);									// Set label
+			$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");								// Set image
+			$("#co-Av-").animate({ left:this.bx*o.x, top:this.by*o.y });							// Animate here	
 			}
 	
 		for (j=0;j<this.venue[cf].length;++j) {                             		   	 			// For each room
@@ -466,7 +469,7 @@ class App  {
                 }
    			}
 
-		let o,n,ox,y2,rms=[];																		// ARRANGE ROOMS
+		let n,ox,y2,rms=[];																			// ARRANGE ROOMS
 		for (i=0;i<this.venue[cf].length;++i) rms.push([]); 										// For each room, make room arrays
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at stats
