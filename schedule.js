@@ -43,13 +43,15 @@ class Schedule  {
 		return (mins.substr(0,2)*60)+(mins.substr(2)*1)+(offset-0);								// Get minutes
 	}
 
-	GetEventByRoom(floor, room)																// GET EVENT FOR A ROOM
+	GetEventByRoom(floor, room, ignoreAways)												// GET EVENT FOR A ROOM
 	{
 		let i,o;
-		for (i=0;i<this.schedule.length;++i) {													// For each event
-			o=this.schedule[i];																	// Point at it
-			if (o.away)															 				// An away event 
-				if ((o.room == room) && (o.floor == floor)) return this.FindAwayEvent(o);		// If in this room, find away message
+		if (!ignoreAways) {																		// If ignoring away rooms
+			for (i=0;i<this.schedule.length;++i) {												// For each event
+				o=this.schedule[i];																// Point at it
+				if (o.away > 0)															 		// An away event 
+					if ((o.room == room) && (o.floor == floor)) return this.FindAwayEvent(o);	// If in this room, find away message
+				}
 			}
 		for (i=0;i<this.schedule.length;++i) {													// For each event
 			o=this.schedule[i];																	// Point at it
@@ -71,6 +73,17 @@ class Schedule  {
 				if ((o.room == ev.room) && (o.floor == ev.floor)) return o;						// If in this room, find away message
 			}
 		return ev;																				// Return original event
+	}
+
+	SetAway()																				// TOGGLE ROOMS AWAY MESSAGE
+	{
+		let p=app.people[app.myId];																// Get role
+		if (!p.role)								return;										// Quit if no role
+		if (!p.role.match(/admin|host|vendor/i))	return;										// Quit if not authorized
+		if (p.stats[0] != "R")						return;										// Not in a room
+		let o=this.GetEventByRoom(app.curFloor, p.stats.substring(1), true);					// Point at room	
+		o.away=(o.away > 0) ? 0 : 1;															// Toggle away
+		app.ws.send(`AW|${o.id}|${o.away}`);													// Update server
 	}
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS

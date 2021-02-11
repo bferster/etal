@@ -227,19 +227,13 @@ class App  {
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updvenue">Venue</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div></td></tr>
-		<tr><td><b>Away?</b></td><td>
-		Floor: <select id="upFloor" class="co-is" style="width:50px;font-size:13px"></select>&nbsp;&nbsp;&nbsp;
-		Room: <select id="upRoom" class="co-is" style="width:auto;font-size:13px"></select>&nbsp;&nbsp;&nbsp;
-		<input type="radio" name="upRadio" { id="upNormal">No 
-		<input type="radio" name="upRadio" id="upAway">Yes 
-		</td></tr>
 		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
 		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div>
 		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.ShowS3Images()">Refresh</div></td></tr>
 		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
 		
-			for (i=0;i<app.venue.length;++i) $("#upFloor").append(`<option>${i}</option>`);					// For each floor, add to select
+		for (i=0;i<app.venue.length;++i) $("#upFloor").append(`<option>${i}</option>`);					// For each floor, add to select
 		for (i=0;i<app.venue[this.curFloor].length;++i) {												// For each title
 			s=app.venue[this.curFloor][i].title;														// Get title
 			$("#upRoom").append(`<option>${app.venue[this.curFloor][i].room+". "+s}</option>`);			// Add to select
