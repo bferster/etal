@@ -16,6 +16,7 @@ class App  {
 		this.InitSpreadSheets();																	// Init jsGrid
 		this.ven=new Venue();																		// Init venue module
 		this.sced=new Schedule();																	// Init schedule module
+		this.curFloor=0;
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -220,23 +221,38 @@ class App  {
 
 	DrawLive()																						// MAKE LIVE EDITOR
 	{
-		let i,s,o,cf=0;
+		let i,s;
 		let str=`<br><table style="border-spacing:8px">
 		<tr><td><b>Meeting</b></td><td><div class="co-bs" id="co-start">Start meeting</div></td></tr>
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updvenue">Venue</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div></td></tr>
+		<tr><td><b>Away?</b></td><td>
+		Floor: <select id="upFloor" class="co-is" style="width:50px;font-size:13px"></select>&nbsp;&nbsp;&nbsp;
+		Room: <select id="upRoom" class="co-is" style="width:auto;font-size:13px"></select>&nbsp;&nbsp;&nbsp;
+		<input type="radio" name="upRadio" { id="upNormal">No 
+		<input type="radio" name="upRadio" id="upAway">Yes 
+		</td></tr>
 		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
 		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div>
 		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.ShowS3Images()">Refresh</div></td></tr>
 		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
-
-		for (i=0;i<app.venue.length;++i) $("#dlFloor").append(`<option>${i}</option>`);					// For each floor, add to select
-		for (i=0;i<app.schedule.length;++i) {															// For each event
-			s=app.schedule[i].desc;																		// Get description
-			$("#dlEvent").append(`<option>${i+". "+s}</option>`);										// Add to select
+		
+			for (i=0;i<app.venue.length;++i) $("#upFloor").append(`<option>${i}</option>`);					// For each floor, add to select
+		for (i=0;i<app.venue[this.curFloor].length;++i) {												// For each title
+			s=app.venue[this.curFloor][i].title;														// Get title
+			$("#upRoom").append(`<option>${app.venue[this.curFloor][i].room+". "+s}</option>`);			// Add to select
 			}
+		$("#upFloor").on("change",()=>{																	// ON FLOOR CHANGE
+			this.curFloor=$("#upFloor").prop("selectedIndex"); 											// Set floor		
+			$("#upRoom").empty();																		// Clear	
+			for (i=0;i<app.venue[this.curFloor].length;++i) {											// For each title
+				s=app.venue[this.curFloor][i].title;													// Get title
+				$("#upRoom").append(`<option>${app.venue[this.curFloor][i].room+". "+s}</option>`);		// Add to select
+				}
+			});	
+
 		this.ShowS3Images();																					// Show images
 		
 		$("#co-addImage").on("click",()=>{ 	  $("#co-imageUpload").trigger("click") })						// ON ADD IMAGE	

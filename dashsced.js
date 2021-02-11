@@ -124,9 +124,10 @@ class Schedule  {
 		<td>Duration</td><td><input type="text" id="evvDE-${num}" class="co-is" style="width:50px"  value="${o.end}"></td></tr>
 		<tr><td>Link</td><td colspan='3'><input type="text" id="evvDL-${num}" class="co-is" style="width:240px" value="${o.link ? o.link : ""}"></td></tr>
 		<tr><td>Desc</td><td colspan='3'><input type="text" id="evvDD-${num}" class="co-is" style="width:240px" value="${o.desc ? o.desc : ""}"></td></tr>
-		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}></td><tr>
+		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}>&nbsp;&nbsp;&nbsp;
+		Away?&nbsp<input type="checkbox" id="evvDA-${num}"${o.away > 0 ? " checked": ""}></td><tr>
 		<tr><td colspan="4" style="padding-top:8px;text-align:center"><div id="ev-EditH-${num}" class="co-bs">Edit content HTML</div></td></td></tr>
-		<tr><td colspan="4"><div style="background-color:${col};text-align:center;color:#fff;
+		<tr><td colspan="4"><div id="scedDetCon" style="background-color:${col};text-align:center;color:#fff;
 		width:320px;padding:8px;margin-top:8px">
 		${title.charAt(0) != "*" ? title+"<br><br>" : ""}${o.content ? o.content : ""}</div></td></tr>
 		<td colspan="4" style="text-align:center"><br><img id="ev-Delete" src="img/deletebut.png" style="width:12px;cursor:pointer"></tr>
@@ -145,6 +146,7 @@ class Schedule  {
 			else if (t == "L")	o.link=$("#"+e.target.id).val();												
 			else if (t == "D")	o.desc=$("#"+e.target.id).val();												
 			else if (t == "B")	o.bar=$("#"+e.target.id).prop("checked") ? "1" : "0";												
+			else if (t == "A")	o.away=$("#"+e.target.id).prop("checked") ? "1" : "0";												
 			this.DrawSchedule();																			// Redraw schedule grid
 			this.ShowEventDetails(this.curEvent);															// Rerdaw event
 			});
@@ -156,6 +158,8 @@ class Schedule  {
 				this.DrawSchedule();																		// Redraw schedule grid
 				});
 		});
+
+	$("#scedDetCon").on("dblclick",()=>{	$("#ev-EditH-"+num).trigger("click");	});						// ON DOUBLE-CLICK CONTENT
 
 	$("[id^=ev-EditH-]").on("click",(e)=>{																	// ON EDIT HTML
 		let num=e.target.id.substr(9);																		// Get id num
@@ -180,6 +184,7 @@ class Schedule  {
 		let o=app.schedule[num];																			// Point at event
 		let s=timeToMins(o.start)/15-24;																	// Set start
 		if (o.start == "*")	s=480/15-24;																	// All day
+		else if (o.start == "!") s=1080/15
 		let e=s+timeToMins(o.end)/15;																		// End
 		if (o.end == "*")	e=s+720/15;																		// All day
 		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
@@ -189,6 +194,7 @@ class Schedule  {
 		$("#co-sgrid").append(str)
 	
 		$("#co-ev-"+num).draggable({ containment:"parent", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
+			if (o.start == "!") return;																		// Not for away events
 			this.Do();																						// Undo
 			if (ui.originalPosition.left != ui.position.left) 												// Moved room
 				o.room=Math.floor(($("#co-ev-"+num).position().left-66)/154);								// Get new room

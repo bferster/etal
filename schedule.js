@@ -48,13 +48,29 @@ class Schedule  {
 		let i,o;
 		for (i=0;i<this.schedule.length;++i) {													// For each event
 			o=this.schedule[i];																	// Point at it
+			if (o.away)															 				// An away event 
+				if ((o.room == room) && (o.floor == floor)) return this.FindAwayEvent(o);		// If in this room, find away message
+			}
+		for (i=0;i<this.schedule.length;++i) {													// For each event
+			o=this.schedule[i];																	// Point at it
 			if ((o.room == room) && 															// Room match
 				(o.floor == floor) && 															// Floor match
 				((o.day == this.day) || (o.day == "*")) && 										// Day match
-				((this.mins < (o.start-0+o.end-0) && (this.mins >= o.start)) || (o.start == "*"))) 	// Time match
+				((this.mins < (o.start-0+o.end-0) && (this.mins >= o.start)) || (o.start == "*"))) // Time match
 					return o;																	// Return room event
 			}
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
+	}
+
+	FindAwayEvent(ev)																		// FIND AWAY EVENT
+	{
+		let i,o;
+		for (i=0;i<this.schedule.length;++i) {													// For each event
+			o=this.schedule[i];																	// Point at it
+			if (o.start == "!")															 		// An away event 
+				if ((o.room == ev.room) && (o.floor == ev.floor)) return o;						// If in this room, find away message
+			}
+		return ev;																				// Return original event
 	}
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
@@ -237,13 +253,13 @@ class Schedule  {
 			$(window).scrollTop(0);																	// Scroll to top	
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
 			if (link.match(/.app.htm/i)) {
-				link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	//  and name 
+				link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// Add name 
 				link=link.replace(/\<.*?>/ig,"");	
 				}
-			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;background-color:#444;
+			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
 			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px
-			${link.match(/.app.htm/i) ? ";overflow:hidden" : ""}">
+			${link.match(/.app.htm/i) ? ";background-color:#444;overflow:hidden" : ""}">
 			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
 			<div style="position:absolute;background-color:#fff;width:18px;height:18px;border-radius:18px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>

@@ -156,11 +156,11 @@ class Venue {
 		for (i=0;i<app.venue.length;++i)																	// For each floor
 			$("#evFloor").append(`<option>${i}</option>`);													// Add to select
 		for (i=0;i<app.venue[this.curFloor].length;++i) {													// For each title
-			s=app.venue[this.curFloor][i].title;																// Get title
-			$("#evVideo").append(`<option>${app.venue[this.curFloor][i].room+". "+s}</option>`);				// Add to select
+			s=app.venue[this.curFloor][i].title;															// Get title
+			$("#evVideo").append(`<option>${app.venue[this.curFloor][i].room+". "+s}</option>`);			// Add to select
 			}
 		for (i=0;i<app.venue[this.curFloor].length;++i) {													// For each title
-			s=app.venue[this.curFloor][i].title;																// Get title
+			s=app.venue[this.curFloor][i].title;															// Get title
 			$("#evRoom").append(`<option>${app.venue[this.curFloor][i].room+". "+s}</option>`);				// Add to select
 			}
 		$("#evFloor").prop("selectedIndex",this.curFloor);													// Set floor select	
