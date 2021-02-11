@@ -194,6 +194,7 @@ class App  {
 		this.roomPortals=[];																		// Portals for this room
 		this.hallPos={};																			// Hallway position
 		this.curContent="";																			// Current floor's content
+		this.coffeebarLink="";																		// Alternative link for main coffeebar
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -345,8 +346,6 @@ class App  {
 			let d=JSON.parse(v[2]);																	// Objectify
 			let i=this.pIndex[d.id];																// Get index
 			if (d) this.people[i]=d;																// Set data								
-			$("#co-At-"+i).html(`${d.firstName}<br>${d.lastName}`);									// Set label
-			setTimeout(()=>{ $("#co-Ap-"+i).prop("src",d.pic ? d.pic : "img/avyou.png"); },5000);	// Wait 5 secs so it's in S3 and set image
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
 		}
@@ -390,8 +389,10 @@ class App  {
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
-   		    this.status="B"+id;                                                  					// Update me
- 			this.sced.ShowLink("japp.htm?/~"+this.meetingId+"~coffeebar-"+this.curFloor+"-"+id); 	// Go to the coffee bar 
+ 			this.status="B"+id;                                                  					// Update me
+  		    let str="japp.htm?/~"+this.meetingId+"~coffeebar-"+this.curFloor+"-"+id;				// Assume Jitsi
+ 			if ((this.status == "B0-0") && this.coffeebarLink) 	str=this.coffeebarLink;				// Use spec'd link for main bar
+			this.sced.ShowLink(str); 																// Go to the coffee bar 
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="B0-0"; $("#co-Av-"+i).show() };													
 			}
 		else{																						// General click
@@ -419,7 +420,6 @@ class App  {
 		if (app.ws)	app.ws.send(`L|${app.people[app.myId].id}|${app.curFloor}|${x}|${y}|${status}`);// Send Location message
 	}
 
-
 	GoToCenter()																				// MOVE TO CENTER HALL OR SPECIFIC SPOY
 	{
 		let x=(Math.random()*20+40)/100;															// Hover X in center
@@ -436,7 +436,7 @@ class App  {
 		let nr=this.venue[cf].length;																// Number of rooms on current floor
 		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
       		x=$("#co-coffee-"+cf+"-0").offset().left+30;                                    		// left side of bar
-       		y=$("#co-coffee-"+cf+"-0").offset().top-8;                      			 			// On top of bar area
+       		y=$("#co-coffee-"+cf+"-0").offset().top+8;                      			 			// On top of bar area
     		w=$("#co-coffee-"+cf+"-0").width()-60-avSize;                                  			// Width of space
    			}
 		for (i=0;i<this.people.length;++i) {														// For each person
@@ -553,6 +553,10 @@ class App  {
 			o=sced[i];																					// Point at it
 			o.start=this.sced.TimeToMins(o.start,off-0);												// Start to mins
 			o.end=this.sced.TimeToMins(o.end,0);														// Duration to mins
+			if (o.link && (o.floor == 0) && (o.room == 0) && o.link.match(/^coffeebar/i)) {				// Set main coffee bar link
+				app.coffeebarLink=o.link.substring(10);													// Set in app
+				o.link="";																				// Remove from even itself
+				}
 			}		
 		this.sced.offset=off;																			// Set offset
 		this.sced.schedule=sced;																		// Set data
@@ -611,9 +615,10 @@ class App  {
 		if (p.avSize)		avSize=p.avSize-0;															// Use size if set
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
 		
-		let menu=`<div style="width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
+		let menu=`<div style="z-index:0;width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px" title="Go private">
-			<img id="co-coffee-${this.curFloor}-0" style="width:264px;margin-left:calc(50% - 132px - ${avSize+16}px)" src="img/coffeebar.png">
+			<img id="co-coffee-${this.curFloor}-0" style="width:264px;margin-top:-12px;margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3" 
+			src="img/coffeebar.png">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See meeting schedule">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See other attendees">`;

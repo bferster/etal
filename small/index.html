@@ -174,6 +174,8 @@ class App  {
 		this.retryWS=false;																			// Reconnecting to web socket
 		this.curItem=2;																				// Current agenda item
 		this.KZ="";																					// Ks
+		this.curContent="";																			// Current floor's content
+		this.coffeebarLink="";																		// Alternative link for main coffeebar
 		if (isLocal) this.ws=new WebSocket('ws://'+window.location.host+':8080');					// Open insecure websocket											
 		else		 this.ws=new WebSocket('wss://'+window.location.host+':8080');					// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -305,8 +307,6 @@ class App  {
 			let d=JSON.parse(v[2]);																	// Objectify
 			let i=this.pIndex[d.id];																// Get index
 			if (d) this.people[i]=d;																// Set data								
-			$("#co-At-"+i).html(`${d.firstName}<br>${d.lastName}`);									// Set label
-			setTimeout(()=>{ $("#co-Ap-"+i).prop("src",d.pic ? d.pic : "img/avyou.png"); },5000);	// Wait 5 secs so it's in S3 and set image
 			}
 		else if (v[0] == "B") {																		// BROADCAST
 			if (v[2].charAt() == "*") {																// If TTS
@@ -330,7 +330,9 @@ class App  {
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
 		if (targetId.match(/co-coffee/)) {															// IN COFFEE BAR
 			this.status="B0";																		// Set status     
-			this.SetLink("japp.htm?/~"+this.meetingId+"~coffeebar-0-0"); 							// Go to the coffee bar 
+			let str="japp.htm?/~"+this.meetingId+"~coffeebar-0-0";									// Assume Jitsi
+ 			if ((this.status == "B0-0") && this.coffeebarLink) 	str=this.coffeebarLink;				// Use spec'd link for main bar
+			this.sced.ShowLink(str); 																// Go to the coffee bar 
 			}
 		else if (targetId.match(/co-room-/)) {														// IN A ROOM
 			i=targetId.substr(8);																	// Get id
@@ -358,7 +360,7 @@ class App  {
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-		let h,i,j,x2,inc,bar=[];
+		let h,i,j,o,x2,inc,bar=[];
      	let	x=$("#co-coffee").offset().left;                                    					// left side of bar
        	let w=$("#co-coffee").width()-avSize;                                  						// Width of space
        	let y=this.by-$("#co-coffee").height()-avSize+2;                       						// On top of bar area
@@ -367,9 +369,14 @@ class App  {
 		$("#co-adj-"+this.curItem).css("background-color","#d8c4ae");								// Hilite current one
 		$("#topicDiv").html(`<b>Current topic:</b><br>${$("#co-adj-"+this.curItem).text()}`);		// Table topic
 
-		for (i=0;i<this.people.length;++i) 															// For each person
-			if ((this.people[i].stats) == "B0") 	bar.push(i); 									// In a bar		
+		for (i=0;i<this.people.length;++i) {														// For each person
+			o=this.people[i];																		// Point at them
+			$("#co-At-"+i).html(`${o.firstName}<br>${o.lastName}`);									// Set label
+			$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");								// Set image
+			$("#co-Av-").animate({ left:this.bx*o.x, top:this.by*o.y });							// Animate here	
+			if ((o.stats) == "B0") 	bar.push(i); 													// In a bar		
 			inc=avSize+2;                                                                          	// Spacing between barmates
+			}
 		if (bar.length > 1) inc=Math.min(inc,w/(bar.length-1));                                 	// Squeeze them in?
 		for (i=0;i<bar.length;++i) {                                                            	// For each barmate
 			if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  	// Move me
@@ -378,7 +385,7 @@ class App  {
 			if (j)  y+=inc;    else x+=inc;                                                  		// Advance
 			}
   
-		let o,n,ox,y2,rms=[ [],[],[],[] ];
+		let n,ox,y2,rms=[ [],[],[],[] ];
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at stats
 			if (o.stats && (o.stats.charAt(0) == "R"))  rms[o.stats.substr(1)].push(i);				// If in a room, add person to it

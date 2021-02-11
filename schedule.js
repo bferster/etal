@@ -234,7 +234,7 @@ class Schedule  {
 				window.open(link.substr(1),"_blank","width=99%");									// Open in new tab
 				return;																				// Quit
 				}
-				$(window).scrollTop(0)	
+			$(window).scrollTop(0);																	// Scroll to top	
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
 			if (link.match(/.app.htm/i)) {
 				link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	//  and name 
