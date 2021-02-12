@@ -124,8 +124,7 @@ class Schedule  {
 		<td>Duration</td><td><input type="text" id="evvDE-${num}" class="co-is" style="width:50px"  value="${o.end}"></td></tr>
 		<tr><td>Link</td><td colspan='3'><input type="text" id="evvDL-${num}" class="co-is" style="width:240px" value="${o.link ? o.link : ""}"></td></tr>
 		<tr><td>Desc</td><td colspan='3'><input type="text" id="evvDD-${num}" class="co-is" style="width:240px" value="${o.desc ? o.desc : ""}"></td></tr>
-		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}>&nbsp;&nbsp;&nbsp;
-		Away?&nbsp<input type="checkbox" id="evvDA-${num}"${o.away > 0 ? " checked": ""}></td><tr>
+		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}></td><tr>
 		<tr><td colspan="4" style="padding-top:8px;text-align:center"><div id="ev-EditH-${num}" class="co-bs">Edit content HTML</div></td></td></tr>
 		<tr><td colspan="4"><div id="scedDetCon" style="background-color:${col};text-align:center;color:#fff;
 		width:320px;padding:8px;margin-top:8px">
@@ -146,7 +145,6 @@ class Schedule  {
 			else if (t == "L")	o.link=$("#"+e.target.id).val();												
 			else if (t == "D")	o.desc=$("#"+e.target.id).val();												
 			else if (t == "B")	o.bar=$("#"+e.target.id).prop("checked") ? "1" : "0";												
-			else if (t == "A")	o.away=$("#"+e.target.id).prop("checked") ? "1" : "0";												
 			this.DrawSchedule();																			// Redraw schedule grid
 			this.ShowEventDetails(this.curEvent);															// Rerdaw event
 			});
