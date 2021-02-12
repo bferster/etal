@@ -81,7 +81,7 @@ class Schedule  {
 		if (!p.role)								return;										// Quit if no role
 		if (!p.role.match(/admin|host|vendor/i))	return;										// Quit if not authorized
 		$("#co-Vcon").remove();																	// Kill existing
-		let str=`<div id="co-vcon" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
+		let str=`<div id="co-Vcon" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
 		width:${$(app.vr).width()-32}px;height:fit-content">
 		<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
@@ -91,12 +91,11 @@ class Schedule  {
 		for (let i=0;i<app.venue[app.curFloor].length;++i) {									// For each room
 			if (this.FindAwayEvent({ floor:app.curFloor, room:i, no:true}).no) continue;		// Skip ones without an away event
 			str+=`<div id="co-Vcon-${i}" class="co-bsg">${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</div>&nbsp;&nbsp;&nbsp;`;	
-		trace(app.venue[app.curFloor][i].title)	
-		}
+			}
 		str+="</div><br></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
 	
-		$("#co-igc").on("click", ()=>{ $("#co-vcon").remove(); });								// ON CLOSE BUT
+		$("#co-igc").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
 		$("[id^=co-Vcon-]").on("click", (e)=>{ 													// ON ROOM CLICK
 			let id=e.currentTarget.id.substr(8);												// Get id
 			let o=this.GetEventByRoom(app.curFloor, id, true);									// Point at room	
