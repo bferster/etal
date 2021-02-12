@@ -144,9 +144,7 @@
 			if ((e.which == 66) && e.altKey && e.ctrlKey) {											// Broadcast key (Ctrl+Alt+B)
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s)});	// Broadcast
 				}
-			if ((e.which == 65) && e.altKey && e.ctrlKey) {											// Away key (Ctrl+Alt+AB)
-				app.sced.SetAway();																	// Set away on server
-				}
+			if ((e.which == 86) && e.altKey && e.ctrlKey) {	app.sced.SetAway();	}					// Away key (Ctrl+Alt+V)
 			if ((e.which == 87) && e.altKey && e.ctrlKey) {											// Time key (Ctrl+Alt+W)
 				GetTextBox("Set time and day", "Type time/day to show. (Day is optional)","",(s)=>{	// Type time
 					let v=s.split("/");																// Split time/day
