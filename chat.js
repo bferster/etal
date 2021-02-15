@@ -106,7 +106,7 @@ class Chat  {
 
 	Chat(id, target, nx, ny)																	// CHAT CLIENT
 	{
-		let i,ox,oy,flip=false;
+		let i,s,ox,oy,flip=false;
 		$("#co-chat").remove();                                                                     // Close chat if open
         $("#co-card").remove();     																// Card                                                                
 		if (target == "here") {			ox=nx;	oy=ny; }											// Hover over x/y
@@ -118,7 +118,6 @@ class Chat  {
 		if (x < 12)	x=12;																			// Too far left
 		if (x > app.bx-312)	x=app.bx-312;															// Too far right
 
-		let o=app.people[id];																		// Point at person
 		this.curChat=id;																			// Set curChat
 		let str=`<div id='co-chat' class='co-chat' style='left:${x}px;top:${y}px'>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-chat').remove()">
@@ -156,9 +155,16 @@ class Chat  {
             });
 
  		for (i=0;i<this.chats.length;++i) {															// For each chat in archive
-			if (this.chats[i].id == id) 															// If it's whom I'm chatting with
-				$("#co-textDiv").append(`<div class="co-text${this.chats[i].dir ? "S" : "R"}">${this.chats[i].msg}</div><br>`);	// Add message
+			if (this.chats[i].id == id) {															// If it's whom I'm chatting with
+				s=this.chats[i].msg;																// Get message
+				if (s && s.match(/http|:https:/)) {													// If a url
+					let u="http"+s.match(/http(.*?)$/i)[1];											// Extract it													
+					s=s.replace(/http(.*?)$/i,`<a href="${u}" target="_blank">${u}</a>`);			// Add as link
+					}
+				$("#co-textDiv").append(`<div class="co-text${this.chats[i].dir ? "S" : "R"}">${s}</div><br>`);	// Add message
+				}
 			}
+			
 		$("#co-textDiv").scrollTop(10000);															// Scroll to bottom
 		$("#co-talkBut").on("click", ()=>{this.Listen()});											// Start STT
 		
