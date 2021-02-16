@@ -251,7 +251,8 @@ class Schedule  {
 	ShowLink(link, center)																		// SHOW LINK
 	{
 		if (!link) return;
-		if (link.match(/^gallery/i)) return;														// Skip gallery links
+		if (link.match(/^gallery/i))  return;														// Skip gallery links
+		if (link.match(/^bulletin/i)) return;														// Skip bulletin board links
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
 		

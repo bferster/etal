@@ -56,6 +56,9 @@
 					font-size: 13px; background-color: #999; padding: 2px 8px 2px 8px; }
 	.co-popup 	{	position: absolute;  width:auto; padding:12px; left:40%; top:calc(50% - 50px); border-radius:8px; display: none;
 					background-color:#fff; border:1px solid #999; font-size:14px; text-align:center; max-width:33%; min-width:20%; }
+	.co-bulletin{	position:absolute;height:calc(100% - 96px); left:8; width:calc(100% - 34px); cursor:auto;
+					overflow-x:hidden; overflow-y:auto; margin:0 8px; margin-top:-24px;color:#000;text-align:left; padding:8px; 
+					font-size:13px;	background-color:#fff; border:1px solid #999; border-radius:6px; }
 	.co-galleryItem{font-size:10px; color:#fff; }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
@@ -649,6 +652,10 @@ class App  {
 			content=sc.content ? sc.content : "";														// Set content if any
 			if (sc.link && sc.link.match(/^gallery/i)) {												// If a gallery, 
 				content=this.sced.GetGalleryData(sc).content; 											// Get gallery content
+				gals[sc.room]=1;																		// Flag to set sizing
+				}
+			if (sc.link && sc.link.match(/^bulletinboard/i)) {											// If a bulletin, 
+				content=this.chat.GetBulletinBoard(sc); 												// Get bulletin board content
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
