@@ -114,6 +114,7 @@ class Schedule  {
 		for (i=0;i<app.venue[app.curFloor].length;++i) {										// For each room
 			sc=this.GetEventByRoom(app.curFloor,i);												// Point at event
 			if (sc.link && sc.link.match(/gallery:https:/i)) this.GetGalleryData(sc)			// If from a doc, update it
+			if (sc.link && sc.link.match(/bulletinboard/i))  app.chat.RequestBulletinData(sc)	// If a bulletin board active
 			str+=sc.link+sc.content;															// Make content hash
 			}
 		if (app.curContent !== str)	app.DrawVenue();											// Redraw venue

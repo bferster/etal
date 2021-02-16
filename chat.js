@@ -225,17 +225,28 @@ class Chat  {
 
 	SendBulletin(id, msg)
 	{
-		msg=msg ? msg : $("#co-bullText").val();																// Get text from msg or textbox
+		msg=msg ? msg : $("#co-bullText").val();														// Get text from msg or textbox
 		if (msg) {
-//			app.ws.send(`BB|${id}|${app.myId}|${msg}`);															// Send message
+//			app.ws.send(`SBB|${id}|${app.myId}|${msg}`);													// Send message
 			msg=`<p	id="co-bullMsg-{$app.myId}" style="cursor:pointer" onclick="trace(app.myId)">
-			<b>${app.people[app.myId].firstName} ${app.people[app.myId].lastName}: </b>${msg}</p>`;				// Add name
-			$("#co-bull-"+id).scrollTop(10000);																	// Scroll to bottom
-			$("#co-bull-"+id).html($("#co-bull-"+id).html()+msg);			
+			<b>${app.people[app.myId].firstName} ${app.people[app.myId].lastName}: </b>${msg}</p>`;		// Add name
+			this.SetBulletinData(id,$("#co-bull-"+id).html()+msg);										// Set data
 			}
-		$("#co-bullText").val("");																				// Clear input
+		$("#co-bullText").val("");																		// Clear input
 	}
 
+	RequestBulletinData(sc)																			// REQUEST BULLETIN BOARD DATA	
+	{
+		trace("Bulletin data", sc)
+	}
+
+	SetBulletinData(id, data)																		// SET BULLETIN BOARD DATA	
+	{
+		let str=data;
+//		app.ws.send(`GBB|${app.myId}`);																	// Send message to request
+		$("#co-bull-"+id).scrollTop(10000);																// Scroll to bottom
+		$("#co-bull-"+id).html(str);			
+	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VOICE INPUT
