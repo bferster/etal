@@ -87,7 +87,7 @@ class Chat  {
 					<img style="cursor:pointer"src="img/LI-Logo.png" height="14px"></a>`;
 				}
 			if (o.web)	str+=`<div style="color:#000099;float:right;margin-top:14px">
-						<a href="${o.web}" target="_blank">Website</a></div>`;
+						<a href="${o.web.replace(/^www\./i,"//www.")}" target="_blank">Website</a></div>`;
 			str+=`</p><div id="co-chatBut" style="position:absolute; left:154px; bottom:10px; cursor:pointer;
 				border-radius:30px;width:36px;background-color:#2d6ab3; color:#fff; height:28px; padding-top:8px; font-size:13px">
 				chat</div> &nbsp;&nbsp
