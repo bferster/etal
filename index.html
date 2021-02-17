@@ -276,7 +276,7 @@ class App  {
 
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
-		let id,meeting="";
+		let id,i,meeting="";
 		let msg=event.data;																			// Get message
 		let v=event.data.split("|");																// Split message
 		if (v[1]) meeting=v[1].split("~")[0];														// Get meeting id
@@ -350,6 +350,14 @@ class App  {
 			let d=JSON.parse(v[2]);																	// Objectify
 			let i=this.pIndex[d.id];																// Get index
 			if (d) this.people[i]=d;																// Set data								
+			}
+		else if (v[0] == "BB") {																	// Update person
+			for (i=0;i<this.sced.schedule.length;++i) 												// For each event
+				if (this.sced.schedule[i].id == v[1]) {												// A match
+					this.sced.schedule[i].content=v[2];												// Set content
+					this.chat.SetBulletinMarkup(i,JSON.parse(v[2]));								// Redraw
+					break;
+					}
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
 		}
@@ -569,6 +577,7 @@ class App  {
 		if (s[0].end.charAt(0) == "*")		this.sced.meetingEnd=new Date();							// Use today
 		else								this.sced.meetingEnd=new Date(s[0].end);					// Set end date
 		this.sced.schedule.sort((a,b)=>{ return (a.day > b.day) ? 1 : -1 });							// Sort by day
+		for (i=0;i<this.sced.schedule.length;++i)	this.sced.schedule[i].index=i;						// Set index
 	}
 
 	AddVenue(ven)																					// ADD VENUE DATA
@@ -582,7 +591,8 @@ class App  {
 			this.venue[o.floor].push(o);																// Add room to floor	
 			}
 		for (i=0;i<this.venue.length;++i) 																// For each floor
-			this.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });						// Sort by room
+			if (app.venue[i])																			// If valid
+				this.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });					// Sort by room
 		}
 
 	DrawPeople()																					// ADD PEOPLE TO MEETING
@@ -654,10 +664,11 @@ class App  {
 				content=this.sced.GetGalleryData(sc).content; 											// Get gallery content
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
-			if (sc.link && sc.link.match(/^bulletinboard/i)) {											// If a bulletin, 
-				content=this.chat.GetBulletinBoard(sc); 												// Get bulletin board content
+			else if (sc.link && sc.link.match(/^bulletinboard/i)) {										// If a bulletin, 
+				content=this.chat.GetBulletinBoard(sc.index); 											// Get bulletin board content
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
+			content=this.sced.SetMacros(content);														// Set content macros
 			this.venue[this.curFloor][i].link=sc.link;													// Set room link
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 			str+=`<div class="co-room" style=";grid-column-start:${cs};grid-column-end:${ce};grid-row-start:${rs};grid-row-end:${re};

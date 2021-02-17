@@ -1,14 +1,13 @@
 {
-  "name": "te2te",
+  "name": "etal",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.htmls",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+     "start": "node config/ws.js"
   },
   "repository": {
     "type": "git",

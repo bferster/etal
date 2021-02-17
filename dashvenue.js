@@ -20,7 +20,8 @@ class Venue {
 				app.venue[data[i].floor].push(data[i]);														// Add room to floor
 				}	
 			for (i=0;i<app.venue.length;++i) 																// For each floor
-				app.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });						// Sort by room
+				if (app.venue[i])	
+					app.venue[i].sort((a,b)=>{ return (a.room-0 > b.room-0) ? 1 : -1 });						// Sort by room
 			this.curUndo=0;																					// Reset undos
 			this.Do();																						// Set 1st undo
 			}

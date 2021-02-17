@@ -206,46 +206,64 @@ class Chat  {
 // BULLETIN BOARD
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	GetBulletinBoard(sc)																			// GET BULLETIN BOARD MARKUP
+	GetBulletinBoard(id, floatId)																// GET BULLETIN BOARD MARKUP
 	{
-		let id=sc.id.split("~")[1];
-		let str=`<div id="co-bull-${id}" class="co-bulletin">
-		<b>Kendra Smith: </b> Now is the time for all me to come to the<br>
-		</div>														
+		let c="";
+		if (floatId) {
+			let r=RegExp("bulletinboard:"+floatId,"i");												// Turn into regex
+			for (id=0;id<app.sced.schedule.length;++id) 											// For each event
+				if (app.sced.schedule[id].link && app.sced.schedule[id].link.match(r)) 				// Got one
+					break;		
+					if (id == app.sced.schedule.length) return "";										// Not found
+				}
+		let content=app.sced.schedule[id].content;													// Point at JSON msg data
+		if (content) {																				// If data
+			content=content.replace(/<p>|<\/p>/ig,"");												// Remove <p>'s
+			content=content.replace(/\&quot;/ig,"\"");												// Restore quotes
+			content=content.replace(/\&apos;/ig,"'");												// Restore apos
+			let data=JSON.parse(content);															// Objectify
+			c=this.SetBulletinMarkup(id, data);														// Get markup			
+			}
+		let str=`<div id="co-bull-${id}" class="co-bulletin">${c}</div>														
 		<div style="position:absolute;top:calc(100% - 34px);left:0;width:100%">
-			<input  id="co-bullText" placeholder="Type here or speak" class='co-is' style='width:calc(100% - 65px);outline:none;'
-			onchange="app.chat.SendBulletin('${id}')">			
+			<input id="co-bullText" placeholder="Type here or speak" class='co-is' style='width:calc(100% - 65px);outline:none;'
+			onchange="app.chat.AddToBulletin('${id}')">			
 			<img id="co-talkBut2" src="img/talkbut.png" style="vertical-align:-7px;margin-left:-16px;cursor:pointer" 
 			onclick="app.chat.Listen()">
 			<img id='co-revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:12px;cursor:pointer'
-			onclick="app.chat.SendBulletin('${id}')">
+			onclick="app.chat.AddToBulletin('${id}')">
 		</div>`;
+		if (floatId) {
+			c=`<div id="co-floatBB" class="co-card" style="left:calc(50% - 150px);top:20%;height:400px">
+			<b>Message Board</b>
+			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-floatBB').remove()">
+			${str}</div>`;
+			$("body").append(c.replace(/\t|\n|\r/g,""));												// Add BB
+			$("#co-bull-"+id).css({ margin:"4px 0 0 -4px" });											// Move box
+			return;
+			}
 		return str.replace(/\t|\n|\r/g,"");																// Return markup
 	}
 
-	SendBulletin(id, msg)
+	AddToBulletin(id, msg)																			// ADD MESSAGE TO BULLETIN BOARD
 	{
 		msg=msg ? msg : $("#co-bullText").val();														// Get text from msg or textbox
-		if (msg) {
-//			app.ws.send(`SBB|${id}|${app.myId}|${msg}`);													// Send message
-			msg=`<p	id="co-bullMsg-{$app.myId}" style="cursor:pointer" onclick="trace(app.myId)">
-			<b>${app.people[app.myId].firstName} ${app.people[app.myId].lastName}: </b>${msg}</p>`;		// Add name
-			this.SetBulletinData(id,$("#co-bull-"+id).html()+msg);										// Set data
-			}
+		if (msg) app.ws.send(`BB|${app.sced.schedule[id].id}|${app.myId}|${msg}`);						// Send message to server
 		$("#co-bullText").val("");																		// Clear input
 	}
 
-	RequestBulletinData(sc)																			// REQUEST BULLETIN BOARD DATA	
+	SetBulletinMarkup(id, data)																		// SET BULLETIN BOARD MARKUP	
 	{
-		trace("Bulletin data", sc)
-	}
-
-	SetBulletinData(id, data)																		// SET BULLETIN BOARD DATA	
-	{
-		let str=data;
-//		app.ws.send(`GBB|${app.myId}`);																	// Send message to request
+		let i,o,str="";
+		for (i=0;i<data.length;++i) {																	// For each message
+			o=data[i];
+			if (!app.people[o.id])	continue;																				// Point at it
+			str+=`<p id="co-bullMsg-${id}" style="cursor:pointer" onclick="app.chat.ShowCard(${o.id})">
+			<b>${app.people[o.id].firstName} ${app.people[o.id].lastName}: </b>${o.msg}</p>`;			// Add message
+			}
+		$("#co-bull-"+id).html(str);																	// Return markup	
 		$("#co-bull-"+id).scrollTop(10000);																// Scroll to bottom
-		$("#co-bull-"+id).html(str);			
+		return str;																						// Return markup
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
