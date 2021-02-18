@@ -632,17 +632,16 @@ class App  {
 		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
 	
-		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
-			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px" title="Go private">
+		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute;)">
+			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin:8px 0 0 8px" title="Go private">
 			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none;" }
-			width:264px;margin-top:-12px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3;">
+			width:264px;margin-top:-36px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3;">
 			<div style="float:right;margin:16px 8px 0 0">			
-				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See meeting schedule">
-				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See other attendees">`;
-				if (sc.link && sc.link.match(/bulletinboard:0/i)) menu+='<img src="img/bulletin.png" id="co-bbIcon"  style="height:36px;margin-right:8px;margin-top:20px;cursor:pointer" title="Message board">';
-				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;margin-top:20px;cursor:pointer" title="Get help!">';
+				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px" title="See meeting schedule">
+				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px" title="See other attendees">`;
+				if (sc.link && sc.link.match(/bulletinboard:0/i)) menu+='<img src="img/bulletin.png" id="co-bbIcon" style="height:36px;margin-right:8px;cursor:pointer" title="Message board">';
+				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer" title="Get help!">';
  		menu+=`</div></div>`;
-
 
 		let str=`<div id="co-grid" class="co-venue" style="`;
 		if (!isSmall) str+=`
@@ -687,7 +686,7 @@ class App  {
 			}
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
-		$("#co-menDiv").offset({ left:$("#co-Rm-0").offset().left, top:this.by-avSize-44});				// Force to bottom
+		$("#co-menDiv").offset({ left:$("#co-Rm-0").offset().left, top:this.by-avSize-22});				// Force to bottom
 		for (i=0;i<this.venue[this.curFloor].length;++i) 												// For each room
 			if (gals[i]) { 																				// If someting there
 				$("#co-roomContent-"+i).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
