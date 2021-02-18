@@ -6,13 +6,12 @@ class Chat  {
 		this.curChat=-1;																			// Who I'm chatting with																			
 		this.queue=[];																				// Contact queue
 		this.recognition=null;																		// TTS/STT
-		this.VoiceInit((s)=> { 																		// Iniy TTS/STT
-			let v=$("#co-revText").val();															// Get current input value
-			if (v) v+=" ";																			// Add a space if something there
-			$("#co-revText").val(v+s);																// Set chat
-			v=$("#co-bullText").val();																// Get current input value
-			if (v) v+=" ";																			// Add a space if something there
-			$("#co-bullText").val(v+s);																// Set bulletin
+		this.VoiceInit((s)=> { 																		// Init TTS/STT
+			$("[id^=co-revText]").each(function() { 												// For each input
+				let v=$(this).val();																// Get value of input																		
+				if (v) v+=" ";																		// Add a space if something there
+				$(this).val(v+s);																	// Set text
+				})
 			});				
 	}
 
@@ -48,7 +47,6 @@ class Chat  {
 
 		$("[id^=co-qd-]").on("click",(e)=>{															// ON DELETE CLICK
 			let i=e.target.id.substr(6)-0;															// Get index
-			let targetId="co-Av-"+i;																// Recreate id
 			$("#co-qv-"+i).remove();																// Kill it
 			this.queue.splice(i,1);																	// Remove it
 			Sound("delete");																		// Delete sound
@@ -169,7 +167,7 @@ class Chat  {
 			}
 			
 		$("#co-textDiv").scrollTop(10000);															// Scroll to bottom
-		$("#co-talkBut").on("click", ()=>{this.Listen()});											// Start STT
+		$("#co-talkBut").on("click", ()=>{this.Listen("")});										// Start STT
 		
 		for (i=0;i<this.queue.length;++i) {															// For item in message box
 			if (this.queue[i].id == id) 															// If it's whom I'm chatting with
@@ -209,7 +207,7 @@ class Chat  {
 	GetBulletinBoard(id, floatId)																// GET BULLETIN BOARD MARKUP
 	{
 		let c="";
-		if (floatId) {
+		if (floatId != undefined) {																	// If called from button
 			let r=RegExp("bulletinboard:"+floatId,"i");												// Turn into regex
 			for (id=0;id<app.sced.schedule.length;++id) 											// For each event
 				if (app.sced.schedule[id].link && app.sced.schedule[id].link.match(r)) 				// Got one
@@ -224,22 +222,24 @@ class Chat  {
 			let data=JSON.parse(content);															// Objectify
 			c=this.SetBulletinMarkup(id, data);														// Get markup			
 			}
+		$('#co-floatBB').remove();																	// Remove old one	
 		let str=`<div id="co-bull-${id}" class="co-bulletin">${c}</div>														
 		<div style="position:absolute;top:calc(100% - 34px);left:0;width:100%">
-			<input id="co-bullText" placeholder="Type here or speak" class='co-is' style='width:calc(100% - 65px);outline:none;'
+			<input id="co-revText-${id}" placeholder="Type here or speak" class='co-is' style='width:calc(100% - 65px);outline:none;'
 			onchange="app.chat.AddToBulletin('${id}')">			
-			<img id="co-talkBut2" src="img/talkbut.png" style="vertical-align:-7px;margin-left:-16px;cursor:pointer" 
-			onclick="app.chat.Listen()">
-			<img id='co-revTextBut'src='img/sendtext.png' style='vertical-align:-7px;margin-left:12px;cursor:pointer'
+			<img id="co-talkBut-${id}" src="img/talkbut.png" style="vertical-align:-7px;margin-left:-16px;cursor:pointer" 
+			onclick="app.chat.Listen('-${id}')">
+			<img src='img/sendtext.png' style='vertical-align:-7px;margin-left:12px;cursor:pointer'
 			onclick="app.chat.AddToBulletin('${id}')">
 		</div>`;
-		if (floatId) {
-			c=`<div id="co-floatBB" class="co-card" style="left:calc(50% - 150px);top:20%;height:400px">
+		if (floatId != undefined) {																	// If called from button
+			c=`<div id="co-floatBB" class="co-card" style="left:calc(50% - 150px);top:20%;height:400px;border-radius:18px">
 			<b>Message Board</b>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-floatBB').remove()">
 			${str}</div>`;
 			$("body").append(c.replace(/\t|\n|\r/g,""));												// Add BB
 			$("#co-bull-"+id).css({ margin:"4px 0 0 -4px" });											// Move box
+			$("#co-floatBB").draggable();
 			return;
 			}
 		return str.replace(/\t|\n|\r/g,"");																// Return markup
@@ -247,9 +247,9 @@ class Chat  {
 
 	AddToBulletin(id, msg)																			// ADD MESSAGE TO BULLETIN BOARD
 	{
-		msg=msg ? msg : $("#co-bullText").val();														// Get text from msg or textbox
-		if (msg) app.ws.send(`BB|${app.sced.schedule[id].id}|${app.myId}|${msg}`);						// Send message to server
-		$("#co-bullText").val("");																		// Clear input
+		msg=msg ? msg : $("#co-revText-"+id).val();														// Get text from msg or textbox
+			if (msg) app.ws.send(`BB|${app.sced.schedule[id].id}|${app.myId}|${msg}`);					// Send message to server
+		$("#co-revText-"+id).val("");																	// Clear input
 	}
 
 	SetBulletinMarkup(id, data)																		// SET BULLETIN BOARD MARKUP	
@@ -280,9 +280,8 @@ class Chat  {
 			this.recognition.lang="en-US";																// US English
 			this.recognition.interimResults=true
 			this.recognition.onend=(e)=> { 																// On end, restore button
-				$("#co-talkBut").prop("src","img/talkbut.png");  										// Chat
-				$("#co-talkBut2").prop("src","img/talkbut.png"); 										// Bulletin
-				this.listening=false; 
+				$("[id^=co-talkBut]").each(function() { $(this).prop("src","img/talkbut.png"); })		// For each input
+				this.listening=false; 																	// Not listening
 				;}	
 			this.hasRecognition=true;																	// Has speechrecognition capabilities														
 			let mac=(navigator.platform == "MacIntel");													// A mac?
@@ -310,12 +309,11 @@ class Chat  {
 		} catch(e) { trace("Voice error",e) };															// On error
 	}
 
-	Listen()																						// TURN ON SPEECH RECOGNITIOM
+	Listen(id)																						// TURN ON SPEECH RECOGNITIOM
 	{
 		if (this.listening)	return;																		// Quit if already started
 		try { this.recognition.start(); this.listening=true; } catch(e) { trace("Voice error",e) };		// Start recognition
-		$("#co-talkBut").prop("src","img/intalkbut.png");												// Talking but
-		$("#co-talkBut2").prop("src","img/intalkbut.png");												// In bulletin
+		$("#co-talkBut"+id).prop("src","img/intalkbut.png");											// Talking but
 	}
 
 	Speak(msg, who="female")

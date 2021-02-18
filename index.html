@@ -629,18 +629,20 @@ class App  {
 		if (p.avSize)		avSize=p.avSize-0;															// Use size if set
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
 		
-		let menu=`<div style="z-index:0;width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
+		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
+		o=this.venue[this.curFloor][0];																	// Point at room
+	
+		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute;top:calc(100% - ${avSize+44}px)">
 			<img src="img/quietarea.png" id="co-quiet" style="height:${avSize+8}px;cursor:pointer;margin-left:8px" title="Go private">
-			<img id="co-coffee-${this.curFloor}-0" style="width:264px;margin-top:-12px;margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3" 
-			src="img/coffeebar.png">
+			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none;" }
+			width:264px;margin-top:-12px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3;">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See meeting schedule">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px;margin-top:20px" title="See other attendees">`;
+				if (sc.link && sc.link.match(/bulletinboard:0/i)) menu+='<img src="img/bulletin.png" id="co-bbIcon"  style="height:36px;margin-right:8px;margin-top:20px;cursor:pointer" title="Message board">';
 				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;margin-top:20px;cursor:pointer" title="Get help!">';
  		menu+=`</div></div>`;
 
-		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
-		o=this.venue[this.curFloor][0];																	// Point at room
 
 		let str=`<div id="co-grid" class="co-venue" style="`;
 		if (!isSmall) str+=`
@@ -664,7 +666,7 @@ class App  {
 				content=this.sced.GetGalleryData(sc).content; 											// Get gallery content
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
-			else if (sc.link && sc.link.match(/^bulletinboard/i)) {										// If a bulletin, 
+			else if (sc.link && (sc.link.toLowerCase() == "bulletinboard")) {							// If a bulletin, 
 				content=this.chat.GetBulletinBoard(sc.index); 											// Get bulletin board content
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
@@ -676,7 +678,7 @@ class App  {
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
 			${o.link ? ";cursor:pointer" : ""}${o.css ? ";"+o.css : ""}">
 			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
-			if (!i && (this.curFloor == 0))	str+=menu;															// Add menu to hallway first floor
+			if (!i && (this.curFloor == 0))	str+=menu;														// Add menu to hallway first floor
  			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
 			str+="<div id='co-roomContent-"+i+"' style='pointer-events:none;display:inline-block;width:100%'>"+content+"</div>";	// Add conten wrapped in no-event div
 			if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${(avSize/2)+27}px);top:-4px;width:52px" src="img/coffeecup.png">`;
@@ -685,7 +687,7 @@ class App  {
 			}
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
-		
+		$("#co-menDiv").offset({ left:$("#co-Rm-0").offset().left, top:this.by-avSize-44});				// Force to bottom
 		for (i=0;i<this.venue[this.curFloor].length;++i) 												// For each room
 			if (gals[i]) { 																				// If someting there
 				$("#co-roomContent-"+i).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
@@ -698,6 +700,7 @@ class App  {
 		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON COFFEE BAR
 		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });					// ON SCHEDULE BUT
 		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infoDesk"); });	// ON HELP BUT
+		$("#co-bbIcon").on("click", 			 (e)=>{ this.chat.GetBulletinBoard("", this.curFloor)}); // ON BULLETIN BUT
 		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); // ON PEOPLE BUT
 		}
 
