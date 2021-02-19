@@ -642,7 +642,6 @@ class App  {
 				if (sc.link && sc.link.match(/bulletinboard:0/i)) menu+='<img src="img/bulletin.png" id="co-bbIcon" style="height:36px;margin-right:8px;cursor:pointer" title="Message board">';
 				if (this.infoDeskId != null) menu+='<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer" title="Get help!">';
  		menu+=`</div></div>`;
-
 		let str=`<div id="co-grid" class="co-venue" style="`;
 		if (!isSmall) str+=`
 			grid-template-columns:repeat(${o.params.cols}, 1fr);
