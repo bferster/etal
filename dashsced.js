@@ -126,7 +126,7 @@ class Schedule  {
 		<tr><td>Desc</td><td colspan='3'><input type="text" id="evvDD-${num}" class="co-is" style="width:240px" value="${o.desc ? o.desc : ""}"></td></tr>
 		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}></td><tr>
 		<tr><td colspan="4" style="padding-top:8px;text-align:center"><div id="ev-EditH-${num}" class="co-bs">Edit content HTML</div></td></td></tr>
-		<tr><td colspan="4"><div id="scedDetCon" style="background-color:${col};text-align:center;color:#fff;
+		<tr><td colspan="4"><div id="scedDetCon" style="background-color:${col};text-align:center;color:#fff;position:absolute;
 		width:320px;padding:8px;margin-top:8px">
 		${title.charAt(0) != "*" ? title+"<br><br>" : ""}${o.content ? o.content : ""}</div></td></tr>
 		<td colspan="4" style="text-align:center"><br><img id="ev-Delete" src="img/deletebut.png" style="width:12px;cursor:pointer"></tr>
