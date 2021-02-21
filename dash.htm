@@ -110,6 +110,7 @@
 <script>
 
 	let app=null;
+	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		$("#co-tab" ).tabs();																		// Init tabs

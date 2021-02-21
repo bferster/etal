@@ -103,6 +103,7 @@ SMALL
 	var	avSize=36;																					// Avatar size
 	isSmall=false;																					// Mobile size flag
 	var app=null;																					// Holds app
+	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 	const isLocal=(window.location.host == "localhost");											// Running locally?
 	const goPath=isLocal ? "/./" : "/go/";															// Path to go folder
 
