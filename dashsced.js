@@ -32,7 +32,7 @@ class Schedule  {
 							<tr><td colspan="4"><hr></td></tr>
 							<tr><td>Start date&nbsp;</td><td colspan="4"><input type="text" id="scStart" class="co-is" style="width:85px" value="${o.start}">
 							&nbsp;&nbsp;&nbsp;End&nbsp;&nbsp;<input type="text" id="scEnd" class="co-is" style="width:85px" value="${o.end}"></td></tr>
-							<tr><td>Time zone</td><td colspan=2><input type="text" id="scZone" class="co-is" style="width:85px" value="${o.bar}"></select></td></tr>
+							<tr><td>Time zone</td><td colspan=2><input type="text" id="scZone" class="co-is" style="width:85px" value="${o.bar.length > 2 ? o.bar : "UTC-5"}"></select></td></tr>
 						<table>
 						<br>
 						<div id="scprop"></div>
