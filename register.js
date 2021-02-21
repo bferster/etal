@@ -3,6 +3,7 @@ class Register  {
 	constructor(person)   																		// CONSTRUCTOR
 	{
 		app.reg=this;																				// Set context
+		this.loc=true;																				// Assume role/org vs. city/state
 		this.person=person;																			// Save person's data
 		this.cameraStream=null;																		// Camera data
 		this.Draw();																				// Draw form
@@ -16,8 +17,8 @@ class Register  {
 			<table style="display:inline-block;border-spacing:4px;text-align:left">
 				<tr><td>First name&nbsp;</td><td><input class='co-is' style="width:150px" type='text' id='firstName' placeholder='required'></td>
 				<td>Last name</td><td><input class='co-is' style="width:150px" type='text' id='lastName' placeholder='required'></td></tr>
-				<tr><td>Title</td><td><input class='co-is' style="width:150px" type='text' id='title'>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-				<td>Organization&nbsp;</td><td><input class='co-is' style="width:150px"type='text' id='org'></td></tr>
+				<tr><td>${this.loc ? "City" : "Title"}</td><td><input class='co-is' style="width:150px" type='text' id='title'>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+				<td>${this.loc ? "State" : "Organization"}&nbsp;</td><td><input class='co-is' style="width:150px"type='text' id='org'></td></tr>
 				<tr><td>Linked-In</td><td><input class='co-is' style="width:150px" type='text' id='li'></td>
 				<td>Website</td><td><input class='co-is' style="width:150px"type='text' id='web'></td></tr>
 				<tr><td>Interests</td><td><input class='co-is' style="width:150px" type='text' id='ints'></td></tr>
@@ -47,7 +48,7 @@ class Register  {
 	$("#title").val(this.person.title ? this.person.title: ""); 									// Title
 	$("#org").val(this.person.org ? this.person.org: ""); 											// Org
 	$("#li").val(this.person.li ? this.person.li: ""); 												// Li
-	$("#web").val(this.person.web ? this.person.ints: ""); 											// Web
+	$("#web").val(this.person.web ? this.person.web: ""); 											// Web
 	$("#ints").val(this.person.ints ? this.person.ints: ""); 										// Ints
 
 	$("#co-regSend").on("click",()=>{ this.Send() });												// ON SEND
@@ -64,6 +65,7 @@ class Register  {
 	{
 		if (!$("#firstName").val()) { Popup("First name is required!"); return; }					// Required
 		if (!$("#lastName").val()) 	{ Popup("Last name is required!");  return; }
+
 		this.person.firstName=$("#firstName").val();												// First name
 		this.person.lastName=$("#lastName").val(); 													// Last
 		this.person.title=$("#title").val() ? $("#title").val() : "";								// Title
@@ -72,13 +74,14 @@ class Register  {
 		this.person.web=$("#web").val() ? $("#web").val() : "";										// Web
 		this.person.ints=$("#ints").val() ? $("#ints").val() : "";									// It
 
+		if (this.cameraStream)	this.StartStreaming();												// If streaming, capture image
+
 		if (!$("#co-regPic").val() && (regSnapimg.src.length > 100)) {								// Not directly spec'd and nothing loaded
 			let s=this.person.meeting+"/"+this.person.email+".png";									// Make up file name
 			app.ws.send("IMG|"+s+"|"+regSnapimg.src);												// Send base64 to server
 			this.person.pic="https://etalimages.s3.amazonaws.com/"+s;								// Get AWS S3 url
 			}
-		else 
-		this.person.pic=$("#co-regPic").val();													// Set pic
+		else this.person.pic=$("#co-regPic").val();													// Set pic
 		app.ws.send("MP|"+this.person.id+"|"+JSON.stringify(this.person));							// Update server record
 		app.JoinMeeting(this.person.id);															// Join meeting
 	}
