@@ -130,6 +130,7 @@ class Schedule  {
 		width:320px;padding:8px;margin-top:8px;overflow:hidden">
 		${title.charAt(0) != "*" ? title+"<br><br>" : ""}${o.content ? o.content : ""}</div></td></tr>
 		</table>`;
+		
 		$("#scprop").html(str.replace(/\t|\n|\r/g,""));
 		$("#scedDetCon").height($("body").height()-$("#scedDetCon").position().top-40);						// Resize
 
