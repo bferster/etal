@@ -115,7 +115,6 @@ class Schedule  {
 			if (app.venue[this.curFloor][o.room].rug)	col=app.venue[this.curFloor][o.room].rug;			// Set color
 			if (app.venue[this.curFloor][o.room].title && (o.room > 0)) title=app.venue[this.curFloor][o.room].title;	// Set title
 			}
-		
 		let str=`<b>EVENT DETAILS:</b><hr><br><table>
 		<tr><td>Day</td><td><input type="text" id="evvDY-${num}" class="co-is" style="width:50px" value="${o.day}"></td></tr>
 		<tr><td>Floor</td><td><input type="text" id="evvDF-${num}" class="co-is" style="width:50px"  value="${o.floor}"></td>
@@ -124,14 +123,15 @@ class Schedule  {
 		<td>Duration</td><td><input type="text" id="evvDE-${num}" class="co-is" style="width:50px"  value="${o.end}"></td></tr>
 		<tr><td>Link</td><td colspan='3'><input type="text" id="evvDL-${num}" class="co-is" style="width:240px" value="${o.link ? o.link : ""}"></td></tr>
 		<tr><td>Desc</td><td colspan='3'><input type="text" id="evvDD-${num}" class="co-is" style="width:240px" value="${o.desc ? o.desc : ""}"></td></tr>
-		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}></td><tr>
+		<tr><td>Coffeebar&nbsp;</td><td><input type="checkbox" id="evvDB-${num}"${o.bar > 0 ? " checked": ""}>
+		</td><td colspan="2"><img id="ev-Delete" src="img/deletebut.png" style="width:12px;cursor:pointer;float:right"></td><tr>
 		<tr><td colspan="4" style="padding-top:8px;text-align:center"><div id="ev-EditH-${num}" class="co-bs">Edit content HTML</div></td></td></tr>
 		<tr><td colspan="4"><div id="scedDetCon" style="background-color:${col};text-align:center;color:#fff;position:absolute;
-		width:320px;padding:8px;margin-top:8px">
+		width:320px;padding:8px;margin-top:8px;overflow:hidden">
 		${title.charAt(0) != "*" ? title+"<br><br>" : ""}${o.content ? o.content : ""}</div></td></tr>
-		<td colspan="4" style="text-align:center"><br><img id="ev-Delete" src="img/deletebut.png" style="width:12px;cursor:pointer"></tr>
 		</table>`;
 		$("#scprop").html(str.replace(/\t|\n|\r/g,""));
+		$("#scedDetCon").height($("body").height()-$("#scedDetCon").position().top-40);						// Resize
 
 		$("[id^=evvD]").on("change",(e)=>{																	// ON EVENT ITEM CHANGE
 			this.Do();																						// Undo
@@ -185,23 +185,28 @@ class Schedule  {
 		else if (o.start == "!") s=1080/15
 		let e=s+timeToMins(o.end)/15;																		// End
 		if (o.end == "*")	e=s+720/15;																		// All day
+		$("#co-ev-"+num).remove();
 		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
 		cursor:pointer;overflow:hidden;font-size:11px;border-radius:8px;
 		text-align:center;color:#fff;border:1px solid #999;background-color:#004eff;opacity:.33;padding:6px">
 		${o.desc ? o.desc : ""}</div>`;
 		$("#co-sgrid").append(str)
 	
-		$("#co-ev-"+num).draggable({ containment:"parent", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
+		$("#co-ev-"+num).draggable({ containment:"body", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
 			if (o.start == "!") return;																		// Not for away events
 			this.Do();																						// Undo
-			if (ui.originalPosition.left != ui.position.left) 												// Moved room
-				o.room=Math.floor(($("#co-ev-"+num).position().left-66)/154);								// Get new room
+			if (ui.originalPosition.left != ui.position.left) {												// Moved room
+				o.room=Math.floor(($("#co-ev-"+num).position().left-66+$("#scedGrid")[0].scrollLeft)/154);	// Get new room
+				o.room=Math.max(o.room,0);																	// Cap
+				}
 			if (ui.originalPosition.top != ui.position.top) {												// Moved start
 				let s=(Math.floor(($("#co-ev-"+num).position().top-$("#co-sgrid").position().top)/12)+24)*15;// Get new start
 				o.start=Math.floor(s/60)+":";																// Set hours
 				if (!(s%60)) o.start+="00";																	// No minutes
 				else		 o.start+=s%60;																	// Minutes
 				}
+			
+			this.DrawEvent(num);																			// Redraw event
 			this.ShowEventDetails(num);																		// Show
 			} 
 			});
