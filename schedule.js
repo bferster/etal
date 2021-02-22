@@ -375,7 +375,6 @@ class Schedule  {
 				str+=`<div id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][1]}" width="50%"
 			onclick='app.sced.ShowGalleryItem(${p})'><br>${s[i][0]}<br><br></div>`;					// Add it 
 			}
-		trace(p)
 		str+="</div>";																				// Close div
 		return str;																					// Return gallery HTML	
 	}
