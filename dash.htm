@@ -29,7 +29,7 @@
 	.co-popup 	{	position: absolute;  width: auto; padding: 12px; left: calc(50% - 100px); top: calc(50% - 50px);
 					border-radius: 8px; background-color: #eee; border: 1px solid #999; box-shadow: 4px 2px 12px 2px #aaa; 
 					font-size: 14px; text-align:center; display: none; }
-	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:84px; }
+	.co-is 		{	border-radius:12px; padding:1px 8px; border:1px solid #999; width:94px; font-size:12px; }
 	.co-bs 		{	cursor: pointer; color:#fff; text-align: center; border-radius: 16px; display: inline-block; user-select: none;
 					font-size: 13px; background-color:  #999; padding: 2px 8px 2px 8px; }
 	.jsgrid-cell{	overflow:hidden; }
@@ -86,14 +86,14 @@
 		<div style="float:right;margin-right:36px; pointer-events:all">
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			Load from&nbsp;&nbsp;<select id="co-loadpeople" class="co-is">
-			<option>Choose source</option>
+			<option>Choose</option>
 			<option>Meeting server</option>
 			<option>Local CSV file</option>
 			<option>Google docs</option>
 			</select>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			Publish to&nbsp;&nbsp;<select id="co-savepeople" class="co-is">
-				<option>Choose destination</option>
+				<option>Choose</option>
 				<option>Meeting server</option>
 				<option>Local CSV file</option>
 				</select>
@@ -221,8 +221,8 @@
 				for (k in d[i]) if (!k) delete d[i][k];														// If empty field, delete it
 				}	
 			if ((table == "people")   && !d[0].email) { PopUp("Wrong type!"); Sound("delete"); return; }	// Wrong table type
-			if ((table == "schedule") && !d[0].day)  { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
-			if ((table == "venue")    && !d[0].rug)  { PopUp("Wrong type!"); Sound("delete"); return; }		// Wrong table type
+			if ((table == "schedule") && !d[0].day)   { PopUp("Wrong type!"); Sound("delete"); return; }	// Wrong table type
+			if ((table == "venue")    && !d[0].rug)   { PopUp("Wrong type!"); Sound("delete"); return; }	// Wrong table type
 			for (i=0;i<d.length;++i) {																		// For each row	
 				if ((table == "schedule")    && (d[i].day == undefined))   d.splice(i,1);					// Remove blank row	
 				else if ((table == "people") && (d[i].email == undefined)) d.splice(i,1);					// Remove
@@ -240,8 +240,12 @@
 			};
 	}
 
-	function SaveTextAsFile(file, contents)														// SAVE TEXT TO LOCAL FILE
+	function SaveTextAsFile(file, contents)																// SAVE TEXT TO LOCAL FILE
 	{
+		if (file.charAt(0) == "*") {																		// If asking
+			GetTextBox("Type file name","", file.substr(1), (s)=>{ SaveTextAsFile(s, contents); });			// Ask for name
+			return;																							// Quit
+			}
 		var textFileAsBlob=new Blob([contents], {type:'text/plain'});
 		var downloadLink=document.createElement("a");
 		downloadLink.download=file;

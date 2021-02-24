@@ -38,19 +38,21 @@ class Venue {
 			${localStorage.getItem("palette-"+app.meetingId)}</datalist>										
 			<div class="co-venue">
 				<table>
-				<tr style="vertical-align:top"><td><b>CURRENT FLOOR</b><br><br></td><td><select id="evFloor" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
-				<tr><td>Background color</td><td><input class='co-is' style='width:60px' type='text' id='ev-bcol' value='${(d.bcol ? d.bcol : "#ffffff")}'>
+				<tr style="vertical-align:4px"><td><b>CURRENT&nbsp;FLOOR&nbsp;</b><br><br></td><td><select id="evFloor" class="co-is" style="width:110px;font-size:13px"></select></td></tr>
+				<tr><td>Background color</td><td><input class='co-is' style='width:70px' type='text' id='ev-bcol' value='${(d.bcol ? d.bcol : "#ffffff")}'>
 				<div id='ev-bcolc' class='co-colChip' style='background-color:${(d.bcol ?d.bcol : "#ffffff")}'></td></tr>	
-				<tr><td>Number of columns&nbsp; </td><td><input class='co-is' type='text' id='ev-cols' value='${(d.cols ? d.cols : 10)}'></td></tr>	
-				<tr><td>Number of rows</td><td><input class='co-is' type='text' id='ev-rows' value='${(d.rows ? d.rows : 3)}'></td></tr>	
+				<tr><td>Number columns&nbsp; </td><td><input class='co-is' type='text' id='ev-cols' value='${(d.cols ? d.cols : 10)}'></td></tr>	
+				<tr><td>Number rows</td><td><input class='co-is' type='text' id='ev-rows' value='${(d.rows ? d.rows : 3)}'></td></tr>	
 				<tr><td>Grid gap</td><td><input class='co-is' type='text' id='ev-gap' value='${(d.gap ? d.gap : 0)}'></td></tr>	
 				<tr><td>Avatar size</td><td><input class='co-is' type='text' id='ev-avs' value='${(d.avSize ? d.avSize : 36)}'></td></tr>	
-				<tr style="vertical-align:top"><td>Video room<br><br></td><td><select id="evVideo" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
+				<tr><td>Video room</td><td><select id="evVideo" class="co-is" style="width:110px"></select></td></tr>
+				<tr><td>Templates</td><td><select id="evTemp" class="co-is" style="width:110px">
+				<option>Choose</option><option>Load public</option><option>Load local CSV</option><option>Save local CSV</option></select></td></tr>
 				<tr><td colspan='2'>&nbsp;</td></tr>	
 				<tr><td><div id='evAddFloor' class='co-bs'>Add floor</div></td><td><img id='evDelFloor' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
 				<tr><td colspan='2'><br><hr><br></td></tr>	
-				<tr style="vertical-align:top"><td><b>CURRENT ROOM</b><br><br></td><td><select id="evRoom" class="co-is" style="width:100px;font-size:13px"></select></td></tr>
-				<tr><td>Room color</td><td><input class='co-is' style='width:60px' type='text' id='ev-rug' value='${(r.rug ? r.rug : "#ffffff")}'>
+				<tr style="vertical-align:4px"><td><b>CURRENT ROOM</b><br><br></td><td><select id="evRoom" class="co-is" style="width:110px;font-size:13px"></select></td></tr>
+				<tr><td>Room color</td><td><input class='co-is' style='width:70px' type='text' id='ev-rug' value='${(r.rug ? r.rug : "#ffffff")}'>
 				<div id='ev-rugc' class='co-colChip' style='background-color:${(r.rug ? r.rug : "#ffffff")}'></td></tr>	
 				<tr><td>Room title</td><td><input class='co-is' type='text' id='ev-title' value='${(r.title ? r.title : "")}'></td></tr>	
 				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
@@ -129,6 +131,19 @@ class Venue {
 										});	
 
 		$("#evRoom").on("change",()=>{	d.room=this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();})// On room change
+		$("#evTemp").on("change",()=>{																		// ON TEMPLATE PICK
+			let opt=$("#evTemp").prop("selectedIndex");														// Get option
+			let fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css"];			// Fields
+			if (opt == 3) {																					// If Save to local CSV
+				let d=JSON.parse(JSON.stringify(app.venue[this.curFloor]));									// Clone floor
+				if (d[0].params) d[0].params=JSON.stringify(d[0].params);									// Stringify params object
+				let str=Papa.unparse(d,{ header:true, skipEmptyLines:true, columns:fields });				// Make CSV using lib
+				SaveTextAsFile("*"+this.curFloor+"-"+app.meetingId+"-vTemp.csv",str);						// Save csv																	// Write file	
+				}
+			$("#evTemp").prop("selectedIndex","Choose");
+			
+			this.EditVenue();
+			})
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
 			this.Do();																						// Set do 
