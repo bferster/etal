@@ -82,6 +82,7 @@
 	<input type="file" id="co-fileschedule" style="display:none">
 	<input type="file" id="co-filevenue" style="display:none">
 	<input type="file" id="co-imageUpload" style="display:none">
+	<input type="file" id="co-tempFile" style="display:none">
 	<div id="co-tData" class="co-bar">
 		<div style="float:right;margin-right:36px; pointer-events:all">
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -229,11 +230,12 @@
 				else if ((table == "venue")  && (d[i].floor == undefined)) d.splice(i,1);					// Remove
 				}
 			if (table == "venue") { 																		// Venue
-				for (let i=0;i<d.length;++i)
-					if (d[i].params)	
-						d[i].params=JSON.parse(d[i].params);
-				app.ven.EditVenue(d);
-				}
+				for (let i=0;i<d.length;++i)																// For each room
+					if (d[i].params)																		// If params	
+						d[i].params=JSON.parse(d[i].params);												// Objectify
+				if (id == "floor")	{ app.venue[app.curFloor]=d;  app.ven.EditVenue(); }					// Replace a floor and redraw
+				else				  app.ven.EditVenue(d);													// Set data and redraw
+			}
 			else if (table == "schedule")	app.sced.EditSchedule(d);										// Schedule
 			else if (table == "people") 	$("#jsGrid-"+table).jsGrid("option", "data", d);				// People
 			Sound("ding");																					// Ding

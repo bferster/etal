@@ -90,7 +90,6 @@ class Venue {
 			Sound("ding");																					// Ding
 			this.EditVenue();																				// Redraw
 			});
-
 		$("#evAddFloor").on("click",()=>{																	// ON ADD FLOOR
 			this.Do();																						// Set do 
 			this.curFloor=app.venue.length;																	// Set new current floor
@@ -99,7 +98,6 @@ class Venue {
 			Sound("ding");																					// Ding
 			this.EditVenue();																				// Redraw
 			});
-
 		$("#evDelRoom").on("click",()=>{																	// ON DELETE ROOM
 			this.Do();																						// Set do 
 			if (!this.curRoom)	PopUp("You can't delete the hallway!");										// Warn
@@ -110,7 +108,6 @@ class Venue {
 												this.EditVenue();											// Redraw
 												});
 			});
-
 		$("#evDelFloor").on("click",()=>{																	// ON DELETE ROOM
 			this.Do();																						// Set do 
 			if (!this.curFloor)	PopUp("You can't delete the first floor!");									// Warn
@@ -122,27 +119,29 @@ class Venue {
 												this.EditVenue();											// Redraw
 												});
 			});
-
 		$("#evFloor").on("change",()=>{	this.curFloor=$("#evFloor").prop("selectedIndex"); 					// On floor change
-										this.curRoom=0;														// Room to 0
-										this.EditVenue(); 
-										$("#evVideo").prop("selectedIndex",0);
-										$("#evRoom").prop("selectedIndex",0)
-										});	
-
-		$("#evRoom").on("change",()=>{	d.room=this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();})// On room change
+												this.curRoom=0;												// Room to 0
+												this.EditVenue(); 
+												$("#evVideo").prop("selectedIndex",0);
+												$("#evRoom").prop("selectedIndex",0)
+												});	
+		$("#co-tempFile").on("change",(e)=>{ 																// ON FILEREAD
+			ReadFile(e,"floor","venue")																		// Read file
+			$("#co-tempFile").val("");																		// Keep from triggering twice
+			});								
+		$("#evRoom").on("change",()=>{	d.room=this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();}) // On room change
 		$("#evTemp").on("change",()=>{																		// ON TEMPLATE PICK
 			let opt=$("#evTemp").prop("selectedIndex");														// Get option
 			let fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css"];			// Fields
-			if (opt == 3) {																					// If Save to local CSV
+			if (opt == 2) 	$("#co-tempFile").trigger("click");												// From local CSV file
+			else if (opt == 3) {																			// If save to local CSV
 				let d=JSON.parse(JSON.stringify(app.venue[this.curFloor]));									// Clone floor
 				if (d[0].params) d[0].params=JSON.stringify(d[0].params);									// Stringify params object
 				let str=Papa.unparse(d,{ header:true, skipEmptyLines:true, columns:fields });				// Make CSV using lib
 				SaveTextAsFile("*"+this.curFloor+"-"+app.meetingId+"-vTemp.csv",str);						// Save csv																	// Write file	
 				}
-			$("#evTemp").prop("selectedIndex","Choose");
-			
-			this.EditVenue();
+			$("#evTemp").prop("selectedIndex","Choose");													// Clear select
+			this.EditVenue();																				// Draw venue grid
 			})
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
