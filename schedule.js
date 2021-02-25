@@ -186,7 +186,8 @@ class Schedule  {
 	{
 		let i,selects=[];
 		app.chat.curChat=-1;																		// Not chatting with anyone
-		let x=$("#co-attendees").offset().left-222;													// Left
+		let x=$("#co-attendees").offset().left-260;													// Left
+		x=Math.min(x,app.bx-222);																	// Cap to screen
 		let y=$("#co-attendees").offset().top-40-app.by/2											// Top
 		let str=`<div id="co-people" class="co-people" style="left:${x}px;top:${y}px;background-color:#eee">
 			<img style="float:right;cursor:pointer;margin-top:5px" src="img/closedot.png" onclick="$('#co-people').remove()">
