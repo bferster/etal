@@ -371,8 +371,10 @@ class Schedule  {
 		for (i=1;i<s.length;++i) {																	// For each pic									
 			ss=s[i][2].replace(/\"/g,"\\\"");														// Escape "
 			ss=ss.replace(/\'/g,"\\\'");															// '
+			if (ss && ss.match(/^http(.*?)pdf/i)  && !s[i][1]) s[i][1]="img/pdf.png";				// PDF icon
+			else if (ss && ss.match(/^http(.*?)/i) && !s[i][1]) s[i][1]="img/link.png";				// Link icon
 			p=`\"${s[i][0]}\",\"${s[i][1]}\",\"${ss}\"`;											// Item content
-				str+=`<div id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][1]}" width="50%"
+			str+=`<div id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][1]}" width="50%"
 			onclick='app.sced.ShowGalleryItem(${p})'><br>${s[i][0]}<br><br></div>`;					// Add it 
 			}
 		str+="</div>";																				// Close div
@@ -392,7 +394,7 @@ class Schedule  {
 			allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe></div>`;
 			}
 		else{																						// Picture/text
-				str+=`<img src="${link}" style="width:40%;border:1px solid #999;vertical-align:top;float:left;margin-left:5%">
+			str+=`<img src="${link}" style="width:40%;border:1px solid #999;vertical-align:top;float:left;margin-left:5%">
 			<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(45% - 32px);">
 			${content ? content : "No details..."}</div></div>`;
 			}
