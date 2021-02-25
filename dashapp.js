@@ -64,7 +64,7 @@ class App  {
 				app.ws.send(`IMGL|${app.meetingId}`);												// S3 images
 				}
 			}						
-		else if (v[0] == "IMGL") 	app.S3Images=(JSON.parse(v[1]));								// Get S3 images
+		else if (v[0] == "IMGL") {	app.S3Images=(JSON.parse(v[1])); app.ShowS3Images(); }			// Get S3 images
 		else if (v[0] == "IMG") 	app.DrawLive();													// Refreh when new images loaded
 	}
 
@@ -244,7 +244,7 @@ class App  {
 		<div class="co-bs" id="co-updschedule">Schedule</div></td></tr>
 		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
 		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div>
-		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.ShowS3Images()">Refresh</div></td></tr>
+		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.GetS3Images()">Refresh</div></td></tr>
 		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
 		
@@ -262,13 +262,13 @@ class App  {
 				}
 			});	
 
-		this.ShowS3Images();																					// Show images
+		this.ShowS3Images();																			// Show images
 		
-		$("#co-addImage").on("click",()=>{ 	  $("#co-imageUpload").trigger("click") })						// ON ADD IMAGE	
-		$("#co-updpeople").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|people`); Sound("ding"); });	// ON UDATE PEOPLE
-		$("#co-updschedule").on("click",()=>{ app.ws.send(`U|${app.meetingId}|schedule`); Sound("ding"); }); // SCHEDULE
-		$("#co-updvenue").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|venue`); Sound("ding"); });	// VENUE
-		$("#co-start").on("click",(e)=>{ 	  app.StartMeeting(); });										// ON START MEETING
+		$("#co-addImage").on("click",()=>{ 	  $("#co-imageUpload").trigger("click") })							// ON ADD IMAGE	
+		$("#co-updpeople").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|people`); Sound("ding"); });		// ON UDATE PEOPLE
+		$("#co-updschedule").on("click",()=>{ app.ws.send(`U|${app.meetingId}|schedule`); Sound("ding"); }); 	// SCHEDULE
+		$("#co-updvenue").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|venue`); Sound("ding"); });		// VENUE
+		$("#co-start").on("click",(e)=>{ 	  app.StartMeeting(); });											// ON START MEETING
 
 		$("#co-preview").on("click", ()=> {  															// ON PREVIEW 
 			let i,j,d=[];
@@ -285,6 +285,11 @@ class App  {
 			});
 	}
 
+	GetS3Images()																					// GET LIST OF S3 IMAGES
+	{
+		app.ws.send(`IMGL|${app.meetingId}`);															// Request S3 images
+	}
+
 	ShowS3Images()
 	{
 		let i,str="";
@@ -296,8 +301,6 @@ class App  {
 			}
 		$("#co-images").html(str.replace(/\t|\n|\r/g,""));
 		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
-			trace(e)
-			
 			let id=e.currentTarget.id.substr(7);														// Get id
 			PopUp(app.S3Images[id]+"<br>Copied to clipboard");											// Show it
 			$("#clipOutputDiv").val("https://etalimages.s3.amazonaws.com/"+app.S3Images[id]);			// Copy to shill

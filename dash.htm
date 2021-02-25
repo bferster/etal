@@ -230,11 +230,13 @@
 				else if ((table == "venue")  && (d[i].floor == undefined)) d.splice(i,1);					// Remove
 				}
 			if (table == "venue") { 																		// Venue
-				for (let i=0;i<d.length;++i)																// For each room
+				for (let i=0;i<d.length;++i) {																// For each room
+					if (id == "floor")	d[i].floor=app.ven.curFloor;										// Reset floor if a template
 					if (d[i].params)																		// If params	
 						d[i].params=JSON.parse(d[i].params);												// Objectify
-				if (id == "floor")	{ app.venue[app.curFloor]=d;  app.ven.EditVenue(); }					// Replace a floor and redraw
-				else				  app.ven.EditVenue(d);													// Set data and redraw
+					}
+				if (id == "floor"){ app.venue[app.ven.curFloor]=d;  app.ven.EditVenue(); }					// Replace a floor and redraw
+				else				app.ven.EditVenue(d);													// Set data and redraw
 			}
 			else if (table == "schedule")	app.sced.EditSchedule(d);										// Schedule
 			else if (table == "people") 	$("#jsGrid-"+table).jsGrid("option", "data", d);				// People
