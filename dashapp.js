@@ -151,7 +151,7 @@ class App  {
 	{
 		let i,d=[],fields;
 		if (table == "venue") {																				// If a venue
-			fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css"];				// Fields
+			fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css","link"];	// Fields
 			for (i=0;i<this.venue.length;++i) d=d.concat(JSON.parse(JSON.stringify(this.venue[i])))			// Flatten floors into single array
 			for (i=0;i<d.length;++i)																		// For each room
 				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object

@@ -47,6 +47,12 @@ class Venue {
 				<tr><td>Avatar size</td><td><input class='co-is' type='text' id='ev-avs' value='${(d.avSize ? d.avSize : 36)}'></td></tr>	
 				<tr><td>Video room</td><td><select id="evVideo" class="co-is" style="width:110px"></select></td></tr>
 				<tr><td>Templates</td><td><select id="evTemp" class="co-is" style="width:110px">
+				<tr><td colspan="3">Quiet&nbsp;&nbsp;&nbsp;<input type="checkbox" id="co-evb0" ${d.bar&1 ? " checked" : ""}>&nbsp;&nbsp;
+				Bar&nbsp;&nbsp;&nbsp;<input type="checkbox" id="co-evb1" ${d.bar&2 ? " checked" : ""}>&nbsp;&nbsp;
+				Sced&nbsp;<input type="checkbox" id="co-evb2" ${d.bar&4 ? " checked" : ""}></td></tr>
+				<tr><td colspan="3">People&nbsp;<input type="checkbox" id="co-evb3" ${d.bar&8 ? " checked" : ""}>&nbsp;&nbsp;
+				Msgs&nbsp;<input type="checkbox" id="co-evb4" ${d.bar&16 ? " checked" : ""}>&nbsp;&nbsp;
+				Info&nbsp;&nbsp;<input type="checkbox" id="co-evb5" ${d.bar&32 ? " checked" : ""}></td></tr>
 				<option>Choose</option><option>Load public</option><option>Load local CSV</option><option>Save local CSV</option></select></td></tr>
 				<tr><td colspan='2'>&nbsp;</td></tr>	
 				<tr><td><div id='evAddFloor' class='co-bs'>Add floor</div></td><td><img id='evDelFloor' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
@@ -55,6 +61,7 @@ class Venue {
 				<tr><td>Room color</td><td><input class='co-is' style='width:70px' type='text' id='ev-rug' value='${(r.rug ? r.rug : "#ffffff")}'>
 				<div id='ev-rugc' class='co-colChip' style='background-color:${(r.rug ? r.rug : "#ffffff")}'></td></tr>	
 				<tr><td>Room title</td><td><input class='co-is' type='text' id='ev-title' value='${(r.title ? r.title : "")}'></td></tr>	
+				<tr><td>Room link</td><td><input class='co-is' type='text' id='ev-link' value='${(r.link ? r.link : "")}'></td></tr>	
 				<tr><td>Room CSS</td><td><textArea class='co-is' type='text' id='ev-css'>${(r.css ? r.css : "")}</textArea></td></tr>	
 				<tr><td>Portal</td><td><input class='co-is' type='text' id='ev-por' value='${(r.portal ? r.portal : "")}'></td></tr>	
 				<tr><td>Room number</td><td><input class='co-is' type='text' id='ev-room' value='${r.room}'></td></tr>	
@@ -75,6 +82,7 @@ class Venue {
 		r.room=$("#ev-room").val();																			// Room number
 		r.css=$("#ev-css").val();																			// Room style
 		r.title=$("#ev-title").val();																		// Room title
+		r.link=$("#ev-link").val();																			// Room link
 		this.DrawVenue();																					// Draw venue grid
 
 		$("#ev-rug").on("change",()=>{  $("#ev-rugc").css("background-color",$("#ev-rug").val()) });		// Chip follows color field
@@ -132,7 +140,7 @@ class Venue {
 		$("#evRoom").on("change",()=>{	d.room=this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();}) // On room change
 		$("#evTemp").on("change",()=>{																		// ON TEMPLATE PICK
 			let opt=$("#evTemp").prop("selectedIndex");														// Get option
-			let fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css"];			// Fields
+			let fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css","link"];	// Fields
 			if (opt == 2) 	$("#co-tempFile").trigger("click");												// From local CSV file
 			else if (opt == 3) {																			// If save to local CSV
 				let d=JSON.parse(JSON.stringify(app.venue[this.curFloor]));									// Clone floor
@@ -144,6 +152,10 @@ class Venue {
 			this.EditVenue();																				// Draw venue grid
 			})
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
+		$("[id^=co-evb]").on("click",(e)=>{																	// ON BAR OPTIONS CLICK
+			for (d.bar=i=0;i<6;++i) if ($("#co-evb"+i).prop("checked")) d.bar|=1<<i;						// Remake bitmapped bar
+			});
+
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
 			this.Do();																						// Set do 
 			d.bcol=$("#ev-bcol").val();																		// Background color
@@ -156,6 +168,7 @@ class Venue {
 			r.room=$("#ev-room").val();																		// Room number
 			r.css=$("#ev-css").val();																		// Room style
 			r.title=$("#ev-title").val();																	// Room title
+			r.link=$("#ev-link").val();																		// Room link
 			this.DrawVenue();																				// Draw venue grid
 			});
 	}	
