@@ -46,13 +46,12 @@ class Venue {
 				<tr><td>Grid gap</td><td><input class='co-is' type='text' id='ev-gap' value='${(d.gap ? d.gap : 0)}'></td></tr>	
 				<tr><td>Avatar size</td><td><input class='co-is' type='text' id='ev-avs' value='${(d.avSize ? d.avSize : 36)}'></td></tr>	
 				<tr><td>Video room</td><td><select id="evVideo" class="co-is" style="width:110px"></select></td></tr>
+				<tr><td colspan="3">Quiet&nbsp;<input type="checkbox" id="co-evb0" ${d.menu&1 ? " checked" : ""}>&nbsp;&nbsp;
+				Sced&nbsp;<input type="checkbox" id="co-evb1" ${d.menu&2 ? " checked" : ""}>&nbsp;&nbsp;
+				People&nbsp;<input type="checkbox" id="co-evb2" ${d.menu&4 ? " checked" : ""}></td></tr>
+				<tr><td colspan="3">Info&nbsp;&nbsp;&nbsp;<input type="checkbox" id="co-evb4" ${d.menu&16 ? " checked" : ""}>&nbsp;&nbsp;
+				Messages&nbsp;<input type="checkbox" id="co-evb3" ${d.menu&8 ? " checked" : ""}></td></tr>
 				<tr><td>Templates</td><td><select id="evTemp" class="co-is" style="width:110px">
-				<tr><td colspan="3">Quiet&nbsp;&nbsp;&nbsp;<input type="checkbox" id="co-evb0" ${d.bar&1 ? " checked" : ""}>&nbsp;&nbsp;
-				Bar&nbsp;&nbsp;&nbsp;<input type="checkbox" id="co-evb1" ${d.bar&2 ? " checked" : ""}>&nbsp;&nbsp;
-				Sced&nbsp;<input type="checkbox" id="co-evb2" ${d.bar&4 ? " checked" : ""}></td></tr>
-				<tr><td colspan="3">People&nbsp;<input type="checkbox" id="co-evb3" ${d.bar&8 ? " checked" : ""}>&nbsp;&nbsp;
-				Msgs&nbsp;<input type="checkbox" id="co-evb4" ${d.bar&16 ? " checked" : ""}>&nbsp;&nbsp;
-				Info&nbsp;&nbsp;<input type="checkbox" id="co-evb5" ${d.bar&32 ? " checked" : ""}></td></tr>
 				<option>Choose</option><option>Load public</option><option>Load local CSV</option><option>Save local CSV</option></select></td></tr>
 				<tr><td colspan='2'>&nbsp;</td></tr>	
 				<tr><td><div id='evAddFloor' class='co-bs'>Add floor</div></td><td><img id='evDelFloor' src='img/deletebut2.png' style='float:right;cursor:pointer'></td></tr>	
@@ -153,7 +152,7 @@ class Venue {
 			})
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
 		$("[id^=co-evb]").on("click",(e)=>{																	// ON BAR OPTIONS CLICK
-			for (d.bar=i=0;i<6;++i) if ($("#co-evb"+i).prop("checked")) d.bar|=1<<i;						// Remake bitmapped bar
+			for (d.menu=i=0;i<6;++i) if ($("#co-evb"+i).prop("checked")) d.menu|=1<<i;						// Remake bitmapped menu
 			});
 
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
