@@ -606,7 +606,7 @@ class App  {
 			o.y=Math.max(0,Math.min(o.y,95));															// Cap x to screen
 			if (!this.people[i].pic)	this.people[i].pic="img/avyou.png";								// Use generic pic
 			str+=`<div class="co-avatar" id="co-Av-${i}" style="top:${o.y}%;left:${o.x}%;
-			display:${(o.stats == "Q") ? "none" : "block"}"> 
+			display:${(o.stats == "Q") ? "none" : "block"}" title="${o.firstName} ${o.lastName}"> 
 			<div style="width:${avSize}px;height:${avSize}px;overflow:hidden;border-radius:64px;display:inline-block">
 			<img id="co-Ap-${i}" src="${o.pic}" style="width:${avSize}px;min-height:${avSize}px"></div>
 			<div id="co-At-${i}">${o.firstName}<br>${o.lastName}</div></div>`;							// Add person
@@ -635,8 +635,8 @@ class App  {
 		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute;)">
 			<img src="img/quietarea.png" id="co-quiet" 
 			style="height:${avSize+8}px;cursor:pointer;margin:8px 0 0 8px${p.menu&1 ? "" : ";display:none" }"  title="Go private">
-			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none;" }
-			width:264px;margin-top:-36px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3;">
+			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none;"}
+			width:264px;margin-top:-36px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3" title="Main coffeebar">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px${p.menu&2 ? "" : ";display:none" }" title="See meeting schedule">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px${p.menu&4 ? "" : ";display:none" }" title="See other attendees">
@@ -682,8 +682,9 @@ class App  {
 			if (!i)	str+=menu;																			// Add menu to hallway
  			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
 			str+="<div id='co-roomContent-"+i+"' style='pointer-events:none;display:inline-block;width:100%'>"+content+"</div>";	// Add conten wrapped in no-event div
-			if (i && (sc.bar > 0))     	str+=`<img id="co-coffee-${this.curFloor}-${i}" style="position:absolute;cursor:pointer;left:calc(100% - ${(avSize/2)+27}px);top:-4px;width:52px" src="img/coffeecup.png">`;
-           	if (sc.live > 0)    		str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
+			if (i && (sc.bar > 0)) str+=`<img id="co-coffee-${this.curFloor}-${i}" 
+			style="position:absolute;cursor:pointer;left:calc(100% - ${(avSize/2)+27}px);top:-4px;width:52px" src="img/coffeecup.png" title="Coffeebar">`;
+           	if (sc.live > 0)   str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
           	str+="</div></div>";		
 			}
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
