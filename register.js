@@ -3,7 +3,6 @@ class Register  {
 	constructor(person)   																		// CONSTRUCTOR
 	{
 		app.reg=this;																				// Set context
-		this.loc=true;																				// Assume role/org vs. city/state
 		this.person=person;																			// Save person's data
 		this.cameraStream=null;																		// Camera data
 		this.Draw();																				// Draw form
@@ -17,8 +16,10 @@ class Register  {
 			<table style="display:inline-block;border-spacing:4px;text-align:left">
 				<tr><td>First name&nbsp;</td><td><input class='co-is' style="width:150px" type='text' id='firstName' placeholder='required'></td>
 				<td>Last name</td><td><input class='co-is' style="width:150px" type='text' id='lastName' placeholder='required'></td></tr>
-				<tr><td>${this.loc ? "City" : "Title"}</td><td><input class='co-is' style="width:150px" type='text' id='title'>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-				<td>${this.loc ? "State" : "Organization"}&nbsp;</td><td><input class='co-is' style="width:150px"type='text' id='org'></td></tr>
+				<tr><td>Title</td><td><input class='co-is' style="width:150px" type='text' id='title'>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+				<td>Organization&nbsp;</td><td><input class='co-is' style="width:150px"type='text' id='org'></td></tr>
+				<tr><td>City</td><td><input class='co-is' style="width:150px" type='text' id='city'>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+				<td>State/Country&nbsp;</td><td><input class='co-is' style="width:150px"type='text' id='statecon'></td></tr>
 				<tr><td>Linked-In</td><td><input class='co-is' style="width:150px" type='text' id='li'></td>
 				<td>Website</td><td><input class='co-is' style="width:150px"type='text' id='web'></td></tr>
 				<tr><td>Interests</td><td><input class='co-is' style="width:150px" type='text' id='ints'></td></tr>
@@ -47,6 +48,8 @@ class Register  {
 	$("#lastName").val(this.person.lastName ? this.person.lastName: ""); 							// Last
 	$("#title").val(this.person.title ? this.person.title: ""); 									// Title
 	$("#org").val(this.person.org ? this.person.org: ""); 											// Org
+	$("#city").val(this.person.city ? this.person.city: ""); 										// City
+	$("#statecon").val(this.person.statecon ? this.person.statecon: ""); 							// State
 	$("#li").val(this.person.li ? this.person.li: ""); 												// Li
 	$("#web").val(this.person.web ? this.person.web: ""); 											// Web
 	$("#ints").val(this.person.ints ? this.person.ints: ""); 										// Ints
@@ -70,6 +73,8 @@ class Register  {
 		this.person.lastName=$("#lastName").val(); 													// Last
 		this.person.title=$("#title").val() ? $("#title").val() : "";								// Title
 		this.person.org=$("#org").val() ? $("#org").val() : "";										// Org
+		this.person.city=$("#city").val() ? $("#city").val() : "";									// City
+		this.person.statecon=$("#statecon").val() ? $("#statecon").val() : "";						// State/country
 		this.person.li=$("#li").val() ? $("#li").val() : "";										// LinkedIn
 		this.person.web=$("#web").val() ? $("#web").val() : "";										// Web
 		this.person.ints=$("#ints").val() ? $("#ints").val() : "";									// It

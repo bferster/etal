@@ -551,7 +551,8 @@ class App  {
 			if (o.email == this.myEmail) this.myId=i;													// Set myid
 			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
 			this.pIndex[people[i].id]=i;																// Save index by full id
-			}
+			
+		}
 	}
 
 	AddSchedule(sced)																				// ADD SCHEDULE
@@ -631,9 +632,6 @@ class App  {
 		
 		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
-
-		trace(p.menu)
-
 		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute;)">
 			<img src="img/quietarea.png" id="co-quiet" 
 			style="height:${avSize+8}px;cursor:pointer;margin:8px 0 0 8px${p.menu&1 ? "" : ";display:none" }"  title="Go private">
@@ -660,8 +658,10 @@ class App  {
 			if (isSmall) { rs++; re++ }																	// Advance rows for mobile
 			else		 { rs=o.rs; re=o.re; cs=o.cs; ce=o.ce; };										// Use set values
 			app.roomPortals+="R"+i+"="+o.portal;														// Add portal info
+			
 			sc=this.sced.GetEventByRoom(this.curFloor,i)												// Point at schedule room																		
-			this.curContent+=sc.link+sc.content;														// Add to current content hash
+			if (sc.link) o.link=sc.link;																// Set room link
+			this.curContent+=o.link+sc.content;															// Add to current content hash
 			content=sc.content ? sc.content : "";														// Set content if any
 			if (sc.link && sc.link.match(/^gallery/i)) {												// If a gallery, 
 				content=this.sced.GetGalleryData(sc).content; 											// Get gallery content
@@ -672,7 +672,7 @@ class App  {
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
 			content=this.sced.SetMacros(content);														// Set content macros
-			this.venue[this.curFloor][i].link=sc.link;													// Set room link
+		
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 			str+=`<div class="co-room" style=";grid-column-start:${cs};grid-column-end:${ce};grid-row-start:${rs};grid-row-end:${re};
 			${((i == 0) && !this.curFloor) ? "height:100vh;" : ""}

@@ -75,14 +75,16 @@ class App  {
 			{ name:"email", type:"text", width:100, validate:"required"},
 			{ name:"title", type:"text", width:100 },
 			{ name:"org", type:"text",width:100 },
+			{ name:"city", type:"text",width:100 },
+			{ name:"statecon", type:"text",width:100 },
 			{ name:"ints", type:"text",width:100 },
 			{ name:"pic", type:"text",width:100 },
 			{ name:"li", type:"text",width:100 },
 			{ name:"web", type:"text",width:100 },
 			{ name:"role", type:"text",width:100 },
-			{ name:"f", type:"text",width:50 },
-			{ name:"x", type:"text",width:50 },
-			{ name:"y", type:"text",width:50 },
+			{ name:"f", type:"text",width:25 },
+			{ name:"x", type:"text",width:25 },
+			{ name:"y", type:"text",width:25 },
 			{ name:"stats", type:"text",width:50 },
 			{ type: "control" }];
 
@@ -157,7 +159,7 @@ class App  {
 				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object
 			}
 		else if (table == "people")	{	
-			fields=["firstName","lastName","email","title","org","ints","pic","li","web", "role" ];			// Fields
+			fields=["firstName","lastName","email","title","org","ints","pic","li","web", "role", "city", "statecon"];			// Fields
 			d=$("#jsGrid-"+table).jsGrid("option","data");													// Get from grid													
 			for (i=0;i<fields.length;++i)	if (!d[0][fields[i]]) d[0][fields[i]]="";						// Make sure all fields are in 1st row for CSV export															// Make sure it exists
 		}
