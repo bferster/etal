@@ -23,20 +23,24 @@ class Register  {
 				<tr><td>Linked-In</td><td><input class='co-is' style="width:150px" type='text' id='li'></td>
 				<td>Website</td><td><input class='co-is' style="width:150px"type='text' id='web'></td></tr>
 				<tr><td>Interests</td><td><input class='co-is' style="width:150px" type='text' id='ints'></td></tr>
-				<tr><td>Picture:</td><td>Capture a picture<br>from your webcam,
-				<br><i>or</i> load a picture<br>from your computer,
-				<br><i>or</i> type in the full url.<br><br>
-				<input class='co-is' style="width:150px" type='text' id='co-regPic'><br><br>
-				<div class='co-bsg' id='co-regLoad' onclick=''>Load from computer</div></td>
-				<td colspan='2' style='text-align:center'>
+				<tr><td colspan='4'><p><hr></p></td></tr>
+				<tr><td colspan='2' style="text-align:center;vertical-align:top">
+				<b>Add a picture for your icon</b><br><br>
+				<div class="co-bsg" id="co-regCam" onclick='app.reg.StartStreaming()'>From your webcam</div>
+				<p style="margin:4px 0;color:#777"><i>or</i></p>
+				<div class='co-bsg' id='co-regLoad' onclick=''>From your computer</div>
+				<p style="margin:4px 0;color:#777"><i>or</i></p>
+				<input class='co-is' style="width:150px;text-align:center" type='text' id='co-regPic' placeholder="Type the full URL here">
+				</td>
+					<td colspan='2' style='text-align:center'>
 					<div id="streamBox" style="overflow:hidden;width:240px;height:180px;display:inline-block;border:1px solid #999">
 						<div id="coRegSnapShot"><img id="regSnapimg" width="240" src="${this.person.pic ? this.person.pic : "img/avyou.png"}"></div>
 						<video id="stream" width="240" height="180"></video>
 					</div>
 					<canvas id="coRegCapture" width="240" height="180" style="display:none;overflow:hidden"></canvas>
-					<div><div class="co-bsg" id="co-regCam" style="margin-top:8px" onclick='app.reg.StartStreaming()'>Start webcam</div></div><div>
+					</div><div>
 				</td></tr>
-				<tr><td colspan='4'><br><hr><br></td></tr>
+				<tr><td colspan='4'><p><hr></p></td></tr>
 				</table>
 			<br><div class='co-bsg' id='co-regSend' style="font-size:24px;padding-bottom:6px">
 			<b>&nbsp;&nbsp;Join the meeting!&nbsp;&nbsp;</b></div>
@@ -94,7 +98,8 @@ class Register  {
 	StartStreaming() 
 	{
 		if (this.cameraStream) {
-			$("#co-regCam").text("Start webcam");
+			$("#co-regCam").text("From your webcam");
+			$("#co-regCam").css("background-color","#999")
 			var ctx=coRegCapture.getContext('2d');
 			ctx.drawImage(stream, 0, 0, 240, 180 );
 			regSnapimg.src=coRegCapture.toDataURL("image/png" );
@@ -108,7 +113,8 @@ class Register  {
 			return;	
 			}
 	
-		$("#co-regCam").text("Take picture");
+		$("#co-regCam").text("Click here to take picture");
+		$("#co-regCam").css("background-color","#009900")
 		let mediaSupport = 'mediaDevices' in navigator;
 		$("#stream").show();
 		$("#coRegSnapShot").hide();
