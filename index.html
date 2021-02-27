@@ -588,6 +588,7 @@ class App  {
 		ven.sort((a,b)=>{ return (a.floor-0 > b.floor-0) ? 1 : -1 });									// Sort by floor
 		for (i=0;i<ven.length;++i) {																	// For each room
 			o=ven[i];																					// Point at room
+			o.olink=o.link;																				// Save original link
 			if (!this.venue[o.floor])	this.venue[o.floor]=[];											// Create new array if empty
 			this.venue[o.floor].push(o);																// Add room to floor	
 			}
@@ -660,6 +661,7 @@ class App  {
 			app.roomPortals+="R"+i+"="+o.portal;														// Add portal info
 			
 			sc=this.sced.GetEventByRoom(this.curFloor,i)												// Point at schedule room																		
+			o.link=o.olink ? o.olink : "";																// Reset original link
 			if (sc.link) o.link=sc.link;																// Set room link
 			this.curContent+=o.link+sc.content;															// Add to current content hash
 			content=sc.content ? sc.content : "";														// Set content if any
