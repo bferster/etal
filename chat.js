@@ -38,8 +38,9 @@ class Chat  {
 					<i>${this.queue[i].msg}</i>
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
 				}
-			str+="</div>"
-			str+=`<div style="position:absolute;left:141px; top:${flip ? "-10" : "323"}px; width:0;height:0; 
+			str+=`</div><a style="font-size:9px;float:right;color:#000;margin-top:-12px;text-decoration:none" 
+				href="javascript:new Register('${app.myId}')">Change my name tag</a>"
+				<div style="position:absolute;left:141px; top:${flip ? "-10" : "323"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};border-style:solid; border-width: 14px 8px 0 8px;
 				border-color: #fff transparent transparent transparent"></div>
 			</div>`;

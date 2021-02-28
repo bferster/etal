@@ -137,7 +137,7 @@
 				return;																				// Quit																				
 				}
 			if (!app.people[i].firstName) {															// If no name
-				let reg=new Register(app.people[i]);												// Run registration code
+				let reg=new Register(i);															// Run registration code
 				return;																				// Quit
 				}
 			app.JoinMeeting(app.people[i].id);														// Join meeting
