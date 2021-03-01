@@ -153,7 +153,7 @@ class App  {
 	{
 		let i,d=[],fields;
 		if (table == "venue") {																				// If a venue
-			fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css","link"];	// Fields
+			fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css","link"];		// Fields
 			for (i=0;i<this.venue.length;++i) d=d.concat(JSON.parse(JSON.stringify(this.venue[i])))			// Flatten floors into single array
 			for (i=0;i<d.length;++i)																		// For each room
 				if (d[i].params) d[i].params=JSON.stringify(d[i].params);									// Stringify params object
@@ -225,8 +225,15 @@ class App  {
                 for (j=0;j<this.venue[i].length;++j)														// For each room in floor
                     d.push(this.venue[i][j]);																// Add to array
             }
-		else if (table == "people")  	d=$("#jsGrid-"+table).jsGrid("option","data");                      // Get people from spreadsheet
-		else if (table == "schedule")	d=this.schedule;													// Get from scheduel	
+		else if (table == "people") {																		// If people 	
+			d=$("#jsGrid-"+table).jsGrid("option","data");                   							   	// Get people from spreadsheet
+			for (i=0;i<d.length;++i) 																		// For each row
+				for (j=i+1;j<d.length;++j) 																	// For each row after this one
+					if (d[i].email == d[j].email)															// If a duplicate
+						d.splice(j,1);																		// Remove it
+				}
+
+		else if (table == "schedule")	d=this.schedule;													// Get from schedulel	
 		d=JSON.stringify(d);																				// Stringify
 		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${d}`);							// Write to DB table
 		Sound("ding");																						// Ding

@@ -74,6 +74,7 @@ class Chat  {
 		if (x < 12)	x=12;																			// Too far left
 		if (x > app.bx-362)	x=app.bx-362;															// Too far right
 		let o=app.people[id];																		// Point at person
+		if (o.web)	o.web=o.web.replace(/^www\./i,"//www.");										// For Header on www
 		let str=`<div id='co-card' class='co-card' style='left:${x}px;top:${y}px'>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-card').remove()">
 			<b style='font-size:20px;margin-left:16px'>${o.firstName ? o.firstName : ""} ${o.lastName ? o.lastName : ""}</b>
