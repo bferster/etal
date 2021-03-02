@@ -162,7 +162,7 @@
 				for (i=0;i<app.people.length;++i) {
 					$("#co-Av-"+i).css("display","none")
 					if (app.people[i].pic == "img/avyou.png") continue;
-					if (app.people[i].stats.charAt(0) == "R")	continue;
+					if (app.people[i].stats.charAt(0) == "R") continue;
 					$("#co-Av-"+i).css("display","block")
 					if (!(i%9))	x=400,y+=80;
 					x+=80;
@@ -320,7 +320,7 @@ class App  {
 			$("#co-At-"+id).css("display",v[5].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
 		else if ((v[0] == "P") || (v[0] == "WP")) {													// Add/update people
-			let pn=this.people.length;																// Number of people before
+//			let pn=this.people.length;																// Number of people before
 			this.AddPeople(JSON.parse(v[1]));														// Set data								
 			if (v[2] == "U")	app.DrawPeople();													// Redraw on update
 			}
@@ -546,14 +546,12 @@ class App  {
 		people.sort((a,b)=>{ return (a.id.split("~")[1]-0 > b.id.split("~")[1]-0) ? 1 : -1 });			// Sort by numeric id
 		this.people=people;																				// Set data
 		for (i=0;i<people.length;++i) {																	// For each person
-			let id=people[i].id.split("~")[1];															// Split id out
 			o=this.people[i];																			// Point at them
-			o.firstName=o.firstName ? o.firstName : "";													// Null out undefined
-			o.lastName=o.lastName ? o.lastName : "";													// Null 
+//			let id=o.id.split("~")[1];																	// Split id out
+			o.firstname=o.firstname ? o.firstname : "";													// Null out undefined
 			if (o.email == this.myEmail) this.myId=i;													// Set myid
 			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
 			this.pIndex[people[i].id]=i;																// Save index by full id
-			
 		}
 	}
 
