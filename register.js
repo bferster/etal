@@ -35,8 +35,7 @@ class Register  {
 			<p style="margin:4px 0;color:#777"><i>or</i></p>
 			<div class='co-bsg' id='co-regLoad' onclick=''>From your computer</div>
 			<p style="margin:4px 0;color:#777"><i>or</i></p>
-			<input class='co-is' style="width:150px;text-align:center" type='text' id='co-regPic' placeholder="Type the full URL here">
-			</td>
+			<input class='co-is' style="width:150px;text-align:center" type='text' id='co-regPic' placeholder="Type the full URL here"></td>
 				<td colspan='2' style='text-align:center'>
 				<div id="streamBox" style="overflow:hidden;width:240px;height:180px;display:inline-block;border:1px solid #999">
 					<div id="coRegSnapShot"><img id="regSnapimg" width="240" src="${this.person.pic ? this.person.pic : "img/avyou.png"}"></div>
@@ -53,7 +52,7 @@ class Register  {
 			</div></div>`;
 
 	$("#co-card").remove();																			// Kill card, if active
-	$("body").append(str.replace(/\t|\n|\r/g,""));												// Add registration form
+	$("body").append(str.replace(/\t|\n|\r/g,""));													// Add registration form
 	$("#firstName").val(this.person.firstName ? this.person.firstName: ""); 						// First name
 	$("#lastName").val(this.person.lastName ? this.person.lastName: ""); 							// Last
 	$("#title").val(this.person.title ? this.person.title: ""); 									// Title
@@ -63,6 +62,7 @@ class Register  {
 	$("#li").val(this.person.li ? this.person.li: ""); 												// Li
 	$("#web").val(this.person.web ? this.person.web: ""); 											// Web
 	$("#ints").val(this.person.ints ? this.person.ints: ""); 										// Ints
+	$("#co-regPic").val(this.person.pic ? this.person.pic: ""); 									// Pic
 
 	$("#co-regSend").on("click",()=>{ this.Send() });												// ON SEND
 	$("#co-regLoad").on("click",()=>{ $("#co-regUpload").trigger("click") })						// ON ADD IMAGE	

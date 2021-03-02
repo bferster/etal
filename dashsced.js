@@ -168,13 +168,13 @@ class Schedule  {
 		let p=app.venue[fn][0].params;																		// Point at params
 		let w=($("body").width()/p.cols)*Math.max(1,Math.abs(r.ce-r.cs));									// Width
 		let h=($("body").height()/p.rows)*Math.max(1,Math.abs(r.re-r.rs));									// Height
+		h=Math.min(h,$("body").height()-188);																// Cap to screen
 		$("#editorDiv").show();																				// Show editor
 		CKEDITOR.instances.editor1.resize(w,0);																// Set size, less content
 		let t=CKEDITOR.instances.editor1.container.$.clientHeight;											// Get toolbar height
 		CKEDITOR.instances.editor1.resize(w,h+t);															// Set size
 		CKEDITOR.instances.editor1.setData(app.schedule[num].content);										// Set editor
-		CKEDITOR.instances.editor1.document.getBody().setStyle("background-color",col);						// Set color
-		CKEDITOR.instances.editor1.document.getBody().setStyle("background-color",col);						// Set color
+		CKEDITOR.instances.editor1.document.getBody().setStyle("background-color",r.rug);					// Set color
 		});
 	}
 
