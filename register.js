@@ -11,7 +11,7 @@ class Register  {
 	Draw()																						// DRAW REGISTRATION 
 	{
 		$("#splashDiv").fadeOut();																	// Fade out splash
-		let str=`<div id="co-card" style="width:fit-content;position:absolute;top:48px;left:calc(50% - 263px);border:1px solid #999;
+		let str=`<div id="co-card" style="width:-moz-fit-content;width:fit-content;position:absolute;top:48px;left:calc(50% - 263px);border:1px solid #999;
 			text-align:center;background-color:#fff;padding:16px;border-radius:12px;font-size:16px;">`;
 			if (this.person.firstName)																// If updating
 				str+=`<img style="float:right;cursor:pointer;margin-top:5px" src="img/closedot.png" onclick="$('#co-card').remove()">`;

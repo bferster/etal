@@ -83,7 +83,7 @@ class Schedule  {
 		$("#co-Vcon").remove();																	// Kill existing
 		let str=`<div id="co-Vcon" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
-		width:${$(app.vr).width()-32}px;height:fit-content">
+		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
 		<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
 		<b>Vendor Control Panel</b><br><br>
 		<div style="float:left">Toggle away status for:&nbsp;&nbsp;&nbsp;</div>
@@ -387,7 +387,7 @@ class Schedule  {
 		$("#co-gItemD").remove();																	// Kill existing
 		let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
-		width:${$(app.vr).width()-32}px;height:fit-content">
+		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
 		<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
 		<b>${title}</b><br><br>`;
 		if (content && content.match(/^http/i)) { 													// If  a link
