@@ -633,11 +633,11 @@ class App  {
 		
 		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
-		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute;)">
+		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute">
 			<img src="img/quietarea.png" id="co-quiet" 
-			style="height:${avSize+8}px;cursor:url(img/drop.cur),auto;margin:8px 0 0 8px${p.menu&1 ? "" : ";display:none" }"  title="Go private">
-			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none;cursor:url(img/drop.cur),auto"}
-			width:264px;margin-top:-36px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3;cursor:url(img/drop.cur),auto" title="Main coffeebar">
+			style="height:${avSize+8}px;margin:8px 0 0 8px${p.menu&1 ? "" : ";display:none;"};cursor:grabbing" title="Go private">
+			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none"}
+			width:264px;margin-top:-36px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3;cursor:grabbing" title="Main coffeebar">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px${p.menu&2 ? "" : ";display:none" }" title="See meeting schedule">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px${p.menu&4 ? "" : ";display:none" }" title="See other attendees">
@@ -679,13 +679,13 @@ class App  {
 			str+=`<div class="co-room" style=";grid-column-start:${cs};grid-column-end:${ce};grid-row-start:${rs};grid-row-end:${re};
 			${((i == 0) && !this.curFloor) ? "height:100vh;" : ""}
 			${(o.rug.charAt(0) == "#") ? "background-color:"+o.rug : "background-image:url('"+o.rug+"')"}
-			${o.link ? ";cursor:pointer" : ""}${o.css ? ";"+o.css : ""}">
+			${o.link ? ";cursor:grabbing" : ""}${o.css ? ";"+o.css : ""}">
 			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
 			if (!i)	str+=menu;																			// Add menu to hallway
  			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
 			str+="<div id='co-roomContent-"+i+"' style='pointer-events:none;display:inline-block;width:100%'>"+content+"</div>";	// Add conten wrapped in no-event div
 			if (i && (sc.bar > 0)) str+=`<img id="co-coffee-${this.curFloor}-${i}" 
-			style="position:absolute;cursor:url(img/drop.cur),auto;left:calc(100% - ${(avSize/2)+27}px);top:-4px;width:52px" src="img/coffeecup.png" title="Coffeebar">`;
+			style="position:absolute;cursor:grabbing;left:calc(100% - ${(avSize/2)+27}px);top:-4px;width:52px" src="img/coffeecup.png" title="Coffeebar">`;
            	if (sc.live > 0)   str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
           	str+="</div></div>";		
 			}
@@ -697,11 +697,11 @@ class App  {
 				$("#co-roomContent-"+i).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
 				$("#co-galBase-"+i).height(Math.max($("#co-Rm-"+i).height()-60, isSmall? 300 : 0));		// Get hgt, min of 300 for mobile
 				}
-		
-		$("[id^=co-Av-]").droppable({		drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON PERSON
-		$("[id^=co-Rm-]").droppable({		drop:(e,ui)=>{ this.OnMeMove(ui.position.left,ui.position.top,e.target.id) }}); // ON DROP ON ROOM OR HALL
-		$("#co-quiet").droppable({			drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON QUIET AREA
-		$("[id^=co-coffee-]").droppable({	drop:(e)=>{ this.OnMeMove(e.pageX,e.pageY,e.target.id) }}); // ON DROP ON COFFEE BAR
+		$("[id^=co-coffee-], #co-quiet, [id^=co-Av-], [id^=co-Rm-]").droppable({	 					// ON AVATAR DROP
+		    over: (e, ui)=> { ui.draggable.css("cursor", "grabbing"); },								// Show I'm over a droppable
+  			out:  (e, ui)=> { ui.draggable.css("cursor", "grab"); },									// Normal cursor
+			drop: (e, ui)=> { ui.draggable.css("cursor", "grab"); this.OnMeMove(e.pageX,e.pageY,e.target.id);}	// When dropped action		
+			});
 		$("#co-schedule").on("click", 			 (e)=>{ this.sced.ShowSchedule(); });					// ON SCHEDULE BUT
 		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infoDesk"); });	// ON HELP BUT
 		$("#co-bbIcon").on("click", 			 (e)=>{ this.chat.GetBulletinBoard("", this.curFloor)}); // ON BULLETIN BUT

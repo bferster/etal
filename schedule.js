@@ -385,6 +385,7 @@ class Schedule  {
 	ShowGalleryItem(title, link, content)														// SHOW GALLERY ITEM DETAILS
 	{
 		$("#co-gItemD").remove();																	// Kill existing
+		$(window).scrollTop(0);																		// Scroll to top	
 		let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
 		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
