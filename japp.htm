@@ -28,7 +28,7 @@
 		width: "100%",height:window.innerHeight,
 		interfaceConfigOverwrite:{ "TOOLBAR_BUTTONS": [
         							'microphone', 'camera', 'desktop', 'fullscreen',
-        							'settings', 'raisehand', 
+        							'settings', 'raisehand',
         							'videoquality', 'filmstrip', 'tileview' ],
 									"VIDEO_QUALITY_LABEL_DISABLED": true,
 									"SHOW_CHROME_EXTENSION_BANNER": false
@@ -37,7 +37,10 @@
 		parentNode: document.querySelector('body'),
 		};
 
-	if (v[2] && v[2].match(/host|panel|admin/i)) options.interfaceConfigOverwrite["TOOLBAR_BUTTONS"].push("mute-everyone");
+	if (v[2] && v[2].match(/host|panel|admin/i)) {
+		options.interfaceConfigOverwrite["TOOLBAR_BUTTONS"].push("mute-everyone");
+		options.interfaceConfigOverwrite["TOOLBAR_BUTTONS"].push("security");
+		}
 	const api = new JitsiMeetExternalAPI(domain, options);
 	api.executeCommand('displayName',v[1] ? v[1] : "");
 	window.addEventListener("unload",  ()=>{ api.dispose();	});
