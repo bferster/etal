@@ -215,7 +215,7 @@ class Chat  {
 			for (id=0;id<app.sced.schedule.length;++id) 											// For each event
 				if (app.sced.schedule[id].link && app.sced.schedule[id].link.match(r)) 				// Got one
 					break;		
-					if (id == app.sced.schedule.length) return "";										// Not found
+				if (id == app.sced.schedule.length) return "";										// Not found
 				}
 		let content=app.sced.schedule[id].content;													// Point at JSON msg data
 		if (content) {																				// If data

@@ -301,6 +301,8 @@ class Schedule  {
 			<iframe id="co-iframeFrame" style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
 			
+			if (link.match(/sapp.htm/i)) $("#co-iframe").height($(app.vr).height());				// Full sizd
+
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
 				$("#co-iframe").remove();															// Close window
 				app.GoToCenter();																	// Go to center
