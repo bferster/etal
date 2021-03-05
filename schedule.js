@@ -256,7 +256,8 @@ class Schedule  {
 		if (link.match(/^bulletin/i)) return;														// Skip bulletin board links
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
-		
+		let h=$(app.vr).width()*.5625;																// Assume 16x9
+
 		if (link.match(/https:..zoom|zoomus:/i)) {													// If Zoom
 			app.curZoom=link;																		// Save link
 			let myWin=window.open(link,"_blank","scrollbars=no,toolbar=no,status=no,menubar=no");	// Open zoom link
@@ -280,9 +281,13 @@ class Schedule  {
 				window.open(link.substr(1),"_blank");												// Open in new tab
 				return;																				// Quit
 				}
-			if (link.charAt(0) == "!") {															// Show a web page
+			else if (link.charAt(0) == "!") {														// Show a web page
 				window.open(link.substr(1),"_blank","width=99%");									// Open in new tab
 				return;																				// Quit
+				}
+			else if (link.charAt(0) == "#") {														// Show a full page
+				h=$(app.vr).height();																// Full height
+				link=link.substr(1);																// Remove flag									
 				}
 			$(window).scrollTop(0);																	// Scroll to top	
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
@@ -292,7 +297,7 @@ class Schedule  {
 				}
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
-			width:${$(app.vr).width()}px; height:${($(app.vr).width())*.5625}px
+			width:${$(app.vr).width()}px; height:${h}px
 			${link.match(/.app.htm/i) ? ";background-color:#444;overflow:hidden" : ""}">
 			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
 			<div style="position:absolute;background-color:#fff;width:18px;height:18px;border-radius:18px">

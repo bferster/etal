@@ -45,6 +45,7 @@ class Venue {
 				<tr><td>Number rows</td><td><input class='co-is' type='text' id='ev-rows' value='${(d.rows ? d.rows : 3)}'></td></tr>	
 				<tr><td>Grid gap</td><td><input class='co-is' type='text' id='ev-gap' value='${(d.gap ? d.gap : 0)}'></td></tr>	
 				<tr><td>Avatar size</td><td><input class='co-is' type='text' id='ev-avs' value='${(d.avSize ? d.avSize : 36)}'></td></tr>	
+				<tr><td>Calendar URL</td><td><input class='co-is' type='text' id='ev-cal' value='${(d.cal ? d.cal : "")}'></td></tr>	
 				<tr><td>Video room</td><td><select id="evVideo" class="co-is" style="width:110px"></select></td></tr>
 				<tr><td colspan="3">Quiet&nbsp;<input type="checkbox" id="co-evb0" ${d.menu&1 ? " checked" : ""}>&nbsp;&nbsp;
 				Sced&nbsp;<input type="checkbox" id="co-evb1" ${d.menu&2 ? " checked" : ""}>&nbsp;&nbsp;
@@ -75,6 +76,7 @@ class Venue {
 		d.cols=$("#ev-cols").val();																			// Get columns value
 		d.rows=$("#ev-rows").val();																			// Rows
 		d.gap=$("#ev-gap").val();																			// Gap
+		d.cal=$("#ev-cal").val();																			// Calendar
 		d.avSize=$("#ev-avs").val();																		// Avatar size 
 		r.portal=$("#ev-por").val();																		// Portal
 		r.rug=$("#ev-rug").val();																			// Room rug
@@ -162,6 +164,7 @@ class Venue {
 			d.rows=$("#ev-rows").val();																		// Rows
 			d.gap=$("#ev-gap").val();																		// Gap
 			d.avSize=$("#ev-avs").val();																	// Avatar size
+			d.cal=$("#ev-cal").val();																		// Calendar link
 			r.portal=$("#ev-por").val();																	// Portal
 			r.rug=$("#ev-rug").val();																		// Room rug
 			r.room=$("#ev-room").val();																		// Room number
