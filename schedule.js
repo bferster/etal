@@ -256,7 +256,7 @@ class Schedule  {
 		if (link.match(/^bulletin/i)) return;														// Skip bulletin board links
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
-		let h=$(app.vr).width()*.5625;																// Assume 16x9
+		let pad=0,h=$(app.vr).width()*.5625;														// Assume 16x9 and no padding
 
 		if (link.match(/https:..zoom|zoomus:/i)) {													// If Zoom
 			app.curZoom=link;																		// Save link
@@ -286,7 +286,8 @@ class Schedule  {
 				return;																				// Quit
 				}
 			else if (link.charAt(0) == "#") {														// Show a full page
-				h=$(app.vr).height();																// Full height
+				pad=24;																				// padding
+				h=app.by-$(app.vr).position().top-pad-pad-2;											// Full height to bottom
 				link=link.substr(1);																// Remove flag									
 				}
 			$(window).scrollTop(0);																	// Scroll to top	
@@ -295,9 +296,9 @@ class Schedule  {
 				link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// Add name 
 				link=link.replace(/\<.*?>/ig,"");	
 				}
-			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:0;box-shadow:none;
+			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:${pad}px;box-shadow:none;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
-			width:${$(app.vr).width()}px; height:${h}px
+			width:${$(app.vr).width()-pad-pad}px; height:${h}px
 			${link.match(/.app.htm/i) ? ";background-color:#444;overflow:hidden" : ""}">
 			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
 			<div style="position:absolute;background-color:#fff;width:18px;height:18px;border-radius:18px">
@@ -305,8 +306,6 @@ class Schedule  {
 			<span id="co-ift" style="padding-left:24px">Minimize</span></div>
 			<iframe id="co-iframeFrame" style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
-			
-			if (link.match(/sapp.htm/i)) $("#co-iframe").height($(app.vr).height());				// Full sizd
 
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
 				$("#co-iframe").remove();															// Close window
@@ -393,13 +392,19 @@ class Schedule  {
 	{
 		$("#co-gItemD").remove();																	// Kill existing
 		$(window).scrollTop(0);																		// Scroll to top	
+		let h=$(app.vr).height();																	// Cover div only
+		if (content && content.match(/^#/)) { 														// If a full page link
+			content=content.substr(1);																// Remove flag
+			h=app.by-$(app.vr).position().top;														// Full height to bottom
+			}
 		let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
-		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
-		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
+		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;overflow:auto;
+		width:${$(app.vr).width()-32}px;height:${h-34}px">
 		<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
 		<b>${title}</b><br><br>`;
-		if (content && content.match(/^http/i)) { 													// If  a link
-			str+=`<iframe id="co-iframeFrame" style="width:100%;height:${$(app.vr).height()-78}px" src="${content}" 
+		if (content && content.match(/^#*http/i)) { 												// If  a link
+			content=ConvertFromGoogleDrive(content);												// Convert link
+			str+=`<iframe id="co-iframeFrame" style="width:100%;height:${h-79}px" src="${content}" 
 			allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe></div>`;
 			}
 		else{																						// Picture/text

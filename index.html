@@ -782,6 +782,22 @@ class App  {
 		$("#co-Rm-2").html(">"+msg+"<")
 	}
 
+	function ConvertFromGoogleDrive(url)															// CONVERT GOOGLE DRIVE/DROPBOX LINK TO DIRECT LINK
+	{
+		if (url && url.match(/drive\.google/i)) {														// A google drive image
+			var id=url.match(/\?id=(.+)/i);																// Extract id
+			if (!id)																					// Nothing there
+				id=url.match(/\/d\/(.*?)\//);													 		// Try this way
+			if (id)																						// An id found
+				url="//drive.google.com/uc?export=view&id="+id[1];									// Construct 'direct' link
+			}
+		else if (url && url.match(/dropbox\.com/i)) {													// A dropbox link
+			var id=url.match(/\/s\/(.*)\?dl=0/i)[1];													// Extract id
+			url="https://dl.dropboxusercontent.com/s/"+id;												// Construct direct link
+			}
+		return url;																						// Return link
+	}
+
 </script>
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179601831-1"></script>

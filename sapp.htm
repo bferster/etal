@@ -37,7 +37,7 @@
 	
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		let v=window.location.search.substring(1).split("&");										// Get params
-		$("#sp-mainIf").prop("src",v[1]);															// Set main div
+		$("#sp-mainIf").prop("src",ConvertFromGoogleDrive(v[1]));															// Set main div
 		$("#sp-videoIf").prop("src","japp.htm?"+v[0]+"&"+v[2]+"&"+v[3]);							// Set jitsi
 		});
 
@@ -59,7 +59,7 @@
 
 // HELPERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 
-function trace(msg, p1, p2, p3, p4)																	// CONSOLE 
+	function trace(msg, p1, p2, p3, p4)																	// CONSOLE 
 	{
 		if (p4 != undefined)
 			console.log(msg,p1,p2,p3,p4);
@@ -73,6 +73,21 @@ function trace(msg, p1, p2, p3, p4)																	// CONSOLE
 			console.log(msg);
 	}
 
+	function ConvertFromGoogleDrive(url)															// CONVERT GOOGLE DRIVE/DROPBOX LINK TO DIRECT LINK
+	{
+		if (url && url.match(/drive\.google/i)) {														// A google drive image
+			var id=url.match(/\?id=(.+)/i);																// Extract id
+			if (!id)																					// Nothing there
+				id=url.match(/\/d\/(.*?)\//);													 		// Try this way
+			if (id)																						// An id found
+				url="//drive.google.com/uc?export=view&id="+id[1];										// Construct 'direct' link
+			}
+		else if (url && url.match(/dropbox\.com/i)) {													// A dropbox link
+			var id=url.match(/\/s\/(.*)\?dl=0/i)[1];													// Extract id
+			url="https://dl.dropboxusercontent.com/s/"+id;												// Construct direct link
+			}
+		return url;																						// Return link
+	}
 
 </script>
 
