@@ -37,7 +37,7 @@
 	
 	$(document).ready(function() {								           							// ON PAGE LOADED
 		let v=window.location.search.substring(1).split("&");										// Get params
-		$("#sp-mainIf").prop("src",ConvertFromGoogleDrive(v[1]));															// Set main div
+		$("#sp-mainIf").prop("src",ConvertFromGoogleDrive(v[1]));									// Set main div
 		$("#sp-videoIf").prop("src","japp.htm?"+v[0]+"&"+v[2]+"&"+v[3]);							// Set jitsi
 		});
 

@@ -286,8 +286,13 @@ class Schedule  {
 				return;																				// Quit
 				}
 			else if (link.charAt(0) == "#") {														// Show a full page
-				pad=24;																				// padding
-				h=app.by-$(app.vr).position().top-pad-pad-2;											// Full height to bottom
+				pad=32;																				// padding
+				h=app.by-$(app.vr).position().top-pad-pad/2-2										// Full height to bottom
+				link=link.substr(1);																// Remove flag									
+				}
+			else if (link.charAt(0) == "=") {														// Show a full div
+				pad=32;																				// padding
+				h=$(app.vr).height()-pad-pad/2-2													// Full height to bottom
 				link=link.substr(1);																// Remove flag									
 				}
 			$(window).scrollTop(0);																	// Scroll to top	
@@ -296,16 +301,20 @@ class Schedule  {
 				link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// Add name 
 				link=link.replace(/\<.*?>/ig,"");	
 				}
-			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:${pad}px;box-shadow:none;
+			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:${pad/2}px;padding-top:${pad}px;
+			box-shadow:none;background-color:#eee;
 			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
-			width:${$(app.vr).width()-pad-pad}px; height:${h}px
-			${link.match(/.app.htm/i) ? ";background-color:#444;overflow:hidden" : ""}">
-			<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
+			width:${$(app.vr).width()-pad}px; height:${h}px
+			${link.match(/.app.htm/i) ? ";background-color:#444;overflow:hidden" : ""}">`;
+			if (pad) str+=`<img id="co-pipBut2" style="float:right;cursor:pointer;width:22px;margin-top:-27px" src="img/zoomblue.png" title="Video chat">`;
+			str+=`<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
 			<div style="position:absolute;background-color:#fff;width:18px;height:18px;border-radius:18px">
 			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
 			<span id="co-ift" style="padding-left:24px">Minimize</span></div>
 			<iframe id="co-iframeFrame" style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
+
+			$("#co-pipBut2").on("click", ()=>{ this.PipVideo("frame","co-iframe") });				// ON PIP BUT
 
 			$("#co-ifc").on("click", ()=>{															// ON CLOSE BUT
 				$("#co-iframe").remove();															// Close window
@@ -400,8 +409,10 @@ class Schedule  {
 		let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;overflow:auto;
 		width:${$(app.vr).width()-32}px;height:${h-34}px">
-		<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
+		<img id="co-igc" style="float:left;cursor:pointer" src="img/closedot.png">
+		<img id="co-pipBut" style="float:right;cursor:pointer;width:22px" src="img/zoomblue.png" title="Video chat">
 		<b>${title}</b><br><br>`;
+
 		if (content && content.match(/^#*http/i)) { 												// If  a link
 			content=ConvertFromGoogleDrive(content);												// Convert link
 			str+=`<iframe id="co-iframeFrame" style="width:100%;height:${h-79}px" src="${content}" 
@@ -412,9 +423,41 @@ class Schedule  {
 			<div style="display:inline-block;text-align:left;margin-left:16px;vertical-align:top;width:calc(45% - 32px);">
 			${content ? content : "No details..."}</div></div>`;
 			}
-		
 		$("body").append(str.replace(/\t|\n|\r/g,""));												// Draw
 		$("#co-igc").on("click", ()=>{ $("#co-gItemD").remove(); });								// ON CLOSE BUT
+		$("#co-pipBut").on("click", ()=>{ this.PipVideo("gallery","co-gItemD") });					// ON PIP BUT
 	}
+
+	PipVideo(id, parent)																		// ADD PIP VIDEO CHAT			
+	{
+		let link="japp.htm?~"+app.meetingId+"~"+id;
+		link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// Add name 
+		link=link.replace(/\<.*?>/ig,"");	
+		let w=$("#"+parent).width()/3;																// Start off smaller
+		if ($("#co-pipDiv")[0]) {																	// If open
+			$("#co-pipDiv").remove();																// Remove it
+			return;																					// Quit
+			}	
+		let str=`<div id="co-pipDiv" style="position:absolute;right:12px;top:54px;width:${w}px;height:${w*.5625}px">
+		<iframe id="co-pipFrame" style="position:absolute;left:12px;width:calc(100% - 12px);height:100%;" 
+		src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>
+		<div class="co-resizer"></div></div>`;
+	
+		$("#"+parent).append(str.replace(/\t|\n|\r/g,""));											// Draw
+	
+		let l=$("#"+parent).position().left;														// Left side
+		let r=l+$("#"+parent).width()-64;															// Right
+
+		$("#co-pipDiv").draggable( { axis:"x",  iframeFix:false,	containment:[l,0,r,10000],		// SET DRAGGING
+		drag:(e,ui)=>{																				// ON DRAG
+			let ifr=document.getElementById('co-pipFrame').contentWindow.document;					// Point to Jitsi ifrane
+			let w=$("#"+parent).width()-ui.position.left+12;										// New size
+			ifr.getElementById('jitsiConferenceFrame0').style.height=w*.5625+"px";					// Set Jitsi iframe 
+			$("#co-pipDiv").css({ width:`${w}px`, height:`${w*.5625}px`, right:0, top:0 }); 		// Set container div
+			}
+		});
+
+	}
+
 
 } // Class closure

@@ -60,6 +60,8 @@
 					overflow-x:hidden; overflow-y:auto; margin:0 8px; margin-top:-24px;color:#000;text-align:left; padding:8px; 
 					font-size:13px;	background-color:#fff; border:1px solid #999; border-radius:6px; }
 	.co-galleryItem{font-size:10px; color:#fff; }
+	.co-resizer {	position:absolute; top:0; left:0; width:12px; height:100%; background-color:rgba(164,186,236); opacity:.5; 
+					background-image:url(img/slider.png); background-repeat: no-repeat; background-position:center; }
 
 	body ::-webkit-scrollbar { width: 9px; height:8px } 
 	body ::-webkit-scrollbar-track { background: transparent; }
@@ -697,7 +699,8 @@ class App  {
 				$("#co-galBase-"+i).height(Math.max($("#co-Rm-"+i).height()-60, isSmall? 300 : 0));		// Get hgt, min of 300 for mobile
 				}
 		$("[id^=co-coffee-], #co-quiet, [id^=co-Av-], [id^=co-Rm-]").droppable({	 					// ON AVATAR DROP
-		    over: (e, ui)=> { ui.draggable.css("cursor", "grabbing"); },								// Show I'm over a droppable
+		    accept:"#co-AvMe",																			// Only the me icon
+			over: (e, ui)=> { ui.draggable.css("cursor", "grabbing"); },								// Show I'm over a droppable
   			out:  (e, ui)=> { ui.draggable.css("cursor", "grab"); },									// Normal cursor
 			drop: (e, ui)=> { ui.draggable.css("cursor", "grab"); this.OnMeMove(e.pageX,e.pageY,e.target.id);}	// When dropped action		
 			});
