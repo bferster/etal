@@ -295,6 +295,10 @@ class Schedule  {
 				h=$(app.vr).height()-pad-pad/2-2													// Full height to bottom
 				link=link.substr(1);																// Remove flag									
 				}
+			else if (link.charAt(0) == "-") {														// Show a full div, no padding
+				h=$(app.vr).height()-2;																// Full height to bottom
+				link=link.substr(1);																// Remove flag									
+				}
 			$(window).scrollTop(0);																	// Scroll to top	
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
 			if (link.match(/.app.htm/i)) {
