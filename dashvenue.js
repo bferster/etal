@@ -36,7 +36,7 @@ class Venue {
 		    <option value="#d8c4ae"><option value="#a2733f"/><option value="#cc4c39"/><option value="#58aab4"/><option value="#5b66cb"/>
 			<option value="#6e9456"/><option value="#ba57ad"/>
 			${localStorage.getItem("palette-"+app.meetingId)}</datalist>										
-			<div class="co-venue">
+			<div id="ev-venMen" class="co-venue">
 				<table>
 				<tr style="vertical-align:4px"><td><b>CURRENT&nbsp;FLOOR&nbsp;</b><br><br></td><td><select id="evFloor" class="co-is" style="width:110px;font-size:13px"></select></td></tr>
 				<tr><td>Background color</td><td><input class='co-is' style='width:70px' type='text' id='ev-bcol' value='${(d.bcol ? d.bcol : "#ffffff")}'>
@@ -90,6 +90,7 @@ class Venue {
 		$("#ev-bcol").on("change",()=>{ $("#ev-bcolc").css("background-color",$("#ev-bcol").val()) });		// Field
 		$("#ev-rugc").on("click",()=>{  ColorPicker("#ev-rug") });											// Advanced color
 		$("#ev-bcolc").on("click",()=>{ ColorPicker("#ev-bcol") });											// Advanced 
+		$("#ev-venMen").on("click",(e)=>{ if (e.ctrlKey) this.EditParams(d) });								// Edit params
 
 		$("#evAddRoom").on("click",()=>{																	// ON ADD ROOM
 			this.Do();																						// Set do 
@@ -138,7 +139,7 @@ class Venue {
 			ReadFile(e,"floor","venue")																		// Read file
 			$("#co-tempFile").val("");																		// Keep from triggering twice
 			});								
-		$("#evRoom").on("change",()=>{	d.room=this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue();}) // On room change
+		$("#evRoom").on("change",()=>{ this.curRoom=$("#evRoom").prop("selectedIndex"); this.EditVenue(); })// On room change
 		$("#evTemp").on("change",()=>{																		// ON TEMPLATE PICK
 			let opt=$("#evTemp").prop("selectedIndex");														// Get option
 			let fields=["floor","room","rug","title","rs","ce","cs","re","params","portal","css","link"];	// Fields
@@ -272,6 +273,38 @@ class Venue {
 			app.ven.DrawVenue();
 		}
 	}
+
+	EditParams()
+	{
+		let k;
+		let p=JSON.parse(JSON.stringify(app.venue[this.curFloor][0].params));							// Clone params						
+		$("#confirmBoxDiv").remove();																	// Remove 
+		$("body").append("<div class='co-confirm' id='confirmBoxDiv' style='text-align:center'></div>");// Add box								
+		let str="<img src='img/logo.png' width='64'/><br>";												// Logo					
+		str+="<div style='font-size:14px;margin-top:8px;color:#666'><b>Floor parameters</b></div><table style='margin:0 auto'"; // Title
+		str+="<tr><td colspan=2><hr></td></tr>";
+		for (k in p)																					// For each param
+			str+=`<tr><td style="text-align:right"><b>${k}&nbsp;:&nbsp;</b></td><td>
+			<input type="text" id="pv-${k}" class="co-is" value="${p[k]}"></td></tr>`;					
+		str+="<tr><td colspan=2><hr></td></tr>";
+		str+=`<tr><td><input type="text" id="pvaddk" class="co-is" style="width:50px" placeholder="New key">&nbsp;&nbsp;
+		</td><td><input type="text" id="pvaddv" class="co-is" placeholder="New value"></td></tr>`;		// Add new line
+		str+="</table><br><div id='dialogOK' class='co-bs'>OK</div>";
+		str+="<div id='dialogCancel' class='co-bs' style='margin-left:8px;background-color:#999'>Cancel</div></div>";
+		$("#confirmBoxDiv").html(str);																	// Add to div
+		$("#dialogCancel").on("click", ()=>{	$("#confirmBoxDiv").remove(); });						// ON CANCEL
+		$("#dialogOK").on("click", ()=> {																// ON OK 
+			p=app.venue[this.curFloor][0].params;														// Get actual params						
+			for (k in p) {																				// For each param
+				if ($("#pv-"+k).val() == "delete") 	delete p[k];										// If delete, remove it
+				else								p[k]=$("#pv-"+k).val();								// Copy val
+				}
+			if ($("#pvaddk").val() && $("#pvaddv").val()) p[$("#pvaddk").val()]=$("#pvaddv").val();		// A new one
+			$("#confirmBoxDiv").remove(); 																// Kill dialog
+			app.ven.EditVenue();																		// Reshow interface
+			});						
+		}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UNDO

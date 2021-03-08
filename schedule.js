@@ -448,7 +448,7 @@ class Schedule  {
 		let l=$("#"+parent).position().left;														// Left side
 		let r=l+$("#"+parent).width()-64;															// Right
 
-		$("#co-pipDiv").draggable( { axis:"x",  iframeFix:true,	containment:[l,0,r,10000],		// SET DRAGGING
+		$("#co-pipDiv").draggable( { axis:"x",  iframeFix:true,	containment:[l,0,r,10000],			// SET DRAGGING
 		drag:(e,ui)=>{																				// ON DRAG
 			let ifr=document.getElementById('co-pipFrame').contentWindow.document;					// Point to Jitsi ifrane
 			let w=$("#"+parent).width()-ui.position.left+12;										// New size
