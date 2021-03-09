@@ -337,9 +337,19 @@ class Schedule  {
 			}
 	}
 
-	SetMacros(content)																			// SET CONTENT MACROS
+	SetMacros(room, content)																	// SET CONTENT MACROS
 	{
 		return content;
+		let ifr;
+		let h=app.venue[app.curFloor][room].hgt;													// Get height
+		if ((ifr=content.match(/iframe\((.+?)\)/i))) {												// An iframe macro
+			content=`<iframe src="${ifr[1]}" 
+			style="width:100%;height:${h}px;pointer-events:auto;border:none"  
+			allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
+			}
+		else if ((ifr=content.match(/center\((.+?)\)/i))) {											// A center macro
+			}
+		return content.replace(/\t|\n|\r/g,"");
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

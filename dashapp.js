@@ -135,6 +135,7 @@ class App  {
 			d[row-1][fields[col]]=o.content.$t;																// Add content
 			}
 		for (i=0;i<d.length;++i) {																			// For each row	
+			if ((table == "schedule")    && d[i].content)			   d[i].content=d[i].content.replace(/\<LF\/\>/g,"\n");	// Replace <LF/>s												// I something there in sechedule content
 			if ((table == "schedule")    && (d[i].day == undefined))   d.splice(i,1);						// Remove blank row	
 			else if ((table == "people") && (d[i].email == undefined)) d.splice(i,1);						// Remove
 			else if ((table == "venue")  && (d[i].floor == undefined)) d.splice(i,1);						// Remove
@@ -167,9 +168,11 @@ class App  {
 			fields=["day","start","end","desc","floor","bar","room","link","content"];						// Fields
 			d=JSON.parse(JSON.stringify(this.schedule));													// Clone schedule data
 			for (i=0;i<fields.length;++i)	if (!d[0][fields[i]]) d[0][fields[i]]="";						// Make sure all fields are in 1st row for CSV export															// Make sure it exists
+			for (i=0;i<d.length;++i) {																		// For each event
+				if (d[i].content) 																			// I something there in content
+					d[i].content=d[i].content.replace(/\n|\r\n/g,"<LF/>");									// Replace LFs
+				}
 			}
-		
-		
 		let str=Papa.unparse(d,{ header:true, skipEmptyLines:true, columns:fields });						// Make CSV using lib
 		SaveTextAsFile(this.meetingId+"-"+table+".csv",str);												// Write file	
 		Sound("ding");																						// Ding

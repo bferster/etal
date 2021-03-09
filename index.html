@@ -671,7 +671,7 @@ class App  {
 				content=this.chat.GetBulletinBoard(sc.index); 											// Get bulletin board content
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
-			content=this.sced.SetMacros(content);														// Set content macros
+			content=this.sced.SetMacros(i,content);														// Set content macros
 		
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
 			str+=`<div class="co-room" style=";grid-column-start:${cs};grid-column-end:${ce};grid-row-start:${rs};grid-row-end:${re};
@@ -680,7 +680,7 @@ class App  {
 			<div id="co-Rm-${i}" style="height:100%;width:100%;position:relative">`;
 			if (!i)	str+=menu;																			// Add menu to hallway
  			if (o.title && i && (o.title.charAt(0) != "*")) str+=`<div class="co-roomHdr">${o.title }</div>`;	// Add title to non-hallways
-			str+="<div id='co-roomContent-"+i+"' style='pointer-events:none;display:inline-block;width:100%'>"+content+"</div>";	// Add conten wrapped in no-event div
+			str+="<div id='co-roomContent-"+i+"' style='pointer-events:none;display:inline-block;width:100%'>"+content+"</div>";	// Add content wrapped in no-event div
 			if (i && (sc.bar > 0)) str+=`<img id="co-coffee-${this.curFloor}-${i}" 
 			style="position:absolute;cursor:grabbing;left:calc(100% - ${(avSize/2)+27}px);top:-4px;width:52px" src="img/coffeecup.png" title="Coffeebar">`;
            	if (sc.live > 0)   str+=`<img style="position:absolute;left:10px;top:12px;width:32px" src="img/live.png">`;
@@ -689,11 +689,13 @@ class App  {
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
 		$("#co-menDiv").offset({ left:$("#co-Rm-0").offset().left, top:this.by-avSize-22});				// Force to bottom
-		for (i=0;i<this.venue[this.curFloor].length;++i) 												// For each room
-			if (gals[i]) { 																				// If someting there
+		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
+			this.venue[this.curFloor][i].hgt=$("#co-roomContent-"+i).height();							// Save room height
+			if (gals[i]) { 																				// If something there
 				$("#co-roomContent-"+i).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
 				$("#co-galBase-"+i).height(Math.max($("#co-Rm-"+i).height()-60, isSmall? 300 : 0));		// Get hgt, min of 300 for mobile
 				}
+			}
 		$("[id^=co-coffee-], #co-quiet, [id^=co-Av-], [id^=co-Rm-]").droppable({	 					// ON AVATAR DROP
 		    accept:"#co-AvMe",																			// Only the me icon
 			over: (e, ui)=> { ui.draggable.css("cursor", "grabbing"); },								// Show I'm over a droppable

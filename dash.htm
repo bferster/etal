@@ -225,6 +225,7 @@
 			if ((table == "schedule") && !d[0].day)   { PopUp("Wrong type!"); Sound("delete"); return; }	// Wrong table type
 			if ((table == "venue")    && !d[0].rug)   { PopUp("Wrong type!"); Sound("delete"); return; }	// Wrong table type
 			for (i=0;i<d.length;++i) {																		// For each row	
+				if ((table == "schedule")    && d[i].content)			   d[i].content=d[i].content.replace(/\<LF\/\>/g,"\n");	// Replace <LF/>s												// I something there in sechedule content
 				if ((table == "schedule")    && (d[i].day == undefined))   d.splice(i,1);					// Remove blank row	
 				else if ((table == "people") && (d[i].email == undefined)) d.splice(i,1);					// Remove
 				else if ((table == "venue")  && (d[i].floor == undefined)) d.splice(i,1);					// Remove
