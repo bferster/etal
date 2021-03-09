@@ -452,7 +452,7 @@ class Schedule  {
 			$("#co-pipDiv").remove();																// Remove it
 			return;																					// Quit
 			}	
-		let str=`<div id="co-pipDiv" style="position:absolute;right:12px;top:54px;width:${w}px;height:${w*.5625}px">
+		let str=`<div id="co-pipDiv" style="position:absolute;right:16px;top:54px;width:${w}px;height:${w*.5625}px">
 		<iframe id="co-pipFrame" style="position:absolute;left:12px;width:calc(100% - 12px);height:100%;" 
 		src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>
 		<div class="co-resizer"></div></div>`;
