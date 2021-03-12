@@ -81,10 +81,14 @@ class Schedule  {
 		if (!p.role)								return;										// Quit if no role
 		if (!p.role.match(/admin|host|vendor/i))	return;										// Quit if not authorized
 		$("#co-Vcon").remove();																	// Kill existing
+		let content=$("#co-gItemD").data("content");											// Get content
+		if (content && !content.match(/^https\:\/\/etalimages.s3.amazonaws.com/i)) content="";	// Not an AWS file
+
+
 		let str=`<div id="co-Vcon" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
 		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
-		<img id="co-igc" style="float:right;cursor:pointer" src="img/closedot.png">
+		<img id="co-clsa" style="float:right;cursor:pointer" src="img/closedot.png">
 		<b>Vendor Control Panel</b><br><br>
 		<div style="float:left">Toggle away status for:&nbsp;&nbsp;&nbsp;</div>
 		<div style="text-align:left">`;
@@ -92,18 +96,26 @@ class Schedule  {
 			if (this.FindAwayEvent({ floor:app.curFloor, room:i, no:true}).no) continue;		// Skip ones without an away event
 			str+=`<div id="co-Vcon-${i}" class="co-bsg">${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</div>&nbsp;&nbsp;&nbsp;`;	
 			}
+		if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
 		str+="</div><br></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
 	
-		$("#co-igc").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
+		$("#co-clsa").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
 		$("[id^=co-Vcon-]").on("click", (e)=>{ 													// ON ROOM CLICK
 			let id=e.currentTarget.id.substr(8);												// Get id
 			let o=this.GetEventByRoom(app.curFloor, id, true);									// Point at room	
 			o.away=(o.away > 0) ? 0 : 1;														// Toggle away
 			app.ws.send(`AW|${o.id}|${o.away}`);												// Update server
 			});
-	
-	}
+		
+		$("#co-imageUpload").on("change",(e)=>{													// ON IMAGE UPLOAD
+			let myReader=new FileReader();														// Alloc reader
+			myReader.onloadend=(e)=>{ 															// When loaded
+				app.ws.send("IMG|"+content.split(".com/")[1]+"|"+myReader.result);				// Send base64 to server
+				}						
+			myReader.readAsDataURL(e.target.files[0]);											// Load file		
+			});
+		}
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
 	{
@@ -422,7 +434,7 @@ class Schedule  {
 			}
 		let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;overflow:auto;
-		width:${$(app.vr).width()-32}px;height:${h-34}px">
+		width:${$(app.vr).width()-32}px;height:${h-34}px" data-content="${content}">
 		<img id="co-igc" style="float:left;cursor:pointer" src="img/closedot.png">
 		<img id="co-pipBut" style="float:right;cursor:pointer;width:22px" src="img/zoomblue.png" title="Video chat">
 		<b>${title}</b><br><br>`;
