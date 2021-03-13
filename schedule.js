@@ -110,7 +110,7 @@ class Schedule  {
 		
 		$("#co-imageUpload").on("change",(e)=>{													// ON IMAGE UPLOAD
 			let myReader=new FileReader();														// Alloc reader
-			myReader.onloadend=(e)=>{ 															// When loaded
+			myReader.onloadend=function(e) { 													// When loaded
 				app.ws.send("IMG|"+content.split(".com/")[1]+"|"+myReader.result);				// Send base64 to server
 				}						
 			myReader.readAsDataURL(e.target.files[0]);											// Load file		
