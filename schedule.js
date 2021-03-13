@@ -84,7 +84,6 @@ class Schedule  {
 		let content=$("#co-gItemD").data("content");											// Get content
 		if (content && !content.match(/^https\:\/\/etalimages.s3.amazonaws.com/i)) content="";	// Not an AWS file
 
-
 		let str=`<div id="co-Vcon" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
 		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
