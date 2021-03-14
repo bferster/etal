@@ -16,7 +16,8 @@
 	<title>èt•al Meeting</title>
 </head>
 <style>
-	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:0; }
+	body 		{ 	font-family:Segoe UI,Verdana,Geneva,sans-serif; font-size:10px; padding:0px; box-sizing:content-box; margin:0;
+					/*background-image:url("img/clouds.jpg"); background-size:cover;*/ } 
 	.co-splash 	{ 	position:absolute; width:100%; top:0; left:0; text-align:center; margin-top:15%; display:none; font-size:12px; }
 	.co-top		{	opacity:0; overflow:hidden; height:100vh; z-index:0;}
 	.co-venue 	{	display:grid; text-align:center; height:100%; color:#fff; user-select:none; -webkit-user-select:none; -ms-user-select:none; }
@@ -201,8 +202,8 @@ class App  {
 		this.hallPos={};																			// Hallway position
 		this.curContent="";																			// Current floor's content
 		this.coffeebarLink="";																		// Alternative link for main coffeebar
-		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
-		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
+		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080?hello');	// Open insecure websocket											
+		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080?hello');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };					// ON CLOSE
 		this.ws.onerror=(e)=> { 																	// ON ERROR
@@ -232,8 +233,8 @@ class App  {
 			if ((this.secs%15) == 0)  this.ArrangePeople();											// Every 15 secs, arrange people
 			if ((this.secs%60) == 10) this.sced.CheckSchedule();									// On every minute, check the schedule
 			if (this.retryWS) {																		// If reconnectng to websocket
-				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
-				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
+				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080?hello');		// Open insecure websocket											
+				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080?hello');	// Secure											
 				this.ws.onmessage=(e)=>{ this.SocketIn(e); };										// ON INCOMING MESSAGE
 				this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };			// ON CLOSE
 				this.ws.onopen=()=>    { console.log('re-connected'); };							// ON OPEN  
