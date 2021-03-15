@@ -205,8 +205,8 @@ class App  {
 		this.privateMode=false;																		// Private mode
 		
 		if (window.location.search && window.location.search.match(/\&private/i)) this.privateMode=true;	// Start private mode
-		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080?hello');	// Open insecure websocket											
-		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080?hello');	// Secure											
+		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
+		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
 		this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };					// ON CLOSE
 		this.ws.onerror=(e)=> { 																	// ON ERROR
@@ -236,8 +236,8 @@ class App  {
 			if ((this.secs%15) == 0)  this.ArrangePeople();											// Every 15 secs, arrange people
 			if ((this.secs%60) == 10) this.sced.CheckSchedule();									// On every minute, check the schedule
 			if (this.retryWS) {																		// If reconnectng to websocket
-				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080?hello');		// Open insecure websocket											
-				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080?hello');	// Secure											
+				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
+				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 				this.ws.onmessage=(e)=>{ this.SocketIn(e); };										// ON INCOMING MESSAGE
 				this.ws.onclose=()=>   { this.retryWS=true; console.log('disconnected'); };			// ON CLOSE
 				this.ws.onopen=()=>    { console.log('re-connected'); };							// ON OPEN  
