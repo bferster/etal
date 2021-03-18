@@ -269,7 +269,7 @@ class App  {
 
 	JoinMeeting(id)																				// JOIN MEETING
 	{
-		id=this.pIndex[id];																			// Turn id into inde		
+		id=this.pIndex[id];																			// Turn id into index		
 		this.myId=id;																				// My id
 		this.myEmail=this.people[id].email;															// Get my email
 		this.DrawPeople();																			// Draw people avatars
@@ -326,7 +326,6 @@ class App  {
 			$("#co-At-"+id).css("display",v[5].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
 		else if ((v[0] == "P") || (v[0] == "WP")) {													// Add/update people
-//			let pn=this.people.length;																// Number of people before
 			this.AddPeople(JSON.parse(v[1]));														// Set data								
 			if (v[2] == "U")	app.DrawPeople();													// Redraw on update
 			}
@@ -550,7 +549,6 @@ class App  {
 		this.people=people;																				// Set data
 		for (i=0;i<people.length;++i) {																	// For each person
 			o=this.people[i];																			// Point at them
-//			let id=o.id.split("~")[1];																	// Split id out
 			o.firstname=o.firstname ? o.firstname : "";													// Null out undefined
 			if (o.email == this.myEmail) this.myId=i;													// Set myid
 			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  

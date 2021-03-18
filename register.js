@@ -27,7 +27,12 @@ class Register  {
 			<td>State/Country&nbsp;</td><td><input class='co-is' style="width:150px"type='text' id='statecon'></td></tr>
 			<tr><td>Linked-In</td><td><input class='co-is' style="width:150px" type='text' id='li'></td>
 			<td>Website</td><td><input class='co-is' style="width:150px"type='text' id='web'></td></tr>
-			<tr><td>Interests</td><td><input class='co-is' style="width:150px" type='text' id='ints'></td></tr>
+			<tr><td>Interests</td><td><input class='co-is' style="width:150px" type='text' id='ints'></td><td>`;
+			if (this.person.email.toLowerCase().trim() == "guest") {
+				this.person.email="";
+				str+=`Email</td></td><td><input class='co-is' style="width:150px" type='text' id='email' placeholder='required'>`;
+				}
+			str+=`</td></tr>
 			<tr><td colspan='4'><p><hr></p></td></tr>
 			<tr><td colspan='2' style="text-align:center;vertical-align:top">
 			<b>Add a picture for your icon</b><br><br>
@@ -55,6 +60,7 @@ class Register  {
 	$("body").append(str.replace(/\t|\n|\r/g,""));													// Add registration form
 	$("#firstName").val(this.person.firstName ? this.person.firstName: ""); 						// First name
 	$("#lastName").val(this.person.lastName ? this.person.lastName: ""); 							// Last
+	$("#email").val(this.person.email ? this.person.email: ""); 									// Email
 	$("#title").val(this.person.title ? this.person.title: ""); 									// Title
 	$("#org").val(this.person.org ? this.person.org: ""); 											// Org
 	$("#city").val(this.person.city ? this.person.city: ""); 										// City
@@ -78,9 +84,11 @@ class Register  {
 	{
 		if (!$("#firstName").val()) { Popup("First name is required!"); return; }					// Required
 		if (!$("#lastName").val()) 	{ Popup("Last name is required!");  return; }
+		if (!$("#email").val()) 	{ Popup("Email is required!");  	return; }
 
 		this.person.firstName=$("#firstName").val();												// First name
 		this.person.lastName=$("#lastName").val(); 													// Last
+		this.person.email=$("#email").val(); 														// Email
 		this.person.title=$("#title").val() ? $("#title").val() : "";								// Title
 		this.person.org=$("#org").val() ? $("#org").val() : "";										// Org
 		this.person.city=$("#city").val() ? $("#city").val() : "";									// City
