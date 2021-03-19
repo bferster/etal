@@ -112,11 +112,14 @@
 			window.addEventListener("message",HTML5eventHandler,false);								// Add event handler
 		else																						// Use other method
 			window.attachEvent("message",HTML5eventHandler);										// Add handler
-
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		var url=window.location.search.substring(1);						   						// Get query string
-		let meetingId=url ? url.split("&")[0] : 1;													// Set meeting id
-	
+		let meetingId=url ? url.split("&")[0] : "1";												// Set meeeting id
+														
+/////////////////////////////////////////////////////////////	
+if (meetingId && +meetingId.match(/av\d/i)) return;
+/////////////////////////////////////////////////////////////
+
 		app=new App(meetingId);                                      								// Alloc app
 		$("#splashDiv").fadeIn();																	// Fade in splash
 	
@@ -642,6 +645,7 @@ class App  {
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px${p.menu&2 ? "" : ";display:none" }" title="See meeting schedule">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px${p.menu&4 ? "" : ";display:none" }" title="See other attendees">
 				<img src="img/bulletin.png" id="co-bbIcon" style="height:36px;margin-right:8px;cursor:pointer${p.menu&8 ? "" : ";display:none" }" title="Message board">
+				<img src="img/whiteboard.png" id="co-whiteIcon" style="height:36px;margin-right:8px;cursor:pointer${p.white ? "" : ";display:none" }" title="White board">
 				<img src="img/calendar.png" id="co-calIcon" style="height:36px;margin-right:8px;cursor:pointer${p.cal ? "" : ";display:none" }" title="Calendar">
 				<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer${p.menu&16 ? "" : ";display:none" }" title="Get help!">
 			</div></div>`;
@@ -709,6 +713,7 @@ class App  {
 		$("#co-infoDesk").on("click", 			 (e)=>{ this.chat.Chat(this.infoDeskId,"infoDesk"); });	// ON HELP BUT
 		$("#co-bbIcon").on("click", 			 (e)=>{ this.chat.GetBulletinBoard("", this.curFloor)}); // ON BULLETIN BUT
 		$("#co-calIcon").on("click", 			 (e)=>{ this.sced.ShowLink(p.cal) }); 					// ON CALENDAR BUT
+		$("#co-whiteIcon").on("click", 			 (e)=>{ this.sced.ShowLink(p.white) }); 				// ON WHITEBOARD BUT
 		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); // ON PEOPLE BUT
 		}
 
