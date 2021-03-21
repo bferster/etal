@@ -33,7 +33,7 @@ class Chat  {
 				str+=`<div id="co-qv-${i}" style="vertical-align:top">
 				<div style="float:left;text-align:left;width:100%">
 					<div style="float:left;width:40px;height:40px;overflow:hidden;border-radius:64px;margin:0 8px 16px 4px;border:1px solid #999">
-					<img id="co-qi-${i}" style="width:40px"	src="${app.people[this.queue[i].id].pic}"></div>
+					<img id="co-qi-${i}" style="width:40px;min-height:40px"	src="${app.people[this.queue[i].id].pic}"></div>
 					<b>${app.people[this.queue[i].id].firstName} ${app.people[this.queue[i].id].lastName}</b></br>
 					<i>${this.queue[i].msg}</i>
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`

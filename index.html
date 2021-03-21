@@ -115,11 +115,6 @@
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url.split("&")[0] : "1";												// Set meeeting id
-														
-/////////////////////////////////////////////////////////////	
-if (meetingId && +meetingId.match(/av\d/i)) return;
-/////////////////////////////////////////////////////////////
-
 		app=new App(meetingId);                                      								// Alloc app
 		$("#splashDiv").fadeIn();																	// Fade in splash
 	
