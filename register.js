@@ -11,6 +11,7 @@ class Register  {
 	Draw()																						// DRAW REGISTRATION 
 	{
 		$("#splashDiv").fadeOut();																	// Fade out splash
+		if (this.person.email.toLowerCase().trim() == "guest") 	this.person.email="";				// Clear guest
 		let str=`<div id="co-card" style="width:-moz-fit-content;width:fit-content;position:absolute;top:48px;left:calc(50% - 263px);border:1px solid #999;
 			text-align:center;background-color:#fff;padding:16px;border-radius:12px;font-size:16px;">`;
 			if (this.person.firstName)																// If updating
@@ -27,11 +28,8 @@ class Register  {
 			<td>State/Country&nbsp;</td><td><input class='co-is' style="width:150px"type='text' id='statecon'></td></tr>
 			<tr><td>Linked-In</td><td><input class='co-is' style="width:150px" type='text' id='li'></td>
 			<td>Website</td><td><input class='co-is' style="width:150px"type='text' id='web'></td></tr>
-			<tr><td>Interests</td><td><input class='co-is' style="width:150px" type='text' id='ints'></td><td>`;
-			if (this.person.email.toLowerCase().trim() == "guest") {
-				this.person.email="";
-				str+=`Email</td></td><td><input class='co-is' style="width:150px" type='text' id='email' placeholder='required'>`;
-				}
+			<tr><td>Interests</td><td><input class='co-is' style="width:150px" type='text' id='ints'></td>
+			<td>Email</td></td><td><input class='co-is' style="width:150px" type='text' id='email' placeholder='required'>`;
 			str+=`</td></tr>
 			<tr><td colspan='4'><p><hr></p></td></tr>
 			<tr><td colspan='2' style="text-align:center;vertical-align:top">
