@@ -5,6 +5,7 @@ class Chat  {
 		this.chats=[];																				// Holds chats
 		this.curChat=-1;																			// Who I'm chatting with																			
 		this.speedTimer=null;																		// Speed meeting timer
+		this.speedSecs=0;																			// Seconds in a speed meeting
 		this.queue=[];																				// Contact queue
 		this.recognition=null;																		// TTS/STT
 		this.VoiceInit((s)=> { 																		// Init TTS/STT
@@ -18,7 +19,38 @@ class Chat  {
 
 	SpeedMeeting(close)																			// START/STOP SPEED MEETING																				
 	{
+		let i,o,bar,id,_this=this;
 		this.speedTimer=null;																		// Speed meeting timer
+		GetNextPerson();																			// Get next available person
+
+		function GetNextPerson() {																	// GET NEXT PERSON
+			bar=[];
+			for (i=0;i<app.people.length;++i) {														// For each person
+				o=app.people[i];																	// Point at them
+				if ((i != app.myId) && (o.stats == "S"+app.curFloor) && !o.met) bar.push(i); 		// Add if in a speed meeting, not me and not already met
+				}
+			if (bar.length) {																		// If people in speed meeting
+				id=ShuffleArray(bar)[0]																// Get random person
+				app.people[id].met=1;																// Set person as met
+				let fid=app.people[app.myId].id;													// From id (me)
+				let tid=app.people[id].id															// To id
+				app.sced.ShowLink(`japp.htm?/~${app.meetingId}~${fid}~${tid}`);						// Run video
+				app.ws.send(`C|${fid}|${tid}|speedmeet`);											// Send chat message to start
+				_this.speedSecs=0;																	// Start second
+				app.ArrangePeople();																// Arrange people in meeting
+				_this.speedTimer=setInterval(()=>{													// Set timer
+					_this.speedSecs++;																// Add to count	
+//					ShowClock();
+					if (_this.speedSecs > 30) {														// If done with this persson
+						app.ArrangePeople();														// Arrange people in meeting
+						clearTimeout(_this.speedTimer);												// Clear timer
+						app.ws.send(`C|${fid}|${tid}|speedclose`);									// Send chat message to close
+						GetNextPerson();															// Get next person
+						}
+					},1000);																		// Every second
+				}
+			else app.CloseAll(3);																	// Quit
+			}
 	}
 
 	ShowQueue()																					// SHOW QUEUE DOT

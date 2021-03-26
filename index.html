@@ -286,6 +286,15 @@ class App  {
 		if (v[1]) meeting=v[1].split("~")[0];														// Get meeting id
 		if (v[0] == "C") {																			// CHAT
 			if (meeting != this.meetingId)	return;													// Not this meeting
+			if (v[3] == "speedmeet") {																// A speed meeting
+				app.people[app.pIndex[v[2]]].met=1;													// Set met flag
+				app.sced.ShowLink(`japp.htm?/~${app.meetingId}~${v[2]}~${v[1]}`);					// Run video
+				return;																				// Quit
+				}
+			else if (v[3] == "speedclose") {														// A speed meeting
+				app.CloseAll(3);																	// Close video
+				return;																				// Quit
+				}
 			id=this.pIndex[v[2]];																	// Get index from id			
 			this.chat.chats.push({ dir:0, id:id, msg:v[3] });										// Archive
 			if (($("#co-textDiv").length) && (this.chat.curChat == id)) {							// If chat window is open with same person
@@ -319,7 +328,7 @@ class App  {
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
 			if (v[5] == "Q")							$("#co-Av-"+id).css("display","none");		// Hide this person if quiet
 			else if ($("#co-top").css("opacity") > 0)	$("#co-Av-"+id).css("display","block");		// Show them, if initted
-			if (v[5].match(/^[B|R]/))	this.ArrangePeople();										// Arrange people at bar and rooms
+			if (v[5].match(/^[B|R|S]/))	this.ArrangePeople();										// Arrange people at bar and rooms
 			$("#co-Av-"+this.myId).css("display","none");											// Always hide my own avatar
 			$("#co-At-"+id).css("display",v[5].match(/^[B|R]/) ? "none" : "block");					// Hide or show name tag
 			}
@@ -407,7 +416,7 @@ class App  {
 			y=$("#"+targetId).offset().top+4;														// Y
 			$("#co-AvMe").animate({ left:x, top:y });												// Animate me there		
 			app.chat.SpeedMeeting(false);															// Init speed meeting
-			for (let i=0;i<this.people.length;++i) { this.people[i].stats="S0"; $("#co-Av-"+i).show() };													
+//			for (let i=0;i<this.people.length;++i) { this.people[i].stats="S0"; $("#co-Av-"+i).show() };													
 			this.status="S"+this.curFloor;															// In speed meeting mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
@@ -460,23 +469,24 @@ class App  {
 		let nr=this.venue[cf].length;																// Number of rooms on current floor
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at them
-			if (cf != o.f) 				$("#co-Av-"+i).css("display","none");						// Hide people not on this floor
-			else if (o.stats != "Q")	$("#co-Av-"+i).css("display","block")						// Show unless quiet
+			if ((cf != o.f) || (o.stats == "Q")	|| (o.stats == "S"+cf)) {							// Hide people not on floor, quiet, or speed meeting
+				if ((o.stats == "S"+cf) && (i != this.myId) && !o.met) bar.push(i); 				// If unmet person in a speed meeting, add to array
+				$("#co-Av-"+i).css("display","none");												// Hide avatar
+				continue;					
+				}
 			$("#co-At-"+i).html(`${o.firstName}<br>${o.lastName}`);									// Set label
 			$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");								// Set image
 			$("#co-Av-").animate({ left:this.bx*o.x, top:this.by*o.y });							// Animate here	
-			if (this.people[i].stats == "S"+cf) bar.push(i); 										// If in a speed meeting, add to array
 			}
-		
 		if (bar.length) {																			// If a speed meeting active
     		x=$("#co-speedMeet-"+cf).offset().left+5;                                    			// left side of icon
 			y=$("#co-speedMeet-"+cf).offset().top-avSize-2;                                    		// Top side of icon
 			inc=avSize+1;                                                              	            // Spacing between meeters
 			bar=ShuffleArray(bar);																	// Randomize			
 			for (i=0;i<bar.length;++i) {                                                            // For each barmate
-   				if (bar[i] == this.myId) continue;													// Skip me
+	          	$("#co-Av-"+bar[i]).css("display","block");												// Show it
    				$("#co-At-"+bar[i]).css("display","none");                                         	// Hide me tag
-               	$("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           							// Move them
+   				 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           						// Move them
   				if (i < 3) y-=inc;    						                              			// Advance 1st bunch
 				}
  			}
