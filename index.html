@@ -201,7 +201,7 @@ class App  {
 		this.curContent="";																			// Current floor's content
 		this.coffeebarLink="";																		// Alternative link for main coffeebar
 		this.privateMode=false;																		// Private mode
-		
+
 		if (window.location.search && window.location.search.match(/\&private/i)) this.privateMode=true;	// Start private mode
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -402,6 +402,14 @@ class App  {
 			$("#co-AvMe").animate({ left:x, top:y });												// Animate me there		
 			this.status="Q";																		// In quiet mode
 			}
+		else if (targetId.match(/co-speedMeet/)) {													// ON SPEED MEETING AREA
+			x=$("#"+targetId).offset().left+4;														// Center x
+			y=$("#"+targetId).offset().top+4;														// Y
+			$("#co-AvMe").animate({ left:x, top:y });												// Animate me there		
+			app.chat.SpeedMeeting(false);															// Init speed meeting
+			for (let i=0;i<this.people.length;++i) { this.people[i].stats="S0"; $("#co-Av-"+i).show() };													
+			this.status="S"+this.curFloor;															// In speed meeting mode
+			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
 			let id=targetId.substr(10);                                                             // Which one?
  			this.status="B"+id;                                                  					// Update me
@@ -450,11 +458,6 @@ class App  {
 		let cf=this.curFloor;																		// Current floor
 		let nf=this.venue.length																	// Number of floors
 		let nr=this.venue[cf].length;																// Number of rooms on current floor
-		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
-      		x=$("#co-coffee-"+cf+"-0").offset().left+30;                                    		// left side of bar
-       		y=$("#co-coffee-"+cf+"-0").offset().top+8;                      			 			// On top of bar area
-    		w=$("#co-coffee-"+cf+"-0").width()-60-avSize;                                  			// Width of space
-   			}
 		for (i=0;i<this.people.length;++i) {														// For each person
 			o=this.people[i];																		// Point at them
 			if (cf != o.f) 				$("#co-Av-"+i).css("display","none");						// Hide people not on this floor
@@ -462,8 +465,27 @@ class App  {
 			$("#co-At-"+i).html(`${o.firstName}<br>${o.lastName}`);									// Set label
 			$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");								// Set image
 			$("#co-Av-").animate({ left:this.bx*o.x, top:this.by*o.y });							// Animate here	
+			if (this.people[i].stats == "S"+cf) bar.push(i); 										// If in a speed meeting, add to array
 			}
-	
+		
+		if (bar.length) {																			// If a speed meeting active
+    		x=$("#co-speedMeet-"+cf).offset().left+5;                                    			// left side of icon
+			y=$("#co-speedMeet-"+cf).offset().top-avSize-2;                                    		// Top side of icon
+			inc=avSize+1;                                                              	            // Spacing between meeters
+			bar=ShuffleArray(bar);																	// Randomize			
+			for (i=0;i<bar.length;++i) {                                                            // For each barmate
+   				if (bar[i] == this.myId) continue;													// Skip me
+   				$("#co-At-"+bar[i]).css("display","none");                                         	// Hide me tag
+               	$("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           							// Move them
+  				if (i < 3) y-=inc;    						                              			// Advance 1st bunch
+				}
+ 			}
+
+		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
+      		x=$("#co-coffee-"+cf+"-0").offset().left+30;                                    		// left side of bar
+       		y=$("#co-coffee-"+cf+"-0").offset().top+8;                      			 			// On top of bar area
+    		w=$("#co-coffee-"+cf+"-0").width()-60-avSize;                                  			// Width of space
+   			}
 		for (j=0;j<this.venue[cf].length;++j) {                             		   	 			// For each room
             bar=[];                                                                                 // New array
 			for (i=0;i<this.people.length;++i) {													// For each person
@@ -547,6 +569,7 @@ class App  {
 		this.people=people;																				// Set data
 		for (i=0;i<people.length;++i) {																	// For each person
 			o=this.people[i];																			// Point at them
+			o.met=0;																					// Not met yet
 			o.firstname=o.firstname ? o.firstname : "";													// Null out undefined
 			if (o.email == this.myEmail) this.myId=i;													// Set myid
 			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
@@ -631,11 +654,16 @@ class App  {
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
 		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
+		let offx=p.menu&1 ? avSize+16 : 0;																// Account for quiet icon
+		offx+=p.menu&32 ? avSize+8 : 0;																	// And speed icon
+
 		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute">
+			<img src="img/speedmeet.png" id="co-speedMeet-${this.curFloor}" 
+			style="height:${avSize+8}px${p.menu&32 ? "" : ";display:none;"};cursor:grabbing" title="Speed meeting">
 			<img src="img/quietarea.png" id="co-quiet" 
 			style="height:${avSize+8}px;margin:8px 0 0 8px${p.menu&1 ? "" : ";display:none;"};cursor:grabbing" title="Go private">
 			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none;"}
-			width:264px;margin-top:-36px; margin-left:calc(50% - 132px - ${avSize+16}px);z-index:3;cursor:grabbing" title="Main coffeebar">
+			width:264px;margin-top:-36px;margin-left:calc(50% - 136px - ${offx}px);z-index:3;cursor:grabbing" title="Main coffeebar">
 			<div style="float:right;margin:16px 8px 0 0">			
 				<img src="img/schedule.png" id="co-schedule"  style="height:36px;cursor:pointer;margin-right:8px${p.menu&2 ? "" : ";display:none" }" title="See meeting schedule">
 				<img src="img/people.png" 	id="co-attendees" style="height:36px;cursor:pointer;margin-right:8px${p.menu&4 ? "" : ";display:none" }" title="See other attendees">
@@ -698,7 +726,7 @@ class App  {
 				$("#co-galBase-"+i).height(Math.max($("#co-Rm-"+i).height()-60, isSmall? 300 : 0));		// Get hgt, min of 300 for mobile
 				}
 			}
-		$("[id^=co-coffee-], #co-quiet, [id^=co-Av-], [id^=co-Rm-]").droppable({	 					// ON AVATAR DROP
+		$("[id^=co-coffee-], #co-quiet, [id^=co-Av-], [id^=co-speedMeet-], [id^=co-Rm-]").droppable({	 					// ON AVATAR DROP
 		    accept:"#co-AvMe",																			// Only the me icon
 			over: (e, ui)=> { ui.draggable.css("cursor", "grabbing"); },								// Show I'm over a droppable
   			out:  (e, ui)=> { ui.draggable.css("cursor", "grab"); },									// Normal cursor
@@ -784,6 +812,19 @@ class App  {
 		trace(msg);
 		Popup(msg,10000)
 		$("#co-Rm-2").html(">"+msg+"<")
+	}
+
+	function ShuffleArray(array) 																	// SHUFFLE ARRAY
+  	{	
+		let currentIndex= array.length,temporaryValue,randomIndex;
+	  	while (currentIndex !== 0) {																	// While there remain elements to shuffle...
+			randomIndex=Math.floor(Math.random()*currentIndex);											// Pick a remaining element...
+    		currentIndex-=1;
+   			temporaryValue=array[currentIndex]; 														// And swap it with the current element.
+       	 	array[currentIndex]=array[randomIndex];
+    		array[randomIndex]=temporaryValue;
+  			}
+		  return array;																					// Return shuffled array
 	}
 
 	function ConvertFromGoogleDrive(url)															// CONVERT GOOGLE DRIVE/DROPBOX LINK TO DIRECT LINK

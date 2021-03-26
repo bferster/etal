@@ -4,6 +4,7 @@ class Chat  {
 	{
 		this.chats=[];																				// Holds chats
 		this.curChat=-1;																			// Who I'm chatting with																			
+		this.speedTimer=null;																		// Speed meeting timer
 		this.queue=[];																				// Contact queue
 		this.recognition=null;																		// TTS/STT
 		this.VoiceInit((s)=> { 																		// Init TTS/STT
@@ -13,6 +14,11 @@ class Chat  {
 				$(this).val(v+s);																	// Set text
 				})
 			});				
+	}
+
+	SpeedMeeting(close)																			// START/STOP SPEED MEETING																				
+	{
+		this.speedTimer=null;																		// Speed meeting timer
 	}
 
 	ShowQueue()																					// SHOW QUEUE DOT

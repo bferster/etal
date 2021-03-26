@@ -48,9 +48,10 @@ class Venue {
 				<tr><td>Calendar URL</td><td><input class='co-is' type='text' id='ev-cal' value='${(d.cal ? d.cal : "")}'></td></tr>	
 				<tr><td>Video room</td><td><select id="evVideo" class="co-is" style="width:110px"></select></td></tr>
 				<tr><td colspan="3">Quiet&nbsp;<input type="checkbox" id="co-evb0" ${d.menu&1 ? " checked" : ""}>&nbsp;&nbsp;
-				Sced&nbsp;<input type="checkbox" id="co-evb1" ${d.menu&2 ? " checked" : ""}>&nbsp;&nbsp;
+				Sched&nbsp;<input type="checkbox" id="co-evb1" ${d.menu&2 ? " checked" : ""}>&nbsp;&nbsp;
 				People&nbsp;<input type="checkbox" id="co-evb2" ${d.menu&4 ? " checked" : ""}></td></tr>
 				<tr><td colspan="3">Info&nbsp;&nbsp;&nbsp;<input type="checkbox" id="co-evb4" ${d.menu&16 ? " checked" : ""}>&nbsp;&nbsp;
+				Speed&nbsp;<input type="checkbox" id="co-evb5" ${d.menu&32 ? " checked" : ""}>&nbsp;&nbsp;
 				Messages&nbsp;<input type="checkbox" id="co-evb3" ${d.menu&8 ? " checked" : ""}></td></tr>
 				<tr><td>Templates</td><td><select id="evTemp" class="co-is" style="width:110px">
 				<option>Choose</option><option>Load public</option><option>Load local CSV</option><option>Save local CSV</option></select></td></tr>
