@@ -70,7 +70,9 @@
 	body ::-webkit-scrollbar-thumb:hover { background: #a4baec }
 
 	@media only screen and (max-width:700px) {
-		.co-top 	{ height:auto; overflow:auto }
+		.co-top 				{ height:auto; overflow:auto }
+		#co-roomContent-0 		{ min-height:100vh; }
+		[id^=co-roomContent-]	{ max-height:100vh; }
 		}
 
 </style>
@@ -666,11 +668,11 @@ class App  {
 		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
 		let offx=p.menu&1 ? avSize+16 : 0;																// Account for quiet icon
-		offx+=p.menu&32 ? avSize+8 : 0;																	// And speed icon
+		offx+=p.menu&32 ? avSize+16 : 0;																// And speed icon
 
 		let menu=`<div id="co-menDiv" style="z-index:0;width:100%;text-align:left;position:absolute">
 			<img src="img/speedmeet.png" id="co-speedMeet-${this.curFloor}" 
-			style="height:${avSize+8}px${p.menu&32 ? "" : ";display:none;"};cursor:grabbing" title="Speed meeting">
+			style="height:${avSize+8}px${p.menu&32 ? "" : ";display:none;"};cursor:grabbing;margin-left:8px" title="Speed meeting">
 			<img src="img/quietarea.png" id="co-quiet" 
 			style="height:${avSize+8}px;margin:8px 0 0 8px${p.menu&1 ? "" : ";display:none;"};cursor:grabbing" title="Go private">
 			<img id="co-coffee-${this.curFloor}-0" src="img/coffeebar.png" style="${(sc.bar > 0) ? "" : "display:none;"}
