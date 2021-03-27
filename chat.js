@@ -17,9 +17,9 @@ class Chat  {
 			});				
 	}
 
-	SpeedMeeting(close)																			// START/STOP SPEED MEETING																				
+	SpeedMeeting(maxTime)																			// START/STOP SPEED MEETING																				
 	{
-		let i,o,bar,id,_this=this;
+		let i,o,bar,id,_this=this,str;
 		this.speedTimer=null;																		// Speed meeting timer
 		GetNextPerson();																			// Get next available person
 
@@ -38,10 +38,24 @@ class Chat  {
 				app.ws.send(`C|${fid}|${tid}|speedmeet`);											// Send chat message to start
 				_this.speedSecs=0;																	// Start second
 				app.ArrangePeople();																// Arrange people in meeting
+				
 				_this.speedTimer=setInterval(()=>{													// Set timer
 					_this.speedSecs++;																// Add to count	
-//					ShowClock();
-					if (_this.speedSecs > 30) {														// If done with this persson
+					if (_this.speedSecs == maxTime-10) {											// If close to end
+						$("#co-popupDiv").remove();													// Kill old one, if any
+						if (document.fullscreenElement)	document.exitFullscreen();					// Force non-full screen 
+						str=`<div id="co-popupDiv" class="co-popup">
+						There are 10 seconds left in this meeting<br><br>
+						<div class="co-bsg" id="co-extMeet">Extend?</div></div>`;
+						$("body").append(str);														// Add popup to body
+						$("#co-popupDiv").fadeIn(500).delay(9000).fadeOut(500)						// Animate in and out		
+						$("#co-extMeet").on("click",()=>{											// ON EXTEND
+							_this.speedSecs=0;														// Start over
+							$("#co-popupDiv").remove();												// Remove popup
+							Sound('ding');															// Ding
+							});
+						}
+					if (_this.speedSecs > maxTime) {												// If done with this persson
 						app.ArrangePeople();														// Arrange people in meeting
 						clearTimeout(_this.speedTimer);												// Clear timer
 						app.ws.send(`C|${fid}|${tid}|speedclose`);									// Send chat message to close

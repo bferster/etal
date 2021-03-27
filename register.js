@@ -10,8 +10,11 @@ class Register  {
 
 	Draw()																						// DRAW REGISTRATION 
 	{
-		$("#splashDiv").fadeOut();																	// Fade out splash
-		if (this.person.email.toLowerCase().trim() == "guest") 	this.person.email="";				// Clear guest
+		if (this.person.email.toLowerCase().trim() == "guest") {
+			this.person.email="!guest";																// Ret as registering
+			app.ws.send("MP|"+this.person.id+"|"+JSON.stringify(this.person));						// Update server record
+			this.person.email="";																	// Clear guest
+			}
 		let str=`<div id="co-card" style="width:-moz-fit-content;width:fit-content;position:absolute;top:48px;left:calc(50% - 263px);border:1px solid #999;
 			text-align:center;background-color:#fff;padding:16px;border-radius:12px;font-size:16px;">`;
 			if (this.person.firstName)																// If updating

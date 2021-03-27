@@ -415,7 +415,7 @@ class App  {
 			x=$("#"+targetId).offset().left+4;														// Center x
 			y=$("#"+targetId).offset().top+4;														// Y
 			$("#co-AvMe").animate({ left:x, top:y });												// Animate me there		
-			app.chat.SpeedMeeting(false);															// Init speed meeting
+			app.chat.SpeedMeeting(60);																// Init speed meeting
 //			for (let i=0;i<this.people.length;++i) { this.people[i].stats="S0"; $("#co-Av-"+i).show() };													
 			this.status="S"+this.curFloor;															// In speed meeting mode
 			}
@@ -478,6 +478,7 @@ class App  {
 			$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");								// Set image
 			$("#co-Av-").animate({ left:this.bx*o.x, top:this.by*o.y });							// Animate here	
 			}
+
 		if (bar.length) {																			// If a speed meeting active
     		x=$("#co-speedMeet-"+cf).offset().left+5;                                    			// left side of icon
 			y=$("#co-speedMeet-"+cf).offset().top-avSize-2;                                    		// Top side of icon
