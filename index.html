@@ -71,8 +71,8 @@
 
 	@media only screen and (max-width:700px) {
 		.co-top 				{ height:auto; overflow:auto }
-		#co-roomContent-0 		{ min-height:100vh; }
-		[id^=co-roomContent-]	{ max-height:100vh; }
+		[id^=co-roomContent-]	{ min-height:50vh; max-height:50vh; }
+		#co-roomContent-0 		{ min-height:75vh; }
 		}
 
 </style>
@@ -204,7 +204,7 @@ class App  {
 		this.coffeebarLink="";																		// Alternative link for main coffeebar
 		this.privateMode=false;																		// Private mode
 
-		if (window.location.search && window.location.search.match(/\&private/i)) this.privateMode=true;	// Start private mode
+		if (window.location.search && window.location.search.match(/\&private/i)) this.privateMode=true;		// Start private mode
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -731,7 +731,7 @@ class App  {
 			}
 		this.roomPortals=this.roomPortals.toUpperCase();												// Force UC
 		$("#co-main").html(str.replace(/\t|\n|\r/g,""));												// Add venue
-		$("#co-menDiv").offset({ left:$("#co-Rm-0").offset().left, top:this.by-avSize-22});				// Force to bottom
+		$("#co-menDiv").offset({ left:$("#co-Rm-0").offset().left, top:$("#co-Rm-0").offset().top+$("#co-Rm-0").height()-avSize-22});	// Force to bottom of hallway
 		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
 			this.venue[this.curFloor][i].hgt=$("#co-roomContent-"+i).height();							// Save room height
 			if (gals[i]) { 																				// If something there
