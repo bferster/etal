@@ -314,6 +314,7 @@ class Schedule  {
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
 			if (link.match(/.app.htm/i)) {
 				link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// Add name 
+				if (app.venue[0][0].params.jitsi)	link+="&jitsi"+app.venue[0][0].params.jitsi;
 				link=link.replace(/\<.*?>/ig,"");	
 				}
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:${pad/2}px;padding-top:${pad}px;
