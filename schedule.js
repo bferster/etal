@@ -317,10 +317,12 @@ class Schedule  {
 				if (app.venue[0][0].params.jitsi)	link+="&jitsi"+app.venue[0][0].params.jitsi;
 				link=link.replace(/\<.*?>/ig,"");	
 				}
+			
+			let x=isSmall ? 0 : $(app.vr).offset().left;											// Left is video room, unless small
+			let y=isSmall ? 0 : $(app.vr).offset().top;
 			let str=`<div id="co-iframe" class="co-card"' style="margin:0;padding:${pad/2}px;padding-top:${pad}px;
 			box-shadow:none;background-color:#eee;
-			left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;
-			width:${$(app.vr).width()-pad}px; height:${h}px
+			left:${x}px;top:${y}px;	width:${$(app.vr).width()-pad}px; height:${h}px
 			${link.match(/.app.htm/i) ? ";background-color:#444;overflow:hidden" : ""}">`;
 			if (pad) str+=`<img id="co-pipBut2" style="float:right;cursor:pointer;width:22px;margin-top:-27px" src="img/zoomblue.png" title="Video chat">`;
 			str+=`<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff">
