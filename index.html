@@ -300,7 +300,7 @@ class App  {
 			id=this.pIndex[v[2]];																	// Get index from id			
 			this.chat.chats.push({ dir:0, id:id, msg:v[3] });										// Archive
 			if (($("#co-textDiv").length) && (this.chat.curChat == id)) {							// If chat window is open with same person
-				$("#co-textDiv").append("<div class='co-textR'>"+v[3]+"</div><br>");				// Add message
+				$("#co-textDiv").append("<div class='co-textR'>"+LinkableURL(v[3])+"</div><br>");	// Add message
 				$("#co-textDiv").scrollTop(10000);													// Scroll to bottom
 				}
 			else{																					// Send to message queue
@@ -838,6 +838,20 @@ class App  {
     		array[randomIndex]=temporaryValue;
   			}
 		  return array;																					// Return shuffled array
+	}
+
+	function LinkableURL(s) 																		// URL LINK CONVERSION
+	{
+		let u;
+		if (s && s.match(/http:\/\/|https:\/\//i)) {													// If an http or https
+			u="http"+s.match(/http(.*?)$/i)[1];															// Extract it													
+			s=s.replace(/http(.*?)$/i,`<a href="${u}" target="_blank">${u}</a>`);						// Add as link
+			}
+		else if (s && s.match(/www\./i)) {																// If www.
+			u="http://www."+s.match(/www\.(.*?)$/i)[1];													// Extract it													
+			s=s.replace(/www\.(.*?)$/i,`<a href="${u}" target="_blank">${u}</a>`);						// Add as link
+			}
+		return s;																						// Return url
 	}
 
 	function ConvertFromGoogleDrive(url)															// CONVERT GOOGLE DRIVE/DROPBOX LINK TO DIRECT LINK

@@ -212,11 +212,7 @@ class Chat  {
 
  		for (i=0;i<this.chats.length;++i) {															// For each chat in archive
 			if (this.chats[i].id == id) {															// If it's whom I'm chatting with
-				s=this.chats[i].msg;																// Get message
-				if (s && s.match(/http|:https:/)) {													// If a url
-					let u="http"+s.match(/http(.*?)$/i)[1];											// Extract it													
-					s=s.replace(/http(.*?)$/i,`<a href="${u}" target="_blank">${u}</a>`);			// Add as link
-					}
+				s=LinkableURL(this.chats[i].msg);													// Get message
 				$("#co-textDiv").append(`<div class="co-text${this.chats[i].dir ? "S" : "R"}">${s}</div><br>`);	// Add message
 				}
 			}
@@ -244,7 +240,7 @@ class Chat  {
 		function sendChat(msg) {																	// TEXT CHATTING
 			let s=msg ? msg : $("#co-revText").val();												// Get text fron msg or textbox
 			if (s) {																				// If something there
-				$("#co-textDiv").append("<div class='co-textS'>"+s+"</div>");						// Add to display 
+				$("#co-textDiv").append("<div class='co-textS'>"+LinkableURL(s)+"</div>");			// Add to display 
 				let fid=app.people[app.myId].id;													// From id (me)
 				let tid=app.people[id].id															// To id
 				app.ws.send(`C|${fid}|${tid}|${s}`);												// Send chat message
@@ -253,6 +249,7 @@ class Chat  {
 				}
 			$("#co-revText").val("");																// Clear input
 			}	
+
 		}
 	
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
