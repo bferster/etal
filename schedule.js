@@ -314,8 +314,8 @@ class Schedule  {
 			if (link.match(/zapp.htm/i)) link+="&"+app.KZ;											// Add K for Zoom
 			if (link.match(/.app.htm/i)) {
 				link+="&"+app.people[app.myId].firstName+"-"+app.people[app.myId].lastName+"&"+app.people[app.myId].role;	// Add name 
-				if (app.venue[0][0].params.jitsi)	link+="&jitsi"+app.venue[0][0].params.jitsi;
-				link=link.replace(/\<.*?>/ig,"");	
+				if (app.venue[0][0].params.jitsi)	link+="&jitsi"+app.venue[0][0].params.jitsi;	// Add jitsi server url if spec'd
+				link=link.replace(/\<.*?>/ig,"");													// Remove tags, if any
 				}
 			
 			let x=isSmall ? 0 : $(app.vr).offset().left;											// Left is video room, unless small

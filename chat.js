@@ -90,13 +90,14 @@ class Chat  {
 					<i>${this.queue[i].msg}</i>
 					<img src="img/deletebut.png" id="co-qd-${i}" style="float:right;cursor:pointer;margin:-8px 8px 0 0"></div></div>`
 				}
-			str+=`</div><a style="font-size:9px;float:right;color:#000;margin-top:-12px;text-decoration:none" 
-				href="javascript:new Register('${app.myId}')">Change my name tag</a>"
+			str+=`</div><div style="font-size:11px;color:#bb0000;float:right;margin-top:-12px;cursor:pointer" 
+				id="co-reReg"><b>Change my name tag</b></div>"
 				<div style="position:absolute;left:141px; top:${flip ? "-10" : "323"}px; width:0;height:0; 
 				${flip ? "transform: rotate(180deg)" : ""};border-style:solid; border-width: 14px 8px 0 8px;
 				border-color: #fff transparent transparent transparent"></div>
 			</div>`;
 		$("body").append(str.replace(/\t|\n|\r/g,""));
+		$("#co-reReg").on("click", ()=> { new Register(app.myId) });								// ON RE-REGISTER CLICK
 
 		$("[id^=co-qd-]").on("click",(e)=>{															// ON DELETE CLICK
 			let i=e.target.id.substr(6)-0;															// Get index
@@ -309,7 +310,7 @@ class Chat  {
 		let i,o,str="";
 		for (i=0;i<data.length;++i) {																	// For each message
 			o=data[i];
-			if (!app.people[o.id])	continue;																				// Point at it
+			if (!app.people[o.id])	continue;															// Point at it
 			str+=`<p id="co-bullMsg-${id}" style="cursor:pointer" onclick="app.chat.ShowCard(${o.id})">
 			<b>${app.people[o.id].firstName} ${app.people[o.id].lastName}: </b>${o.msg}</p>`;			// Add message
 			}

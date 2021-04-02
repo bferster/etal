@@ -417,8 +417,8 @@ class App  {
 			x=$("#"+targetId).offset().left+4;														// Center x
 			y=$("#"+targetId).offset().top+4;														// Y
 			$("#co-AvMe").animate({ left:x, top:y });												// Animate me there		
-			app.chat.SpeedMeeting(60);																// Init speed meeting
-//			for (let i=0;i<this.people.length;++i) { this.people[i].stats="S0"; $("#co-Av-"+i).show() };													
+			app.chat.SpeedMeeting(60);																// Init speed meeting////
+//			for (let i=0;i<this.people.length;++i) { this.people[i].stats="S0";	$("#co-Av-"+i).show() };													
 			this.status="S"+this.curFloor;															// In speed meeting mode
 			}
 		else if (targetId.match(/co-coffee/)) {														// ON COFFEE BAR
@@ -465,35 +465,52 @@ class App  {
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-		let x,w,y,h,i,j,x2,o,inc,bar=[];					
+		let bar=this.ShowHidePeople();																// Hide/show people
+		this.ArrangeSpeedMeeters(bar);																// Arrange people speed meeting
+		this.ArrangeCoffeeBars();																	// Arrange coffee bars
+		this.ArrangeRooms();																		// Arrange Rooms
+		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
+	}
+
+	ShowHidePeople()																			// HIDE OR SHOW AVATARS
+	{
+		let i,o,bar=[];
 		let cf=this.curFloor;																		// Current floor
-		let nf=this.venue.length																	// Number of floors
-		let nr=this.venue[cf].length;																// Number of rooms on current floor
-		for (i=0;i<this.people.length;++i) {														// For each person
+		let np=this.people.length;																	// Number of people
+		let sf="S"+this.curFloor;																	// Current floor
+		for (i=0;i<np;++i) {																		// For each person
 			o=this.people[i];																		// Point at them
-			if ((cf != o.f) || (o.stats == "Q")	|| (o.stats == "S"+cf)) {							// Hide people not on floor, quiet, or speed meeting
-				if ((o.stats == "S"+cf) && (i != this.myId) && !o.met) bar.push(i); 				// If unmet person in a speed meeting, add to array
-				$("#co-Av-"+i).css("display","none");												// Hide avatar
-				continue;					
+			if ((o.stats == sf) && !o.met) bar.push(i); 											// If unmet person in a speed meeting, add to array
+			if ((cf != o.f) || (o.stats == "Q")) 	$("#co-Av-"+i).css("display","none");			// Hide people not on floor or quiet
+			else{
+				$("#co-Av-"+i).css("display","block");												// Show avatar
+				$("#co-At-"+i).html(`${o.firstName}<br>${o.lastName}`);								// Set label
+				$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");							// Set image
 				}
-			$("#co-At-"+i).html(`${o.firstName}<br>${o.lastName}`);									// Set label
-			$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");								// Set image
-			$("#co-Av-").animate({ left:this.bx*o.x, top:this.by*o.y });							// Animate here	
+			}	
+		return bar;																					// Return speed meeters
+	}
+
+	ArrangeSpeedMeeters(people)																	// ARRANGE SPEED MEETERS
+	{
+		let i;					
+		let x=$("#co-speedMeet-"+this.curFloor).offset().left+5;                                    // left side of icon
+		let y=$("#co-speedMeet-"+this.curFloor).offset().top-avSize-2;                            	// Top side of icon
+		let inc=avSize+1;                                                              	            // Spacing between meeters
+		people=ShuffleArray(people);																// Randomize			
+		for (i=0;i<people.length;++i) {                                                            	// For each meeter
+			$("#co-Av-"+people[i]).css("display","block");											// Show it
+   			$("#co-At-"+people[i]).css("display","none");                                         	// Hide me tag
+		   	$("#co-Av-"+people[i]).animate({ left:x, top:y},0);           							// Move them
+        	if (i < 3) y-=inc;																		// Only show 1st 4
 			}
+ 	}
 
-		if (bar.length) {																			// If a speed meeting active
-    		x=$("#co-speedMeet-"+cf).offset().left+5;                                    			// left side of icon
-			y=$("#co-speedMeet-"+cf).offset().top-avSize-2;                                    		// Top side of icon
-			inc=avSize+1;                                                              	            // Spacing between meeters
-			bar=ShuffleArray(bar);																	// Randomize			
-			for (i=0;i<bar.length;++i) {                                                            // For each barmate
-	          	$("#co-Av-"+bar[i]).css("display","block");												// Show it
-   				$("#co-At-"+bar[i]).css("display","none");                                         	// Hide me tag
-   				 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           						// Move them
-  				if (i < 3) y-=inc;    						                              			// Advance 1st bunch
-				}
- 			}
-
+	ArrangeCoffeeBars()																			// ARRANGE COFFEE BARS
+	{	
+		let i,j,x,y,w,o,bar,inc;
+		let cf=this.curFloor;																		// Current floor
+		let np=this.people.length;																	// Number of people
 		if ($("#co-coffee-"+cf+"-0").length) {														// If a main coffee bar
       		x=$("#co-coffee-"+cf+"-0").offset().left+30;                                    		// left side of bar
        		y=$("#co-coffee-"+cf+"-0").offset().top+8;                      			 			// On top of bar area
@@ -501,7 +518,7 @@ class App  {
    			}
 		for (j=0;j<this.venue[cf].length;++j) {                             		   	 			// For each room
             bar=[];                                                                                 // New array
-			for (i=0;i<this.people.length;++i) {													// For each person
+			for (i=0;i<np;++i) {																	// For each person
 				if ((this.people[i].stats) == "B"+cf+"-"+j) 										// In a bar		
 					bar.push(i); 																	// Add to array
 				}
@@ -515,14 +532,20 @@ class App  {
 			for (i=0;i<bar.length;++i) {                                                            // For each barmate
                 if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  // Move me
               	else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           // Move them
-				 $("#co-At-"+bar[i]).css("display","none");                                         // Hide me tag
+				$("#co-At-"+bar[i]).css("display","none");                                         // Hide me tag
                 if (j)  y+=inc;    else x+=inc;                                                  	// Advance
-                }
-   			}
+				}
+			}
+	}
 
+	ArrangeRooms()
+	{
 		let n,ox,y2,rms=[];																			// ARRANGE ROOMS
+		let x,w,y,h,i,j,x2,o,inc;					
+		let cf=this.curFloor;																		// Current floor
+		let np=this.people.length;																	// Number of people
 		for (i=0;i<this.venue[cf].length;++i) rms.push([]); 										// For each room, make room arrays
-		for (i=0;i<this.people.length;++i) {														// For each person
+		for (i=0;i<np;++i) {																		// For each person
 			o=this.people[i];																		// Point at stats
 			if (o.f != cf) {																		// Person not on this floor
 				try{
@@ -554,7 +577,6 @@ class App  {
 				if (y < y2)	break;																	// Quit if too many
 				}
 			}
-		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
  	CloseAll(mask=0)                                                                        	// CLOSE ALL OPEN DIALOGS
@@ -751,6 +773,7 @@ class App  {
 		$("#co-calIcon").on("click", 			 (e)=>{ this.sced.ShowLink(p.cal) }); 					// ON CALENDAR BUT
 		$("#co-whiteIcon").on("click", 			 (e)=>{ this.sced.ShowLink(p.white) }); 				// ON WHITEBOARD BUT
 		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); // ON PEOPLE BUT
+		$("[id^=co-bull-]").scrollTop(10000);															// Scroll bulletin boardd to bottom
 		}
 
 
