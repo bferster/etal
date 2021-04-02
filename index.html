@@ -203,6 +203,7 @@ class App  {
 		this.curContent="";																			// Current floor's content
 		this.coffeebarLink="";																		// Alternative link for main coffeebar
 		this.privateMode=false;																		// Private mode
+		this.speedMeeters=[];																		// Holds people in speed meeting
 
 		if (window.location.search && window.location.search.match(/\&private/i)) this.privateMode=true;		// Start private mode
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
@@ -234,7 +235,7 @@ class App  {
 		this.pollTimer= window.setInterval( ()=>{													// Init polling timer
 			++this.secs;																			// Another second 
 			if ((this.secs%15) == 0)  this.ArrangePeople();											// Every 15 secs, arrange people
-			if ((this.secs%60) == 10) this.sced.CheckSchedule();									// On every minute, check the schedule
+			if ((this.secs%60) == 0) this.sced.CheckSchedule();										// On every minute, check the schedule
 			if (this.retryWS) {																		// If reconnectng to websocket
 				if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 				else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
@@ -465,11 +466,10 @@ class App  {
 
 	ArrangePeople()                                                                             // ARRANGE COFFEE BAR / ROOM MEMBERS
     {
-		let bar=this.ShowHidePeople();																// Hide/show people
-		this.ArrangeSpeedMeeters(bar);																// Arrange people speed meeting
+		this.ShowHidePeople();																		// Hide/show people
+		this.ArrangeSpeedMeeters();																	// Arrange people speed meeting
 		this.ArrangeCoffeeBars();																	// Arrange coffee bars
 		this.ArrangeRooms();																		// Arrange Rooms
-		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
 	ShowHidePeople()																			// HIDE OR SHOW AVATARS
@@ -488,12 +488,14 @@ class App  {
 				$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");							// Set image
 				}
 			}	
-		return bar;																					// Return speed meeters
+		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
+		this.speedMeeters=bar;																		// Save speed meeters
 	}
 
-	ArrangeSpeedMeeters(people)																	// ARRANGE SPEED MEETERS
+	ArrangeSpeedMeeters()																		// ARRANGE SPEED MEETERS
 	{
 		let i;					
+		let people=this.speedMeeters;																// Set meeters
 		let x=$("#co-speedMeet-"+this.curFloor).offset().left+5;                                    // left side of icon
 		let y=$("#co-speedMeet-"+this.curFloor).offset().top-avSize-2;                            	// Top side of icon
 		let inc=avSize+1;                                                              	            // Spacing between meeters
@@ -504,6 +506,7 @@ class App  {
 		   	$("#co-Av-"+people[i]).animate({ left:x, top:y},0);           							// Move them
         	if (i < 3) y-=inc;																		// Only show 1st 4
 			}
+		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
  	}
 
 	ArrangeCoffeeBars()																			// ARRANGE COFFEE BARS
@@ -532,10 +535,11 @@ class App  {
 			for (i=0;i<bar.length;++i) {                                                            // For each barmate
                 if (bar[i] == this.myId) $("#co-AvMe").animate({ left:x, top:y},0)                  // Move me
               	else  					 $("#co-Av-"+bar[i]).animate({ left:x, top:y},0);           // Move them
-				$("#co-At-"+bar[i]).css("display","none");                                         // Hide me tag
+				$("#co-At-"+bar[i]).css("display","none");                                         	// Hide me tag
                 if (j)  y+=inc;    else x+=inc;                                                  	// Advance
 				}
 			}
+		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
 	ArrangeRooms()
@@ -577,6 +581,7 @@ class App  {
 				if (y < y2)	break;																	// Quit if too many
 				}
 			}
+		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
  	CloseAll(mask=0)                                                                        	// CLOSE ALL OPEN DIALOGS
