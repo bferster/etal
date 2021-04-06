@@ -286,6 +286,7 @@ class App  {
 		let id,i,meeting="";
 		let msg=event.data;																			// Get message
 		let v=event.data.split("|");																// Split message
+
 		if (v[1]) meeting=v[1].split("~")[0];														// Get meeting id
 		if (v[0] == "C") {																			// CHAT
 			if (meeting != this.meetingId)	return;													// Not this meeting
@@ -342,7 +343,7 @@ class App  {
 		else if (v[0] == "V") 	{ 																	// Add/update venue
 			this.AddVenue(JSON.parse(v[1]));														// Set data				
 			if (v[2] != "U")	app.ws.send(`S|${app.meetingId}`);									// Request schedule data if adding	
-			else				app.DrawVenue();													// Redraw venue on update
+				else				app.DrawVenue();													// Redraw venue on update
 			}
 		else if (v[0] == "S") {																		// Add/update schedule
 			this.AddSchedule(JSON.parse(v[1]));														// Set data
