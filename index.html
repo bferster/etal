@@ -327,7 +327,7 @@ class App  {
 			let y=v[4]/100*(this.hallPos.h-avSize)+this.hallPos.y;									// Y
 			x=Math.max(0,Math.min(this.bx-avSize,x));												// Cap x to screen
 			y=Math.max(0,Math.min(this.by-avSize*2,y));												// Y
-			this.people[id].f=f; this.people[id].x=x; this.people[id].y=y; this.people[id].stats=v[5]; // Update people object
+			this.people[id].f=f; this.people[id].x=v[3]; this.people[id].y=v[4]; this.people[id].stats=v[5]; // Update people object
 			if (this.curFloor != v[2])	{ $("#co-Av-"+id).css("display","none"); return; }	 		// We're not on the same floor
 			$("#co-Av-"+id).animate({ left:x+"px", top:y+"px"});									// Animate icon there
 			if (v[5] == "Q")							$("#co-Av-"+id).css("display","none");		// Hide this person if quiet
@@ -376,13 +376,13 @@ class App  {
 					}
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
-		}
+	}
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
 	{
 		let i,link;
 		targetId=targetId.replace(/co-AvMe/,"");													// It's just me
-		if (targetId.match(/co-Rm-/)) {																// In a room
+		if (targetId.match(/co-Rm-/) && (targetId != "co-Rm-0")) {									// In a room other than hall
 			link=this.venue[this.curFloor][targetId.substr(6)].link;								// Get goto link
 			if (link && link.match(/chat-/i)) {														// A chat link
 				link=link.substr(5);																// Get just email
@@ -445,7 +445,7 @@ class App  {
 // AVATAR MOVEMENT
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	ReportLocation(x, y, status, pixels)													// REPORT LOCATION TO SERVER
+	ReportLocation(x, y, status, pixels)														// REPORT LOCATION TO SERVER
 	{
 		if (this.privateMode)	status="Q";															// Force status quiet
 		if (pixels) {																				// If reporting from pixels
@@ -475,29 +475,29 @@ class App  {
 
 	ShowHidePeople()																			// HIDE OR SHOW AVATARS
 	{
-		let i,o,bar=[];
+		let i,o;
+		this.speedMeeters=[];
 		let cf=this.curFloor;																		// Current floor
 		let np=this.people.length;																	// Number of people
 		let sf="S"+this.curFloor;																	// Current floor
 		for (i=0;i<np;++i) {																		// For each person
 			o=this.people[i];																		// Point at them
-			if ((o.stats == sf) && !o.met) bar.push(i); 											// If unmet person in a speed meeting, add to array
-			if ((cf != o.f) || (o.stats == "Q")) 	$("#co-Av-"+i).css("display","none");			// Hide people not on floor or quiet
+			if ((o.stats == sf) && !o.met) this.speedMeeters.push(i); 								// If unmet person in a speed meeting, add to array
+			if ((cf != o.f) || (o.stats == "Q"))  $("#co-Av-"+i).css("display","none");				// Hide people not on floor or quiet
 			else{
-				$("#co-Av-"+i).css("display","block");												// Show avatar
+				$("#co-Av-"+i).css({ display:"block",top:o.y+"%",left:o.x+"%" });					// Show avatar
 				$("#co-At-"+i).html(`${o.firstName}<br>${o.lastName}`);								// Set label
 				$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");							// Set image
 				}
 			}	
 		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
-		this.speedMeeters=bar;																		// Save speed meeters
 	}
 
 	ArrangeSpeedMeeters()																		// ARRANGE SPEED MEETERS
 	{
 		let i;					
 		let people=this.speedMeeters;																// Set meeters
-		let x=$("#co-speedMeet-"+this.curFloor).offset().left+5;                                    // left side of icon
+		let x=$("#co-speedMeet-"+this.curFloor).offset().left+2;                                    // left side of icon
 		let y=$("#co-speedMeet-"+this.curFloor).offset().top-avSize-2;                            	// Top side of icon
 		let inc=avSize+1;                                                              	            // Spacing between meeters
 		people=ShuffleArray(people);																// Randomize			
@@ -610,8 +610,9 @@ class App  {
 		this.people=people;																				// Set data
 		for (i=0;i<people.length;++i) {																	// For each person
 			o=this.people[i];																			// Point at them
+			if (!o.stats)	o.stats="Q";																// Quiet unregistered people
 			o.met=0;																					// Not met yet
-			o.firstname=o.firstname ? o.firstname : "";													// Null out undefined
+			o.firstName=o.firstName ? o.firstName : "";													// Null out undefined
 			if (o.email == this.myEmail) this.myId=i;													// Set myid
 			if (o.role && o.role.match(/info/i)) this.infoDeskId=i;                                  	// Info person  
 			this.pIndex[people[i].id]=i;																// Save index by full id

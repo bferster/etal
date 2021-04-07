@@ -259,7 +259,7 @@ class Chat  {
 
 	GetBulletinBoard(id, floatId)																// GET BULLETIN BOARD MARKUP
 	{
-		let c="";
+		let c="",data=[];
 		if (floatId != undefined) {																	// If called from button
 			let r=RegExp("bulletinboard:"+floatId,"i");												// Turn into regex
 			for (id=0;id<app.sced.schedule.length;++id) 											// For each event
@@ -272,8 +272,8 @@ class Chat  {
 			content=content.replace(/<p>|<\/p>/ig,"");												// Remove <p>'s
 			content=content.replace(/\&quot;/ig,"\"");												// Restore quotes
 			content=content.replace(/\&apos;/ig,"'");												// Restore apos
-			let data=JSON.parse(content);															// Objectify
-			c=this.SetBulletinMarkup(id, data);														// Get markup			
+			try { data=JSON.parse(content);	} catch(e) { trace(e) }									// Objectify
+			c=this.SetBulletinMarkup(id, data ? data : []);											// Get markup			
 			}
 		$('#co-floatBB').remove();																	// Remove old one	
 		let str=`<div id="co-bull-${id}" class="co-bulletin">${c}</div>														

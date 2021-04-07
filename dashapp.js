@@ -41,7 +41,6 @@ class App  {
 			},1000)
 	}
 
-
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
 		let msg=event.data;																			// Get message
