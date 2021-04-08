@@ -378,10 +378,11 @@ class Schedule  {
 		else{																						// Get implicit data
 			if (!sc.content)	return "";															// Quit if no content													
 			sc.content=sc.content.replace(/\n|\r/g,"");												// Remove CR/LFs
-			o=sc.content.match(/gallery\((.*?)\)/ig);												// Get data from content
+			o=sc.content.match(/gallery\(\((.*?)\)\)/ig);											// Get data from content
+			if (!o)	return "";																		// Quit if invalid content													
 			for (i=0;i<o.length;++i) {																// For each item
-				o[i]=o[i].substr(8);																// Remove 'GALLERY(' tag
-				o[i]=o[i].replace(/\)$/g,"");														// Remove closing paren
+				o[i]=o[i].substr(9);																// Remove 'GALLERY((' tag
+				o[i]=o[i].replace(/\)\)$/g,"");														// Remove closing paren
 				v=o[i].split(",");																	// Extract fields
 				s[i+1]=[];																			// Add row
 				s[i+1][0]=v[0] ? v[0].trim() : "";													// Get title
@@ -413,8 +414,8 @@ class Schedule  {
 		let i,p,ss;
 		let str=`<div id="co-galBase-${room}" style="overflow-y:auto;margin:0 8px 0 18px">`;		// Base div
 		for (i=1;i<s.length;++i) {																	// For each pic									
-			ss=s[i][2].replace(/\"/g,"\\\"");														// Escape "
-			ss=ss.replace(/\'/g,"\\\'");															// '
+			ss=s[i][2].replace(/"/g,"&quot;");														// Escape "
+			ss=ss.replace(/'/g,"&apos;");															// '
 			if (ss && ss.match(/^http(.*?)pdf/i)  && !s[i][1]) s[i][1]="img/pdf.png";				// PDF icon
 			else if (ss && ss.match(/^http(.*?)/i) && !s[i][1]) s[i][1]="img/link.png";				// Link icon
 			p=`\"${s[i][0]}\",\"${s[i][1]}\",\"${ss}\"`;											// Item content
@@ -427,6 +428,7 @@ class Schedule  {
 
 	ShowGalleryItem(title, link, content)														// SHOW GALLERY ITEM DETAILS
 	{
+		trace(content)
 		$("#co-gItemD").remove();																	// Kill existing
 		$(window).scrollTop(0);																		// Scroll to top	
 		let h=$(app.vr).height();																	// Cover div only
