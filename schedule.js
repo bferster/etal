@@ -89,22 +89,35 @@ class Schedule  {
 		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
 		<img id="co-clsa" style="float:right;cursor:pointer" src="img/closedot.png">
 		<b>Vendor Control Panel</b><br><br>
-		<div style="float:left">Toggle away status for:&nbsp;&nbsp;&nbsp;</div>
+		<div style="float:left">Toggle away status for:&nbsp;&nbsp;&nbsp;&nbsp;</div>
 		<div style="text-align:left">`;
 		for (let i=0;i<app.venue[app.curFloor].length;++i) {									// For each room
 			if (this.FindAwayEvent({ floor:app.curFloor, room:i, no:true}).no) continue;		// Skip ones without an away event
 			str+=`<div id="co-Vcon-${i}" class="co-bsg">${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</div>&nbsp;&nbsp;&nbsp;`;	
 			}
-		if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
+		str+=`<br><br><div style="float:left">Clear message board(s):&nbsp;&nbsp;&nbsp;</div>`;
+		for (let i=0;i<this.schedule.length;++i) {												// For each event
+			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) &&  this.schedule[i].link.match(/BULLETINBOARD/))
+				str+=`<div id="co-Vbul-${i}" class="co-bsg">${app.venue[app.curFloor][this.schedule[i].room].title}</div>&nbsp;&nbsp;&nbsp;`;	
+				}
+			if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
 		str+="</div><br></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
 	
 		$("#co-clsa").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
+
 		$("[id^=co-Vcon-]").on("click", (e)=>{ 													// ON ROOM CLICK
 			let id=e.currentTarget.id.substr(8);												// Get id
 			let o=this.GetEventByRoom(app.curFloor, id, true);									// Point at room	
 			o.away=(o.away > 0) ? 0 : 1;														// Toggle away
 			app.ws.send(`AW|${o.id}|${o.away}`);												// Update server
+			Sound("ding");																		// Ding
+			});
+
+		$("[id^=co-Vbul-]").on("click", (e)=>{ 													// ON ERASE BB
+			let id=this.schedule[e.currentTarget.id.substr(8)].id;								// Get id
+			app.ws.send(`BB|${id}|${app.myId}|EraseBb`);										// Clear
+			Sound("ding");																		// Ding
 			});
 		
 		$("#co-imageUpload").on("change",(e)=>{													// ON IMAGE UPLOAD

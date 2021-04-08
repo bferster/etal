@@ -301,7 +301,7 @@ class Chat  {
 	AddToBulletin(id, msg)																			// ADD MESSAGE TO BULLETIN BOARD
 	{
 		msg=msg ? msg : $("#co-revText-"+id).val();														// Get text from msg or textbox
-			if (msg) app.ws.send(`BB|${app.sced.schedule[id].id}|${app.myId}|${msg}`);					// Send message to server
+		if (msg) app.ws.send(`BB|${app.sced.schedule[id].id}|${app.myId}|${msg}`);						// Send message to server
 		$("#co-revText-"+id).val("");																	// Clear input
 	}
 

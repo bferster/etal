@@ -367,11 +367,11 @@ class App  {
 			let i=this.pIndex[d.id];																// Get index
 			if (d) this.people[i]=d;																// Set data								
 			}
-		else if (v[0] == "BB") {																	// Update person
+		else if (v[0] == "BB") {																	// Update message board
 			for (i=0;i<this.sced.schedule.length;++i) 												// For each event
 				if (this.sced.schedule[i].id == v[1]) {												// A match
 					this.sced.schedule[i].content=v[2];												// Set content
-					this.chat.SetBulletinMarkup(i,JSON.parse(v[2]));								// Redraw
+					this.chat.SetBulletinMarkup(i,v[2] ? JSON.parse(v[2]) : []);					// Redraw
 					break;
 					}
 			}
