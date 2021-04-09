@@ -235,7 +235,7 @@ class Chat  {
 			let str=`<div onclick="app.sced.ShowLink('${link}','true')">
 			Click <img src="img/zoomblue.png" style="width:24px;cursor:pointer;vertical-align:-6px"> to join`;
 			sendChat(str);																			// Invite
-			app.sced.ShowLink(link,true);																// Start chatting
+			app.sced.ShowLink(link,true);															// Start chatting
 			})					
 	
 		function sendChat(msg) {																	// TEXT CHATTING
@@ -290,62 +290,67 @@ class Chat  {
 			<b>Message Board</b>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-floatBB').remove()">
 			${str}</div>`;
-			$("body").append(c.replace(/\t|\n|\r/g,""));												// Add BB
-			$("#co-bull-"+id).css({ margin:"4px 0 0 -4px" });											// Move box
-			$("#co-floatBB").draggable();
+			$("body").append(c.replace(/\t|\n|\r/g,""));											// Add BB
+			$("#co-bull-"+id).css({ margin:"4px 0 0 -4px" });										// Move box
+			$("#co-floatBB").draggable();															// Make draggable
 			return;
 			}
-		return str.replace(/\t|\n|\r/g,"");																// Return markup
+		return str.replace(/\t|\n|\r/g,"");															// Return markup
 	}
 
-	AddToBulletin(id, msg)																			// ADD MESSAGE TO BULLETIN BOARD
+	GetChalkBoard(id)																			// GET CHALKBOARD MARKUP
 	{
-		msg=msg ? msg : $("#co-revText-"+id).val();														// Get text from msg or textbox
-		if (msg) app.ws.send(`BB|${app.sced.schedule[id].id}|${app.myId}|${msg}`);						// Send message to server
-		$("#co-revText-"+id).val("");																	// Clear input
+		return `<div id="co-chalk-${id}" class="co-chalkboard">${app.sced.schedule[id].content}</div>`; // Return markup
 	}
 
-	SetBulletinMarkup(id, data)																		// SET BULLETIN BOARD MARKUP	
+	AddToBulletin(id, msg)																		// ADD MESSAGE TO BULLETIN BOARD
+	{
+		msg=msg ? msg : $("#co-revText-"+id).val();													// Get text from msg or textbox
+		if (msg) app.ws.send(`BB|${app.sced.schedule[id].id}|${app.myId}|${msg}`);					// Send message to server
+		$("#co-revText-"+id).val("");																// Clear input
+	}
+
+	SetBulletinMarkup(id, data)																	// SET BULLETIN BOARD MARKUP	
 	{
 		let i,o,str="";
-		for (i=0;i<data.length;++i) {																	// For each message
+		for (i=0;i<data.length;++i) {																// For each message
 			o=data[i];
-			if (!app.people[o.id])	continue;															// Point at it
+			if (!app.people[o.id])	continue;														// Point at it
 			str+=`<p id="co-bullMsg-${id}" style="cursor:pointer" onclick="app.chat.ShowCard(${o.id})">
-			<b>${app.people[o.id].firstName} ${app.people[o.id].lastName}: </b>${o.msg}</p>`;			// Add message
+			<b>${app.people[o.id].firstName} ${app.people[o.id].lastName}: </b>${o.msg}</p>`;		// Add message
 			}
-		$("#co-bull-"+id).html(str);																	// Return markup	
-		$("#co-bull-"+id).scrollTop(10000);																// Scroll to bottom
-		return str;																						// Return markup
+		$("#co-bull-"+id).html(str);																// Return markup	
+		$("#co-bull-"+id).scrollTop(10000);															// Scroll to bottom
+		return str;																					// Return markup
 	}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VOICE INPUT
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	VoiceInit(callback)
+	VoiceInit(callback)																			// INIT TTS/TTS
 	{	
 		let i;
-		try {																							// Try
-			var SpeechRecognition=SpeechRecognition || webkitSpeechRecognition;							// Browser compatibility
-			this.recognition=new SpeechRecognition();													// Init STT
-			this.recognition.continuous=false;															// Continual recognition off
-			this.recognition.lang="en-US";																// US English
+		try {																						// Try
+			var SpeechRecognition=SpeechRecognition || webkitSpeechRecognition;						// Browser compatibility
+			this.recognition=new SpeechRecognition();												// Init STT
+			this.recognition.continuous=false;														// Continual recognition off
+			this.recognition.lang="en-US";															// US English
 			this.recognition.interimResults=true
-			this.recognition.onend=(e)=> { 																// On end, restore button
-				$("[id^=co-talkBut]").each(function() { $(this).prop("src","img/talkbut.png"); })		// For each input
-				this.listening=false; 																	// Not listening
+			this.recognition.onend=(e)=> { 															// On end, restore button
+				$("[id^=co-talkBut]").each(function() { $(this).prop("src","img/talkbut.png"); })	// For each input
+				this.listening=false; 																// Not listening
 				;}	
-			this.hasRecognition=true;																	// Has speechrecognition capabilities														
-			let mac=(navigator.platform == "MacIntel");													// A mac?
-			this.femaleVoice=mac ? 0 : 1;																// Female voice
-			this.maleVoice=mac ? 1 : 0;																	// Male voice
-			this.voices=[];																				// New array
+			this.hasRecognition=true;																// Has speechrecognition capabilities														
+			let mac=(navigator.platform == "MacIntel");												// A mac?
+			this.femaleVoice=mac ? 0 : 1;															// Female voice
+			this.maleVoice=mac ? 1 : 0;																// Male voice
+			this.voices=[];																			// New array
 
-			speechSynthesis.onvoiceschanged=()=> {														// React to voice init
-				this.voices=[];																			// Clear list
-				speechSynthesis.getVoices().forEach((voice)=> {											// For each voice
-					if (voice.lang == "en-US")						this.voices.push(voice);			// Just look at English
+			speechSynthesis.onvoiceschanged=()=> {													// React to voice init
+				this.voices=[];																		// Clear list
+				speechSynthesis.getVoices().forEach((voice)=> {										// For each voice
+					if (voice.lang == "en-US")						this.voices.push(voice);		// Just look at English
 					if (voice.name.match(/Microsoft David/i))		this.voices.push(voice),this.maleVoice=this.voices.length-1;	// Male voice
 					if (voice.name.match(/Microsoft Zira/i))		this.voices.push(voice),this.femaleVoice=this.voices.length-1;	// Female voice
 					if (voice.name.match(/Alex/i))					this.voices.push(voice),this.maleVoice=this.voices.length-1;	// Mac male voice
@@ -353,31 +358,31 @@ class Chat  {
 					});
 				};
 
-			this.recognition.onresult=(e)=> { 															// On some speech recognized
-				for (i=e.resultIndex;i<e.results.length;++i) {											// For each result
-					if (e.results[i].isFinal)															// If final
-						callback(e.results[i][0].transcript);											// Send text to callback
+			this.recognition.onresult=(e)=> { 														// On some speech recognized
+				for (i=e.resultIndex;i<e.results.length;++i) {										// For each result
+					if (e.results[i].isFinal)														// If final
+						callback(e.results[i][0].transcript);										// Send text to callback
 					}
 				};
-		} catch(e) { trace("Voice error",e) };															// On error
+		} catch(e) { trace("Voice error",e) };														// On error
 	}
 
-	Listen(id)																						// TURN ON SPEECH RECOGNITIOM
+	Listen(id)																					// TURN ON SPEECH RECOGNITIOM
 	{
-		if (this.listening)	return;																		// Quit if already started
-		try { this.recognition.start(); this.listening=true; } catch(e) { trace("Voice error",e) };		// Start recognition
-		$("#co-talkBut"+id).prop("src","img/intalkbut.png");											// Talking but
+		if (this.listening)	return;																	// Quit if already started
+		try { this.recognition.start(); this.listening=true; } catch(e) { trace("Voice error",e) };	// Start recognition
+		$("#co-talkBut"+id).prop("src","img/intalkbut.png");										// Talking but
 	}
 
-	Speak(msg, who="female")
+	Speak(msg, who="female")																	// SPEAK
 	{
-		try {																							// Try
-			let tts=new SpeechSynthesisUtterance();														// Init TTS
-			if (who == "male")	tts.voice=this.voices[this.maleVoice];									// Set male voice
-			else 				tts.voice=this.voices[this.femaleVoice];								// Set female voice
-			tts.text=msg;																				// Set text
-			speechSynthesis.speak(tts);																	// Speak
-			} catch(e) { trace("TTS error",e) };														// On error
+		try {																						// Try
+			let tts=new SpeechSynthesisUtterance();													// Init TTS
+			if (who == "male")	tts.voice=this.voices[this.maleVoice];								// Set male voice
+			else 				tts.voice=this.voices[this.femaleVoice];							// Set female voice
+			tts.text=msg;																			// Set text
+			speechSynthesis.speak(tts);																// Speak
+			} catch(e) { trace("TTS error",e) };													// On error
 	}
 
 	

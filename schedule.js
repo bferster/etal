@@ -75,7 +75,7 @@ class Schedule  {
 		return ev;																				// Return original event
 	}
 
-	SetAway()																				// TOGGLE ROOMS AWAY MESSAGE
+	VendorControl()																			// VENDOR CONTROL PANEL
 	{
 		let p=app.people[app.myId];																// Get role
 		if (!p.role)								return;										// Quit if no role
@@ -89,18 +89,28 @@ class Schedule  {
 		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
 		<img id="co-clsa" style="float:right;cursor:pointer" src="img/closedot.png">
 		<b>Vendor Control Panel</b><br><br>
-		<div style="float:left">Toggle away status for:&nbsp;&nbsp;&nbsp;&nbsp;</div>
+		<div style="float:left">Toggle away status in:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 		<div style="text-align:left">`;
 		for (let i=0;i<app.venue[app.curFloor].length;++i) {									// For each room
 			if (this.FindAwayEvent({ floor:app.curFloor, room:i, no:true}).no) continue;		// Skip ones without an away event
 			str+=`<div id="co-Vcon-${i}" class="co-bsg">${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</div>&nbsp;&nbsp;&nbsp;`;	
 			}
-		str+=`<br><br><div style="float:left">Clear message board(s):&nbsp;&nbsp;&nbsp;</div>`;
+		str+=`<br><br><div style="float:left">Clear message board in:&nbsp;&nbsp;&nbsp;</div>`;
 		for (let i=0;i<this.schedule.length;++i) {												// For each event
-			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) &&  this.schedule[i].link.match(/BULLETINBOARD/))
+			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) && this.schedule[i].link.match(/BULLETINBOARD/))
 				str+=`<div id="co-Vbul-${i}" class="co-bsg">${app.venue[app.curFloor][this.schedule[i].room].title}</div>&nbsp;&nbsp;&nbsp;`;	
 				}
-			if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
+		str+=`<br><br><div style="float:left">Write on chalk board(s):&nbsp;&nbsp;&nbsp;</div>`;
+		for (let i=0;i<this.schedule.length;++i) {												// For each event
+			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) && this.schedule[i].link.match(/CHALKBOARD/))
+				str+=`<div style="width:200px;height:100px;display:inline-block">
+				<div id="co-Vcha-${i}" class="co-bsg" style="margin-bottom:4px">Write to ${app.venue[app.curFloor][this.schedule[i].room].title}</div>	
+				<textarea id="co-VchaCon-${i}" style="text-align:center;width:100%;height:100%;padding:8px;">
+				${this.schedule[i].content ? this.schedule[i].content.replace(/<br>/g,"&#010") : ""}
+				</textarea></div>`;	
+				}
+		
+		if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
 		str+="</div><br></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
 	
@@ -119,7 +129,17 @@ class Schedule  {
 			app.ws.send(`BB|${id}|${app.myId}|EraseBb`);										// Clear
 			Sound("ding");																		// Ding
 			});
-		
+
+		$("[id^=co-Vcha-]").on("click", (e)=>{ 													// ON CHALK WRITE
+			let i=e.currentTarget.id.substr(8);													// Base id
+			let id=this.schedule[i].id;															// Get id
+			let msg=$("#co-VchaCon-"+i).val();													// Get content
+			if (msg) msg=msg.replace(/\n/g,"<br>");												// LF -> <br>
+			app.ws.send(`BB|${id}|${app.myId}|${msg}`);											// Send message
+			Sound("ding");																		// Ding
+			});
+	
+			
 		$("#co-imageUpload").on("change",(e)=>{													// ON IMAGE UPLOAD
 			let myReader=new FileReader();														// Alloc reader
 			myReader.onloadend=function(e) { 													// When loaded
@@ -278,6 +298,7 @@ class Schedule  {
 		if (!link) return;
 		if (link.match(/^gallery/i))  return;														// Skip gallery links
 		if (link.match(/^bulletin/i)) return;														// Skip bulletin board links
+		if (link.match(/^chalk/i)) return;															// Skip chalkboard links
 		if (link.charAt(0) != "*") 	app.CloseAll(3)													// If not a link open dialogs video/iframes
 		if (center) app.GoToCenter();																// Move to center?
 		let pad=0,h=$(app.vr).width()*.5625;														// Assume 16x9 and no padding
@@ -441,7 +462,6 @@ class Schedule  {
 
 	ShowGalleryItem(title, link, content)														// SHOW GALLERY ITEM DETAILS
 	{
-		trace(content)
 		$("#co-gItemD").remove();																	// Kill existing
 		$(window).scrollTop(0);																		// Scroll to top	
 		let h=$(app.vr).height();																	// Cover div only

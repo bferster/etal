@@ -60,6 +60,8 @@
 	.co-bulletin{	position:absolute;height:calc(100% - 96px); left:8; width:calc(100% - 34px); cursor:auto;
 					overflow-x:hidden; overflow-y:auto; margin:0 8px; margin-top:-24px;color:#000;text-align:left; padding:8px; 
 					font-size:13px;	background-color:#fff; border:1px solid #999; border-radius:6px; }
+	.co-chalkboard{	width:calc(100% - 32px); padding:0 12px 12px 12px; font-size:16px; }
+
 	.co-galleryItem{font-size:10px; color:#fff; }
 	.co-resizer {	position:absolute; top:0; left:0; width:12px; height:100%; background-color:rgba(164,186,236); opacity:.5; 
 					background-image:url(img/slider.png); background-repeat: no-repeat; background-position:center; }
@@ -150,7 +152,7 @@
 			if ((e.which == 66) && e.altKey && e.ctrlKey) {											// Broadcast key (Ctrl+Alt+B)
 				GetTextBox("Type or speak message","","",(s)=>{ app.ws.send(`B|${app.meetingId}|${app.people[app.myId].id}|`+s)});	// Broadcast
 				}
-			if ((e.which == 86) && e.altKey && e.ctrlKey) {	app.sced.SetAway();	}					// Away key (Ctrl+Alt+V)
+			if ((e.which == 86) && e.altKey && e.ctrlKey) {	app.sced.VendorControl();	}			// Vendor control panel (Ctrl+Alt+V)
 			if ((e.which == 87) && e.altKey && e.ctrlKey) {											// Time key (Ctrl+Alt+W)
 				GetTextBox("Set time and day", "Type time/day to show. (Day is optional)","",(s)=>{	// Type time
 					let v=s.split("/");																// Split time/day
@@ -371,8 +373,11 @@ class App  {
 			for (i=0;i<this.sced.schedule.length;++i) 												// For each event
 				if (this.sced.schedule[i].id == v[1]) {												// A match
 					this.sced.schedule[i].content=v[2];												// Set content
-					this.chat.SetBulletinMarkup(i,v[2] ? JSON.parse(v[2]) : []);					// Redraw
-					break;
+					if (this.sced.schedule[i].link && this.sced.schedule[i].link.match(/bulletinboard/i))	// if BB data
+						this.chat.SetBulletinMarkup(i,v[2] ? JSON.parse(v[2]) : []);						// Redraw
+					if (this.sced.schedule[i].link && this.sced.schedule[i].link.match(/chalkboard/i))		// if chalk data
+						$(`#co-chalk-${i}`).html(this.sced.schedule[i].content);							// Show
+						break;
 					}
 			}
 		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
@@ -471,6 +476,7 @@ class App  {
 		this.ArrangeSpeedMeeters();																	// Arrange people speed meeting
 		this.ArrangeCoffeeBars();																	// Arrange coffee bars
 		this.ArrangeRooms();																		// Arrange Rooms
+		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
 	ShowHidePeople()																			// HIDE OR SHOW AVATARS
@@ -490,7 +496,6 @@ class App  {
 				$("#co-Ap-"+i).prop("src",o.pic ? o.pic : "img/avyou.png");							// Set image
 				}
 			}	
-		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
 	ArrangeSpeedMeeters()																		// ARRANGE SPEED MEETERS
@@ -507,7 +512,6 @@ class App  {
 		   	$("#co-Av-"+people[i]).animate({ left:x, top:y},0);           							// Move them
         	if (i < 3) y-=inc;																		// Only show 1st 4
 			}
-		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
  	}
 
 	ArrangeCoffeeBars()																			// ARRANGE COFFEE BARS
@@ -528,7 +532,7 @@ class App  {
 				}
 			if (bar.length && j) {																	// If not main hall
                 x=$("#co-coffee-"+cf+"-"+j).offset().left-avSize/2+27; 	                			// Left
-                y=$("#co-coffee-"+cf+"-"+j).offset().top+36;                            			// Top      
+   				y=$("#co-coffee-"+cf+"-"+j).offset().top+36;                            			// Top      
                 w=$("#co-Rm-"+j).height()-avSize-34;                                                // Get size                                             
                 }
             inc=avSize+2;                                                                           // Spacing between barmates
@@ -540,12 +544,11 @@ class App  {
                 if (j)  y+=inc;    else x+=inc;                                                  	// Advance
 				}
 			}
-		$("#co-Av-"+this.myId).css("display","none");												// Always hide my own avatar
 	}
 
-	ArrangeRooms()
+	ArrangeRooms()																				// ARRANGE ROOMS
 	{
-		let n,ox,y2,rms=[];																			// ARRANGE ROOMS
+		let n,ox,y2,rms=[];																			
 		let x,w,y,h,i,j,x2,o,inc;					
 		let cf=this.curFloor;																		// Current floor
 		let np=this.people.length;																	// Number of people
@@ -563,19 +566,19 @@ class App  {
 			else if (o.stats && (o.stats.charAt(0) == "R"))  rms[o.stats.substr(1)].push(i);		// If in a room, add person to it
 			}
 		for (j=1;j<rms.length;++j) {																// For each room
-			ox=$("#co-Rm-"+j).offset().left+4;														// Left side
-			x=ox;																					// Start pos
-			x2=x+$("#co-Rm-"+j).width()-avSize-8;													// Width of space
+			let p=this.venue[cf][j].pos;															// Room pos
+			x=ox=p.left+4;																			// Left side
+			x2=x+p.wid-avSize-8;																	// Width of space
 			w=avSize+2;																				// Full size spacing
 			n=rms[j].length;																		// Number of people
-			y2=$("#co-Rm-"+j).offset().top+50;														// Top
-			y=$("#co-Rm-"+j).offset().top+$("#co-Rm-"+j).height()-avSize-5;							// Bottom
+			y2=p.top+50;																			// Top
+			y=p.top+p.hgt-avSize-5;																	// Bottom
 			w=Math.min(Math.sqrt(((x2-ox)*(y-y2)/n)),avSize+2);										// Set avatar spacing
 			if (this.people[this.myId].stats == "R"+j)												// If I'm in this room		
-				$("#co-AvMe").animate({ left:x, top:y},0),x+=w; 									// Move me in
+				$("#co-AvMe").animate({ left:x, top:y },0),x+=w; 									// Move me in
 			for (i=0;i<n;++i) {																		// For person in room
 				if (rms[j][i] == this.myId)	continue;												// Skip me
-				$("#co-Av-"+rms[j][i]).animate({ left:x, top:y},0);									// Move there
+				$("#co-Av-"+rms[j][i]).animate({ left:x, top:y },0);								// Move there
 				$("#co-At-"+rms[j][i]).css("display","none");										// Hide me tag
 				x+=w;																				// Advance
 				if (x > x2)	{ x=ox;	 y-=w; }														// Next row
@@ -743,6 +746,10 @@ class App  {
 				content=this.chat.GetBulletinBoard(sc.index); 											// Get bulletin board content
 				gals[sc.room]=1;																		// Flag to set sizing
 				}
+			else if (sc.link && (sc.link.toLowerCase() == "chalkboard")) {								// If a chalkboard, 
+				content=this.chat.GetChalkBoard(sc.index); 												// Get chalk board content
+				gals[sc.room]=1;																		// Flag to set sizing
+				}
 			content=this.sced.SetMacros(i,content);														// Set content macros
 		
 			if (!o.rug)		o.rug=this.venue[this.curFloor][i-1].rug;									// Use flooring from room above if not set
@@ -763,6 +770,9 @@ class App  {
 		$("#co-menDiv").offset({ left:$("#co-Rm-0").offset().left, top:$("#co-Rm-0").offset().top+$("#co-Rm-0").height()-avSize-22});	// Force to bottom of hallway
 		for (i=0;i<this.venue[this.curFloor].length;++i) {												// For each room
 			this.venue[this.curFloor][i].hgt=$("#co-roomContent-"+i).height();							// Save room height
+			this.venue[this.curFloor][i].pos=$("#co-Rm-"+i).offset();									// Save offset position
+			this.venue[this.curFloor][i].pos.wid=$("#co-Rm-"+i).width();								// Width
+			this.venue[this.curFloor][i].pos.hgt=$("#co-Rm-"+i).height();								// Height
 			if (gals[i]) { 																				// If something there
 				$("#co-roomContent-"+i).css({"pointer-events":"auto","overflow-x":"hidden" });			// Set CSS
 				$("#co-galBase-"+i).height(Math.max($("#co-Rm-"+i).height()-60, isSmall? 300 : 0));		// Get hgt, min of 300 for mobile
