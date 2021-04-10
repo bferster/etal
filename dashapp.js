@@ -231,10 +231,9 @@ class App  {
 			d=$("#jsGrid-"+table).jsGrid("option","data");                   							   	// Get people from spreadsheet
 			for (i=0;i<d.length;++i) 																		// For each row
 				for (j=i+1;j<d.length;++j) 																	// For each row after this one
-					if ((d[i].email == d[j].email) && (d[i].email.toLowerCase().trim() != "guest"))			// If a duplicate, non guest
+					if ((d[i].email == d[j].email) && d[i].firstName && (d[i].email.toLowerCase().trim() != "guest"))	// If a duplicate, non guest
 						d.splice(j,1);																		// Remove it
 				}
-
 		else if (table == "schedule")	d=this.schedule;													// Get from schedulel	
 		d=JSON.stringify(d);																				// Stringify
 		app.ws.send(`W${table.charAt(0).toUpperCase()}|${this.meetingId}|${d}`);							// Write to DB table
