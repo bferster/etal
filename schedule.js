@@ -359,10 +359,11 @@ class Schedule  {
 			left:${x}px;top:${y}px;	width:${$(app.vr).width()-pad}px; height:${h}px
 			${link.match(/.app.htm/i) ? ";background-color:#444;overflow:hidden" : ""}">`;
 			if (pad) str+=`<img id="co-pipBut2" style="float:right;cursor:pointer;width:22px;margin-top:-27px" src="img/zoomblue.png" title="Video chat">`;
-			str+=`<div id="co-ifSmall" style="cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff;width:calc(100% - 8px)">
+			str+=`<div id="co-ifSmall" style="pointer-events:none;cursor:pointer;position:absolute;top:6px;font-size:11px;left:6px;color:#fff;width:calc(100% - 8px)">
 			<div style="position:absolute;background-color:#fff;width:18px;height:18px;border-radius:18px">
-			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0" src="img/closedot.png"></div>
-			<div id="co-ift" style="cursor:pointer;display:inline-block;text-align:center;width:100%">Minimize window</div></div>
+			<img id="co-ifc" style="cursor:pointer;padding:1px 0 0 0;pointer-events:auto" src="img/closedot.png"></div>
+			<div style="display:inline-block;text-align:center;width:100%">
+			<span id="co-ift"style="cursor:pointer;pointer-events:auto">Minimize window</span></div></div>
 			<iframe id="co-iframeFrame" style="width:100%;height:100%" src="${link}" allow=camera;microphone;autoplay frameborder="0" allowfullscreen></iframe>`;
 			$("body").append(str.replace(/\t|\n|\r/g,""));											// Add it
 
@@ -373,7 +374,7 @@ class Schedule  {
 				app.GoToCenter();																	// Go to center
 				});	
 			
-			$("#co-ifSmall").on("click", ()=>{														// ON SMALLER BUT
+			$("#co-ift").on("click", ()=>{															// ON SMALLER BUT
 				let w=$(app.vr).width(),h=$(app.vr).width()*.5625;									// Default size
 				if ($("#co-ift").text() == "Minimize window")	{									// If reducing
 					w=128;	h=256;																	// Small size
