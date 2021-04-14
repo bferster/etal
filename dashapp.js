@@ -179,8 +179,10 @@ class App  {
 
 	StartMeeting(day)																					// START MEETING
 	{
-		app.ws.send(`>|${this.meetingId}`);																	// Send start
-		Sound("ding");																						// Ding
+		app.ws.send(`P|${this.meetingId}`);																	// Load people		
+		setTimeout(()=>{ 																					// Wait so load is probably finished
+			app.ws.send(`>|${this.meetingId}`);																// Send start
+			}, 10000);																						// 10 seconds
 	}
 		
 	GetFromServer(table)                                                                           	 	// LOAD FROM SERVER
