@@ -183,9 +183,14 @@ class Schedule  {
 		let o=app.schedule[num];																			// Point at event
 		let s=timeToMins(o.start)/15-24;																	// Set start
 		if (o.start == "*")	s=480/15-24;																	// All day
-		else if (o.start == "!") s=1080/15
+		else if (o.start.charAt(0) == "!") {																// If an away avent
+			s=1080/15;																						// Shift								
+			if (!isNaN(o.start.charAt(1))) s-=o.start.charAt(1)*2;											// Shift for multiples
+			}
 		let e=s+timeToMins(o.end)/15;																		// End
 		if (o.end == "*")	e=s+720/15;																		// All day
+		if (o.start.charAt(0) == "!") e=s+2;																// If an away avent shorten
+
 		$("#co-ev-"+num).remove();
 		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
 		cursor:pointer;overflow:hidden;font-size:11px;border-radius:8px;
@@ -194,7 +199,7 @@ class Schedule  {
 		$("#co-sgrid").append(str)
 	
 		$("#co-ev-"+num).draggable({ containment:"body", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
-			if (o.start == "!") return;																		// Not for away events
+			if (o.start.charAt(0) == "!") return;															// Not for away events
 			this.Do();																						// Undo
 			if (ui.originalPosition.left != ui.position.left) {												// Moved room
 				o.room=Math.floor(($("#co-ev-"+num).position().left-66+$("#scedGrid")[0].scrollLeft)/154);	// Get new room

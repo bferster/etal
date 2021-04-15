@@ -69,17 +69,32 @@ class Schedule  {
 		let i,o;
 		for (i=0;i<this.schedule.length;++i) {													// For each event
 			o=this.schedule[i];																	// Point at it
-			if (o.start == "!")															 		// An away event 
-				if ((o.room == ev.room) && (o.floor == ev.floor)) return o;						// If in this room, find away message
+			
+			trace(o)
+			if (o.start == "!"+o.away ? o.away : "")											// An away event 
+				if ((o.room == ev.room) && (o.floor == ev.floor)) return o; 					// If in this room, find away message
 			}
 		return ev;																				// Return original event
 	}
 
+	FindAwayEvents(floor, room)																// FIND AWAY EVENTS AS OPTIONS
+	{
+		let i,o,str="";
+		for (i=0;i<this.schedule.length;++i) {													// For each event
+			o=this.schedule[i];																	// Point at it
+			if ((""+o.start).charAt(0) == "!")													// An away event 
+				if ((o.room == room) && (o.floor == floor))										// If in this room
+					str+=`<option>${o.desc.substr(0,12)}</option>`;								// Add to list
+			}
+		return str;																				// Option lsit
+		}
+
 	VendorControl()																			// VENDOR CONTROL PANEL
 	{
-		let p=app.people[app.myId];																// Get role
-		if (!p.role)								return;										// Quit if no role
-		if (!p.role.match(/admin|host|vendor/i))	return;										// Quit if not authorized
+		let opts,p=app.people[app.myId];														// Get person
+		if (window.location.search.substring(1) == "preview")	p.role="admin";					// Force admin in preview
+		if (!p.role)											return;							// Quit if no role
+		if (!p.role.match(/admin|host|vendor/i))				return;							// Quit if not authorized
 		$("#co-Vcon").remove();																	// Kill existing
 		let content=$("#co-gItemD").data("content");											// Get content
 		if (content && !content.match(/^https\:\/\/etalimages.s3.amazonaws.com/i)) content="";	// Not an AWS file
@@ -92,8 +107,11 @@ class Schedule  {
 		<div style="float:left">Toggle away status in:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
 		<div style="text-align:left">`;
 		for (let i=0;i<app.venue[app.curFloor].length;++i) {									// For each room
-			if (this.FindAwayEvent({ floor:app.curFloor, room:i, no:true}).no) continue;		// Skip ones without an away event
-			str+=`<div id="co-Vcon-${i}" class="co-bsg">${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</div>&nbsp;&nbsp;&nbsp;`;	
+			if (!(opts=this.FindAwayEvents(app.curFloor, i))) continue;							// Skip ones without an away event
+				str+=`<div style="display:inline-block">
+				  ${app.venue[app.curFloor][i].title.replace(/^\*/,"")}<br>
+				  <select class="co-is" style="width:auto" id="co-Vcon-${i}">
+				  <option>Original</option> ${opts}</select></div>&nbsp;&nbsp;&nbsp;`;	
 			}
 		str+=`<br><br><div style="float:left">Clear message board in:&nbsp;&nbsp;&nbsp;</div>`;
 		for (let i=0;i<this.schedule.length;++i) {												// For each event
@@ -116,10 +134,10 @@ class Schedule  {
 	
 		$("#co-clsa").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
 
-		$("[id^=co-Vcon-]").on("click", (e)=>{ 													// ON ROOM CLICK
+		$("[id^=co-Vcon-]").change("change", (e)=>{ 											// ON AWAY ROOM CHANGE
 			let id=e.currentTarget.id.substr(8);												// Get id
 			let o=this.GetEventByRoom(app.curFloor, id, true);									// Point at room	
-			o.away=(o.away > 0) ? 0 : 1;														// Toggle away
+			o.away=$("#"+e.currentTarget.id).prop("selectedIndex");								// Toggle away
 			app.ws.send(`AW|${o.id}|${o.away}`);												// Update server
 			Sound("ding");																		// Ding
 			});

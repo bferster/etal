@@ -632,7 +632,7 @@ class App  {
 		if (s && s[0] && s[0].bar && s[0].bar.match(/UTC/i)) off=s[0].bar.substr(3)*-60;				// Get offset from UTC
 		for (i=0;i<sced.length;++i)	{																	// For each event
 			o=sced[i];																					// Point at it
-			if (o.start != "!")	o.start=this.sced.TimeToMins(o.start,off-0);							// Start to mins, unless an away event
+			if ((""+o.start).charAt(0) != "!")	o.start=this.sced.TimeToMins(o.start,off-0);			// Start to mins, unless an away event
 			o.end=this.sced.TimeToMins(o.end,0);														// Duration to mins
 			if (o.link && (o.floor == 0) && (o.room == 0) && o.link.match(/^coffeebar/i)) {				// Set main coffee bar link
 				app.coffeebarLink=o.link.substring(10);													// Set in app
