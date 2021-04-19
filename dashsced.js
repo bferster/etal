@@ -4,9 +4,10 @@ class Schedule  {
 	{
 		this.curFloor=0;																				// Current floor
 		this.curEvent=0;																				// Current event
-		this.curDay=1;
+		this.curDay=1;																					// Current day
 		this.curUndo=0;																					// Undo counter
 		this.undos=[];																					// Holds undos
+		this.schedule=[];																				// Holds events
 	}
 
 	EditSchedule(data)																					// MAKE SCHEDULE EDITOR

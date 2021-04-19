@@ -19,6 +19,7 @@ class App  {
 		this.curFloor=0;																			// Current floor
 		this.retryWS=false;																			// Reconnecting to web socket
 		this.secs=0;																				// Time
+		this.utcOff;																				// Offset from UTC time
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -43,7 +44,6 @@ class App  {
 
 	SocketIn(event)																				// A WEBSOCKET MESSAGE
 	{
-		let msg=event.data;																			// Get message
 		let v=event.data.split("|");																// Split message
 		if (v[0] == "P") 		this.SetTableData("people",JSON.parse(v[1]));						// Set people
 		else if (v[0] == "S") 	this.SetTableData("schedule",JSON.parse(v[1]));						// Schedule
@@ -63,8 +63,9 @@ class App  {
 				app.ws.send(`IMGL|${app.meetingId}`);												// S3 images
 				}
 			}						
-		else if (v[0] == "IMGL") {	app.S3Images=(JSON.parse(v[1])); app.ShowS3Images(); }			// Get S3 images
-		else if (v[0] == "IMG") 	app.DrawLive();													// Refreh when new images loaded
+		else if (v[0] == "IMGL") {		app.S3Images=(JSON.parse(v[1])); app.ShowS3Images(); }		// Get S3 images
+		else if (v[0] == "IMG") 		app.DrawLive();												// Refreh when new images loaded
+		else if (v[0].charAt(0) == "K") this.utcOff=new Date().getTime()-v[2];						// Get UTC time offser
 	}
 
 	InitSpreadSheets()																			// INIT JSGRID
@@ -182,7 +183,7 @@ class App  {
 		app.ws.send(`P|${this.meetingId}`);																	// Load people		
 		setTimeout(()=>{ 																					// Wait so load is probably finished
 			app.ws.send(`>|${this.meetingId}`);																// Send start
-			}, 10000);																						// 10 seconds
+			}, 20000);																						// 10 seconds
 	}
 		
 	GetFromServer(table)                                                                           	 	// LOAD FROM SERVER
@@ -322,3 +323,6 @@ class App  {
 		}
 
 } // Class closure
+
+
+

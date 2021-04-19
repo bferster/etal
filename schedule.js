@@ -43,15 +43,14 @@ class Schedule  {
 		return (mins.substr(0,2)*60)+(mins.substr(2)*1)+(offset-0);								// Get minutes
 	}
 
-	GetEventByRoom(floor, room, ignoreAways)												// GET EVENT FOR A ROOM
+	GetEventByRoom(floor, room)																// GET EVENT FOR A ROOM
 	{
 		let i,o;
-		if (!ignoreAways) {																		// If ignoring away rooms
-			for (i=0;i<this.schedule.length;++i) {												// For each event
-				o=this.schedule[i];																// Point at it
-				if (o.away > 0)															 		// An away event 
-					if ((o.room == room) && (o.floor == floor)) return this.FindAwayEvent(o);	// If in this room, find away message
-				}
+		let awayId=app.venue[floor][room].away;													// Get away id, if any
+		if (awayId)	{																			// If an away override
+			for (i=0;i<this.schedule.length;++i)												// For each event
+				if (this.schedule[i].id == awayId) 												// A match
+					return this.schedule[i]														// Return away event
 			}
 		for (i=0;i<this.schedule.length;++i) {													// For each event
 			o=this.schedule[i];																	// Point at it
@@ -64,34 +63,9 @@ class Schedule  {
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
 	}
 
-	FindAwayEvent(ev)																		// FIND AWAY EVENT
-	{
-		let i,o;
-		for (i=0;i<this.schedule.length;++i) {													// For each event
-			o=this.schedule[i];																	// Point at it
-			
-			trace(o)
-			if (o.start == "!"+o.away ? o.away : "")											// An away event 
-				if ((o.room == ev.room) && (o.floor == ev.floor)) return o; 					// If in this room, find away message
-			}
-		return ev;																				// Return original event
-	}
-
-	FindAwayEvents(floor, room)																// FIND AWAY EVENTS AS OPTIONS
-	{
-		let i,o,str="";
-		for (i=0;i<this.schedule.length;++i) {													// For each event
-			o=this.schedule[i];																	// Point at it
-			if ((""+o.start).charAt(0) == "!")													// An away event 
-				if ((o.room == room) && (o.floor == floor))										// If in this room
-					str+=`<option>${o.desc.substr(0,12)}</option>`;								// Add to list
-			}
-		return str;																				// Option lsit
-		}
-
 	VendorControl()																			// VENDOR CONTROL PANEL
 	{
-		let opts,p=app.people[app.myId];														// Get person
+		let i,p=app.people[app.myId];															// Get person
 		if (window.location.search.substring(1) == "preview")	p.role="admin";					// Force admin in preview
 		if (!p.role)											return;							// Quit if no role
 		if (!p.role.match(/admin|host|vendor/i))				return;							// Quit if not authorized
@@ -104,15 +78,12 @@ class Schedule  {
 		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
 		<img id="co-clsa" style="float:right;cursor:pointer" src="img/closedot.png">
 		<b>Vendor Control Panel</b><br><br>
-		<div style="float:left">Toggle away status in:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-		<div style="text-align:left">`;
-		for (let i=0;i<app.venue[app.curFloor].length;++i) {									// For each room
-			if (!(opts=this.FindAwayEvents(app.curFloor, i))) continue;							// Skip ones without an away event
-				str+=`<div style="display:inline-block">
-				  ${app.venue[app.curFloor][i].title.replace(/^\*/,"")}<br>
-				  <select class="co-is" style="width:auto" id="co-Vcon-${i}">
-				  <option>Original</option> ${opts}</select></div>&nbsp;&nbsp;&nbsp;`;	
-			}
+		<div style="float:left">Set event in:&nbsp;&nbsp;&nbsp;&nbsp;</div><div style="text-align:left">
+		<select class="co-is" style="width:auto" id="co-Vrom"><option>Hallway</option>`;
+		for (i=1;i<app.venue[app.curFloor].length;++i) 											// For each room
+			str+=`<option>${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</option>`;		// Add room
+		str+=`</select>&nbsp;to&nbsp;<select class="co-is" style="width:auto" id="co-Vevt"></select>`;
+
 		str+=`<br><br><div style="float:left">Clear message board in:&nbsp;&nbsp;&nbsp;</div>`;
 		for (let i=0;i<this.schedule.length;++i) {												// For each event
 			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) && this.schedule[i].link.match(/BULLETINBOARD/))
@@ -131,14 +102,19 @@ class Schedule  {
 		if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
 		str+="</div><br></div>";
 		$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
+		fillEvents(0);																			// Fiull hallway eventws
 	
 		$("#co-clsa").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
 
-		$("[id^=co-Vcon-]").change("change", (e)=>{ 											// ON AWAY ROOM CHANGE
-			let id=e.currentTarget.id.substr(8);												// Get id
-			let o=this.GetEventByRoom(app.curFloor, id, true);									// Point at room	
-			o.away=$("#"+e.currentTarget.id).prop("selectedIndex");								// Toggle away
-			app.ws.send(`AW|${o.id}|${o.away}`);												// Update server
+		$("#co-Vrom").change("change", ()=>{ 													// ON ROOM CHANGE
+			fillEvents($("#co-Vrom").prop("selectedIndex"));									// Fill events select
+			});
+
+		$("#co-Vevt").change("change", (e)=>{ 													// ON AWAY CHANGE
+			let id=$("#co-Vevt").val();															// Get event id
+			let rm=$("#co-Vrom").prop("selectedIndex");											// Choose event
+			let roomId=app.venue[app.curFloor][rm].id; 											// Get room id
+			app.ws.send(`AW|${roomId}|${id != "Choose" ? id : 0 }`);							// Update server
 			Sound("ding");																		// Ding
 			});
 
@@ -157,7 +133,6 @@ class Schedule  {
 			Sound("ding");																		// Ding
 			});
 	
-			
 		$("#co-imageUpload").on("change",(e)=>{													// ON IMAGE UPLOAD
 			let myReader=new FileReader();														// Alloc reader
 			myReader.onloadend=function(e) { 													// When loaded
@@ -165,7 +140,20 @@ class Schedule  {
 				}						
 			myReader.readAsDataURL(e.target.files[0]);											// Load file		
 			});
-		}
+
+		function fillEvents(room) {																// FILL EVENTS SELECT
+			let str,o;
+			$("#co-Vevt").empty();																// Clear
+			$("#co-Vevt").append("<option>Choose</option>");									// Choose event
+			for (i=0;i<app.sced.schedule.length;++i) {											// For each event
+				o=app.sced.schedule[i];															// Point at event
+				if ((app.curFloor == o.floor) && (room == o.room)) {							// The right room 
+					str=`<option value="${o.id}">${o.start} &nbsp; ${o.desc ? o.desc.substr(0,16).replace(/\*/,"") : ""}</option>`;
+					$("#co-Vevt").append(str);													// Add option
+					}
+				}
+			}
+	}
 
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
 	{

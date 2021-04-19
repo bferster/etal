@@ -195,6 +195,7 @@ class App  {
 		this.people=[{ stats:"Q"} ];																// Holds attendees
 		this.pIndex=[]; this.eIndex=[];																// Get people indices from id and email
 		this.status="";																				// My status
+		this.utcOff=null;																			// Current UTC time offset in mSec
 		this.infoDeskId=null;																		// Id of info desk person
 		this.videoWin=null;																			// Video window
 		this.vr="#co-Rm-0";																			// Assume hallway is video rooom for iframes
@@ -345,7 +346,7 @@ class App  {
 		else if (v[0] == "V") 	{ 																	// Add/update venue
 			this.AddVenue(JSON.parse(v[1]));														// Set data				
 			if (v[2] != "U")	app.ws.send(`S|${app.meetingId}`);									// Request schedule data if adding	
-				else				app.DrawVenue();													// Redraw venue on update
+			else				app.DrawVenue();													// Redraw venue on update
 			}
 		else if (v[0] == "S") {																		// Add/update schedule
 			this.AddSchedule(JSON.parse(v[1]));														// Set data
@@ -380,7 +381,10 @@ class App  {
 						break;
 					}
 			}
-		else if (v[0].charAt(0) == "K") 	this[v[0]]=v[1];										// Set ks
+		else if (v[0].charAt(0) == "K") {															// K's and UTC time
+			this[v[0]]=v[1];																		// Set K
+			this.utcOff=new Date().getTime()-v[2];													// Set offset	
+			}										
 	}
 	
 	OnMeMove(x, y, targetId)																	// REACT TO MOVING ME AVATAR
@@ -698,7 +702,7 @@ class App  {
 		let p=this.venue[this.curFloor][0].params;														// Point at all params
 		if (p.avSize)		avSize=p.avSize-0;															// Use size if set
 		if (p.vRoom >= 0)	this.vr="#co-Rm-"+p.vRoom;													// Use video room if set
-		sc=this.sced.GetEventByRoom(this.curFloor, 0);													// Point at schedule for hall																			
+		sc=this.sced.GetEventByRoom(this.curFloor,0);													// Point at schedule for hall																			
 		o=this.venue[this.curFloor][0];																	// Point at room
 		let offx=p.menu&1 ? avSize+16 : 0;																// Account for quiet icon
 		offx+=p.menu&32 ? avSize+16 : 0;																// And speed icon
