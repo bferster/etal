@@ -19,7 +19,6 @@ class App  {
 		this.curFloor=0;																			// Current floor
 		this.retryWS=false;																			// Reconnecting to web socket
 		this.secs=0;																				// Time
-		this.utcOff;																				// Offset from UTC time
 		if (window.location.host == "localhost") this.ws=new WebSocket('ws://'+window.location.host+':8080');	// Open insecure websocket											
 		else									 this.ws=new WebSocket('wss://'+window.location.host+':8080');	// Secure											
 		this.ws.onmessage=(e)=>{ this.SocketIn(e); };												// ON INCOMING MESSAGE
@@ -65,7 +64,6 @@ class App  {
 			}						
 		else if (v[0] == "IMGL") {		app.S3Images=(JSON.parse(v[1])); app.ShowS3Images(); }		// Get S3 images
 		else if (v[0] == "IMG") 		app.DrawLive();												// Refreh when new images loaded
-		else if (v[0].charAt(0) == "K") this.utcOff=new Date().getTime()-v[2];						// Get UTC time offser
 	}
 
 	InitSpreadSheets()																			// INIT JSGRID

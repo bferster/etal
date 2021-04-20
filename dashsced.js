@@ -1,20 +1,20 @@
 class Schedule  {																					
 
-	constructor()   																				// CONSTRUCTOR
+	constructor()   																					// CONSTRUCTOR
 	{
-		this.curFloor=0;																				// Current floor
-		this.curEvent=0;																				// Current event
-		this.curDay=1;																					// Current day
-		this.curUndo=0;																					// Undo counter
-		this.undos=[];																					// Holds undos
-		this.schedule=[];																				// Holds events
+		this.curFloor=0;																					// Current floor
+		this.curEvent=0;																					// Current event
+		this.curDay=1;																						// Current day
+		this.curUndo=0;																						// Undo counter
+		this.undos=[];																						// Holds undos
+		this.schedule=[];																					// Holds events
 	}
 
 	EditSchedule(data)																					// MAKE SCHEDULE EDITOR
 	{
 		let i,o={ day:"0", start:"*", end:"*", bar:"0", floor:"", desc:"", link:"", content:"" };
-		if (data) {
-			this.curFloor=this.curEvent=0;																	// ResetS
+		if (data) {																							// If setting
+			this.curFloor=this.curEvent=0;																	// Reset
 			this.curDay=1;
 			app.schedule=data;																				// Set data
 			this.curUndo=0;																					// Reset undos
@@ -23,6 +23,7 @@ class Schedule  {
 		if (!app.schedule.length)	app.schedule.push(o);													// Need day 0
 		for (i=0;i<app.schedule.length;++i)																	// For each event
 			if (app.schedule[i].day == 0)	o=app.schedule[i];												// Set val if 0
+		o.bar="UTC-"+(new Date().getTimezoneOffset()/60);													// Set authoring timezone
 		let str=`<br><div id="scedGrid" style="display:inline-block;overflow:auto;padding-right:12px;
 				height:calc(100vh - 190px);max-width:calc(100% - 380px)"></div>
 					<div style="display:inline-block;vertical-align:top;padding:12px">
@@ -31,10 +32,10 @@ class Schedule  {
 							&nbsp;&nbsp;&nbsp;<b>Floor</b>&nbsp;&nbsp;<select id="scFloor" class="co-is" style="width:50px;font-size:13px"></select>
 							&nbsp;&nbsp;&nbsp;&nbsp;<div id="scAddEvent" class="co-bs">Add new event</div></td></tr>
 							<tr><td colspan="4"><hr></td></tr>
+							<tr><td colspan="4">My time zone: ${o.bar}</tr>
 							<tr><td>Start date&nbsp;</td><td colspan="4"><input type="text" id="scStart" class="co-is" style="width:85px" value="${o.start}">
 							&nbsp;&nbsp;&nbsp;End&nbsp;&nbsp;<input type="text" id="scEnd" class="co-is" style="width:85px" value="${o.end}"></td></tr>
-							<tr><td>Time zone</td><td colspan=2><input type="text" id="scZone" class="co-is" style="width:85px" value="${o.bar.length > 2 ? o.bar : "UTC-5"}"></select></td></tr>
-						<table>
+							<table>
 						<br>
 						<div id="scprop"></div>
 					</div>
@@ -49,16 +50,16 @@ class Schedule  {
 		$("#scDay").prop("selectedIndex",this.curDay-1);													// Set day
 
 		$("#scFloor").on("change",()=>{																		// ON FLOOR CHANGE
-				this.curFloor=$("#scFloor").prop("selectedIndex"); 											// Set floor			
-				this.EditSchedule(); 																		// Re-edit
-				});	
+			this.curFloor=$("#scFloor").prop("selectedIndex"); 												// Set floor			
+			this.EditSchedule(); 																			// Re-edit
+			});	
 		$("#scDay").on("change",()=>{																		// ON DAY CHANGE
-				this.curDay=$("#scDay").prop("selectedIndex")+1; 											// Set day
-				this.EditSchedule(); 																		// Re-edit
-				});	
+			this.curDay=$("#scDay").prop("selectedIndex")+1; 												// Set day
+			this.EditSchedule(); 																			// Re-edit
+			});	
 		$("#scStart").on("change",()=>{ this.Do(); o.start=$("#scStart").val(); });							// ON START CHANGE
 		$("#scEnd").on("change",()=>  { this.Do(); o.end=$("#scEnd").val(); });								// ON END CHANGE
-		$("#scZone").on("change",()=> { this.Do(); o.bar=$("#scZone").val(); });							// ON ZONE CHANGE
+
 		$("#scAddEvent").on("click",()=> {																	// ON ADD EVENT
 			let o={ day:this.curDay, start:"*", end:"*", bar:"0", room:"0", floor:this.curFloor, desc:"", link:"", content:"" };
 			this.curEvent=app.schedule.length;																// Set new number
@@ -67,7 +68,7 @@ class Schedule  {
 			this.ShowEventDetails(this.curEvent);															// Redraw event
 			Sound("ding");																					// Ding
 			});
-		this.DrawSchedule();																					// Draw schedule		
+		this.DrawSchedule();																				// Draw schedule		
 	}
 
 	DrawSchedule()																						// DRAW THE SCHEDULE GRID
@@ -105,6 +106,54 @@ class Schedule  {
 			else										  Sound("delete");									// Error	
 			});			
 	}
+
+	DrawEvent(num)
+	{
+		let o=app.schedule[num];																			// Point at event
+		let s=timeToMins(o.start)/15-24;																	// Set start
+		if (o.start == "*")	s=480/15-24;																	// All day
+		else if (o.start.charAt(0) == "!") {																// If an away avent
+			s=1080/15;																						// Shift								
+			if (!isNaN(o.start.charAt(1))) s-=o.start.charAt(1)*2;											// Shift for multiples
+			}
+		let e=s+timeToMins(o.end)/15;																		// End
+		if (o.end == "*")	e=s+720/15;																		// All day
+		if (o.start.charAt(0) == "!") e=s+2;																// If an away avent shorten
+
+		$("#co-ev-"+num).remove();
+		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
+		cursor:pointer;overflow:hidden;font-size:11px;border-radius:8px;
+		text-align:center;color:#fff;border:1px solid #999;background-color:#004eff;opacity:.33;padding:6px">
+		${o.desc ? o.desc : ""}</div>`;
+		$("#co-sgrid").append(str)
+	
+		$("#co-ev-"+num).draggable({ containment:"body", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
+			if (o.start.charAt(0) == "!") return;															// Not for away events
+			this.Do();																						// Undo
+			if (ui.originalPosition.left != ui.position.left) {												// Moved room
+				o.room=Math.floor(($("#co-ev-"+num).position().left-66+$("#scedGrid")[0].scrollLeft)/154);	// Get new room
+				o.room=Math.max(o.room,0);																	// Cap
+				}
+			if (ui.originalPosition.top != ui.position.top) {												// Moved start
+				let s=(Math.floor(($("#co-ev-"+num).position().top-$("#co-sgrid").position().top)/12)+24)*15;// Get new start
+				o.start=Math.floor(s/60)+":";																// Set hours
+				if (!(s%60)) o.start+="00";																	// No minutes
+				else		 o.start+=s%60;																	// Minutes
+				}
+			this.DrawEvent(num);																			// Redraw event
+			this.ShowEventDetails(num);																		// Show
+			} 
+			});
+
+		function timeToMins(time) {																			// CONVERT TIME
+			if (!time)	return 0;																			// Invalid time
+			let mins=time.replace(/\D/g,"");																// Only digits
+			if (mins.length < 3) mins+="00";																// Only hour spec'd, add minutes
+			if (mins.length < 4) mins="0"+mins;																// Add leading 0 to hours
+			return mins.substr(0,2)*60+mins.substr(2)*1;													// Get minutes
+			}
+		}
+
 
 	ShowEventDetails(num)																				// SHOW EVENT DETAILS
 	{
@@ -179,53 +228,6 @@ class Schedule  {
 		});
 	}
 
-	DrawEvent(num)
-	{
-		let o=app.schedule[num];																			// Point at event
-		let s=timeToMins(o.start)/15-24;																	// Set start
-		if (o.start == "*")	s=480/15-24;																	// All day
-		else if (o.start.charAt(0) == "!") {																// If an away avent
-			s=1080/15;																						// Shift								
-			if (!isNaN(o.start.charAt(1))) s-=o.start.charAt(1)*2;											// Shift for multiples
-			}
-		let e=s+timeToMins(o.end)/15;																		// End
-		if (o.end == "*")	e=s+720/15;																		// All day
-		if (o.start.charAt(0) == "!") e=s+2;																// If an away avent shorten
-
-		$("#co-ev-"+num).remove();
-		let str=`<div id="co-ev-${num}" style="grid-column-start:${o.room-0+1};grid-column-end:${o.room-0+2};grid-row-start:${s};grid-row-end:${e};
-		cursor:pointer;overflow:hidden;font-size:11px;border-radius:8px;
-		text-align:center;color:#fff;border:1px solid #999;background-color:#004eff;opacity:.33;padding:6px">
-		${o.desc ? o.desc : ""}</div>`;
-		$("#co-sgrid").append(str)
-	
-		$("#co-ev-"+num).draggable({ containment:"body", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
-			if (o.start.charAt(0) == "!") return;															// Not for away events
-			this.Do();																						// Undo
-			if (ui.originalPosition.left != ui.position.left) {												// Moved room
-				o.room=Math.floor(($("#co-ev-"+num).position().left-66+$("#scedGrid")[0].scrollLeft)/154);	// Get new room
-				o.room=Math.max(o.room,0);																	// Cap
-				}
-			if (ui.originalPosition.top != ui.position.top) {												// Moved start
-				let s=(Math.floor(($("#co-ev-"+num).position().top-$("#co-sgrid").position().top)/12)+24)*15;// Get new start
-				o.start=Math.floor(s/60)+":";																// Set hours
-				if (!(s%60)) o.start+="00";																	// No minutes
-				else		 o.start+=s%60;																	// Minutes
-				}
-			
-			this.DrawEvent(num);																			// Redraw event
-			this.ShowEventDetails(num);																		// Show
-			} 
-			});
-
-		function timeToMins(time) {
-			if (!time)	return 0;																			// Invalid time
-			let mins=time.replace(/\D/g,"");																// Only digits
-			if (mins.length < 3) mins+="00";																// Only hour spec'd, add minutes
-			if (mins.length < 4) mins="0"+mins;																// Add leading 0 to hours
-			return mins.substr(0,2)*60+mins.substr(2,0)*1;													// Get minutes
-			}
-		}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // UNDO

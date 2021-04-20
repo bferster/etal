@@ -142,13 +142,15 @@ class Schedule  {
 			});
 
 		function fillEvents(room) {																// FILL EVENTS SELECT
-			let str,o;
+			let str,o,s;
 			$("#co-Vevt").empty();																// Clear
 			$("#co-Vevt").append("<option>Choose</option>");									// Choose event
 			for (i=0;i<app.sced.schedule.length;++i) {											// For each event
 				o=app.sced.schedule[i];															// Point at event
 				if ((app.curFloor == o.floor) && (room == o.room)) {							// The right room 
-					str=`<option value="${o.id}">${o.start} &nbsp; ${o.desc ? o.desc.substr(0,16).replace(/\*/,"") : ""}</option>`;
+					s=o.start-new Date().getTimezoneOffset();									// Get local time
+					if (!isNaN(s)) s=(Math.floor(s/60) < 10 ? "0" : "")+Math.floor(s/60)+":"+s%60+(s%60 ? "" : 0);	// Readable time
+					str=`<option value="${o.id}">${s} &nbsp; ${o.desc ? o.desc.substr(0,16).replace(/\*/,"") : ""}</option>`;
 					$("#co-Vevt").append(str);													// Add option
 					}
 				}
