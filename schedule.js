@@ -527,7 +527,8 @@ class Schedule  {
 				o=app.sced.schedule[i];															// Point at event
 				if ((app.curFloor == o.floor) && (room == o.room)) {							// The right room 
 					s=o.start-new Date().getTimezoneOffset();									// Get local time
-					if (!isNaN(s)) s=(Math.floor(s/60) < 10 ? "0" : "")+Math.floor(s/60)+":"+s%60+(s%60 ? "" : 0);	// Readable time
+					if (!isNaN(s))  s=(Math.floor(s/60) < 10 ? "0" : "")+Math.floor(s/60)+":"+s%60+(s%60 ? "" : 0);	// Readable time
+					else			s="";
 					str=`<option value="${o.id}">${s} &nbsp; ${o.desc ? o.desc.substr(0,16).replace(/\*/,"") : ""}</option>`;
 					$("#co-Vevt").append(str);													// Add option
 					}
