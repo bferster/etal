@@ -224,10 +224,13 @@ class App  {
 		let i,j,d=[];
 		if (!app.ws) { PopUp("Disconnected!"); return; }													// Not connected	
         if (table == "venue") {																				// Flatten venue into room list
-            for (i=0;i<this.venue.length;++i)																// For each floor
-                for (j=0;j<this.venue[i].length;++j)														// For each room in floor
+            for (i=0;i<this.venue.length;++i) {																// For each floor
+  				for (j=0;j<this.venue[i].length;++j) {														// For each room in floor
+              		this.venue[i][j].away=null;																// Clear all aways
                     d.push(this.venue[i][j]);																// Add to array
-            }
+				  	}
+				}
+			}
 		else if (table == "people") {																		// If people 	
 			d=$("#jsGrid-"+table).jsGrid("option","data");                   							   	// Get people from spreadsheet
 			for (i=0;i<d.length;++i) 																		// For each row

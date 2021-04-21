@@ -63,106 +63,12 @@ class Schedule  {
 		return { link:"", content:"", title:"", desc:"", room:room };							// Return null event
 	}
 
-	VendorControl()																			// VENDOR CONTROL PANEL
-	{
-		let i,p=app.people[app.myId];															// Get person
-		if (window.location.search.substring(1) == "preview")	p.role="admin";					// Force admin in preview
-		if (!p.role)											return;							// Quit if no role
-		if (!p.role.match(/admin|host|vendor/i))				return;							// Quit if not authorized
-		$("#co-Vcon").remove();																	// Kill existing
-		let content=$("#co-gItemD").data("content");											// Get content
-		if (content && !content.match(/^https\:\/\/etalimages.s3.amazonaws.com/i)) content="";	// Not an AWS file
-
-		let str=`<div id="co-Vcon" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
-		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
-		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
-		<img id="co-clsa" style="float:right;cursor:pointer" src="img/closedot.png">
-		<b>Vendor Control Panel</b><br><br>
-		<div style="float:left">Set event in:&nbsp;&nbsp;&nbsp;&nbsp;</div><div style="text-align:left">
-		<select class="co-is" style="width:auto" id="co-Vrom"><option>Hallway</option>`;
-		for (i=1;i<app.venue[app.curFloor].length;++i) 											// For each room
-			str+=`<option>${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</option>`;		// Add room
-		str+=`</select>&nbsp;to&nbsp;<select class="co-is" style="width:auto" id="co-Vevt"></select>`;
-
-		str+=`<br><br><div style="float:left">Clear message board in:&nbsp;&nbsp;&nbsp;</div>`;
-		for (let i=0;i<this.schedule.length;++i) {												// For each event
-			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) && this.schedule[i].link.match(/BULLETINBOARD/))
-				str+=`<div id="co-Vbul-${i}" class="co-bsg">${app.venue[app.curFloor][this.schedule[i].room].title}</div>&nbsp;&nbsp;&nbsp;`;	
-				}
-		str+=`<br><br><div style="float:left">Write on chalk board(s):&nbsp;&nbsp;&nbsp;</div>`;
-		for (let i=0;i<this.schedule.length;++i) {												// For each event
-			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) && this.schedule[i].link.match(/CHALKBOARD/))
-				str+=`<div style="width:200px;height:100px;display:inline-block">
-				<div id="co-Vcha-${i}" class="co-bsg" style="margin-bottom:4px">Write to ${app.venue[app.curFloor][this.schedule[i].room].title}</div>	
-				<textarea id="co-VchaCon-${i}" style="text-align:center;width:100%;height:100%;padding:8px;">
-				${this.schedule[i].content ? this.schedule[i].content.replace(/<br>/g,"&#010") : ""}
-				</textarea></div>`;	
-				}
-		
-		if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
-		str+="</div><br></div>";
-		$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
-		fillEvents(0);																			// Fiull hallway eventws
-	
-		$("#co-clsa").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
-
-		$("#co-Vrom").change("change", ()=>{ 													// ON ROOM CHANGE
-			fillEvents($("#co-Vrom").prop("selectedIndex"));									// Fill events select
-			});
-
-		$("#co-Vevt").change("change", (e)=>{ 													// ON AWAY CHANGE
-			let id=$("#co-Vevt").val();															// Get event id
-			let rm=$("#co-Vrom").prop("selectedIndex");											// Choose event
-			let roomId=app.venue[app.curFloor][rm].id; 											// Get room id
-			app.ws.send(`AW|${roomId}|${id != "Choose" ? id : 0 }`);							// Update server
-			Sound("ding");																		// Ding
-			});
-
-		$("[id^=co-Vbul-]").on("click", (e)=>{ 													// ON ERASE BB
-			let id=this.schedule[e.currentTarget.id.substr(8)].id;								// Get id
-			app.ws.send(`BB|${id}|${app.myId}|EraseBb`);										// Clear
-			Sound("ding");																		// Ding
-			});
-
-		$("[id^=co-Vcha-]").on("click", (e)=>{ 													// ON CHALK WRITE
-			let i=e.currentTarget.id.substr(8);													// Base id
-			let id=this.schedule[i].id;															// Get id
-			let msg=$("#co-VchaCon-"+i).val();													// Get content
-			if (msg) msg=msg.replace(/\n/g,"<br>");												// LF -> <br>
-			app.ws.send(`BB|${id}|${app.myId}|${msg}`);											// Send message
-			Sound("ding");																		// Ding
-			});
-	
-		$("#co-imageUpload").on("change",(e)=>{													// ON IMAGE UPLOAD
-			let myReader=new FileReader();														// Alloc reader
-			myReader.onloadend=function(e) { 													// When loaded
-				app.ws.send("IMG|"+content.split(".com/")[1]+"|"+myReader.result);				// Send base64 to server
-				}						
-			myReader.readAsDataURL(e.target.files[0]);											// Load file		
-			});
-
-		function fillEvents(room) {																// FILL EVENTS SELECT
-			let str,o,s;
-			$("#co-Vevt").empty();																// Clear
-			$("#co-Vevt").append("<option>Choose</option>");									// Choose event
-			for (i=0;i<app.sced.schedule.length;++i) {											// For each event
-				o=app.sced.schedule[i];															// Point at event
-				if ((app.curFloor == o.floor) && (room == o.room)) {							// The right room 
-					s=o.start-new Date().getTimezoneOffset();									// Get local time
-					if (!isNaN(s)) s=(Math.floor(s/60) < 10 ? "0" : "")+Math.floor(s/60)+":"+s%60+(s%60 ? "" : 0);	// Readable time
-					str=`<option value="${o.id}">${s} &nbsp; ${o.desc ? o.desc.substr(0,16).replace(/\*/,"") : ""}</option>`;
-					$("#co-Vevt").append(str);													// Add option
-					}
-				}
-			}
-	}
-
 	CheckSchedule()																			// CHECK FOR SCHEDULE ACTIONS
 	{
 		let i,sc,str="";	
 		let today=new Date();																	// Get today
 		this.day=(today.getDate()+50)-(this.meetingStart.getDate()+49);							// Days into meeting
-		this.mins=(today.getUTCHours()*60)+(today.getUTCMinutes()*1);							// Get UTC time in minutes
+		this.mins=(today.getUTCHours()*60)+(today.getUTCMinutes()*1)+1;							// Get UTC time in minutes
 		for (i=0;i<app.venue[app.curFloor].length;++i) {										// For each room
 			sc=this.GetEventByRoom(app.curFloor,i);												// Point at event
 			if (sc.link && sc.link.match(/gallery:https:/i)) this.GetGalleryData(sc)			// If from a doc, update it
@@ -529,6 +435,104 @@ class Schedule  {
 			}
 		});
 
+	}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// VENDOR
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	VendorControl()																			// VENDOR CONTROL PANEL
+	{
+		let i,p=app.people[app.myId];															// Get person
+		if (window.location.search.substring(1) == "preview")	p.role="admin";					// Force admin in preview
+		if (!p.role)											return;							// Quit if no role
+		if (!p.role.match(/admin|host|vendor/i))				return;							// Quit if not authorized
+		$("#co-Vcon").remove();																	// Kill existing
+		let content=$("#co-gItemD").data("content");											// Get content
+		if (content && !content.match(/^https\:\/\/etalimages.s3.amazonaws.com/i)) content="";	// Not an AWS file
+
+		let str=`<div id="co-Vcon" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
+		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;max-height:${$(app.vr).height()-34}px;overflow:auto;
+		width:${$(app.vr).width()-32}px;height:-moz-fit-content;height:fit-content">
+		<img id="co-clsa" style="float:right;cursor:pointer" src="img/closedot.png">
+		<b>Vendor Control Panel</b><br><br>
+		<div style="float:left">Override event in:&nbsp;&nbsp;&nbsp;&nbsp;</div><div style="text-align:left">
+		<select class="co-is" style="width:auto" id="co-Vrom"><option>Hallway</option>`;
+		for (i=1;i<app.venue[app.curFloor].length;++i) 											// For each room
+			str+=`<option>${app.venue[app.curFloor][i].title.replace(/^\*/,"")}</option>`;		// Add room
+		str+=`</select>&nbsp;to&nbsp;<select class="co-is" style="width:auto" id="co-Vevt"></select>`;
+
+		str+=`<br><br><div style="float:left">Clear message board in:&nbsp;&nbsp;&nbsp;</div>`;
+		for (let i=0;i<this.schedule.length;++i) {												// For each event
+			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) && this.schedule[i].link.match(/BULLETINBOARD/))
+				str+=`<div id="co-Vbul-${i}" class="co-bsg">${app.venue[app.curFloor][this.schedule[i].room].title}</div>&nbsp;&nbsp;&nbsp;`;	
+				}
+		str+=`<br><br><div style="float:left">Write on chalk board(s):&nbsp;&nbsp;&nbsp;</div>`;
+		for (let i=0;i<this.schedule.length;++i) {												// For each event
+			if ((this.schedule[i].floor == app.curFloor) && (this.schedule[i].link) && this.schedule[i].link.match(/CHALKBOARD/))
+				str+=`<div style="width:200px;height:100px;display:inline-block">
+				<div id="co-Vcha-${i}" class="co-bsg" style="margin-bottom:4px">Write to ${app.venue[app.curFloor][this.schedule[i].room].title}</div>	
+				<textarea id="co-VchaCon-${i}" style="text-align:center;width:100%;height:100%;padding:8px;">
+				${this.schedule[i].content ? this.schedule[i].content.replace(/<br>/g,"&#010") : ""}
+				</textarea></div>`;	
+				}
+		
+		if (content) str+="<br><br>Upload new file to replace: <input type='file' id='co-imageUpload'>";
+		str+="</div><br></div>";
+		$("body").append(str.replace(/\t|\n|\r/g,""));											// Draw
+		fillEvents(0);																			// Fiull hallway eventws
+	
+		$("#co-clsa").on("click", ()=>{ $("#co-Vcon").remove(); });								// ON CLOSE BUT
+
+		$("#co-Vrom").change("change", ()=>{ 													// ON ROOM CHANGE
+			fillEvents($("#co-Vrom").prop("selectedIndex"));									// Fill events select
+			});
+
+		$("#co-Vevt").change("change", (e)=>{ 													// ON AWAY CHANGE
+			let id=$("#co-Vevt").val();															// Get event id
+			let rm=$("#co-Vrom").prop("selectedIndex");											// Choose event
+			let roomId=app.venue[app.curFloor][rm].id; 											// Get room id
+			app.ws.send(`AW|${roomId}|${id != "Choose" ? id : 0 }`);							// Update server
+			Sound("ding");																		// Ding
+			});
+
+		$("[id^=co-Vbul-]").on("click", (e)=>{ 													// ON ERASE BB
+			let id=this.schedule[e.currentTarget.id.substr(8)].id;								// Get id
+			app.ws.send(`BB|${id}|${app.myId}|EraseBb`);										// Clear
+			Sound("ding");																		// Ding
+			});
+
+		$("[id^=co-Vcha-]").on("click", (e)=>{ 													// ON CHALK WRITE
+			let i=e.currentTarget.id.substr(8);													// Base id
+			let id=this.schedule[i].id;															// Get id
+			let msg=$("#co-VchaCon-"+i).val();													// Get content
+			if (msg) msg=msg.replace(/\n/g,"<br>");												// LF -> <br>
+			app.ws.send(`BB|${id}|${app.myId}|${msg}`);											// Send message
+			Sound("ding");																		// Ding
+			});
+	
+		$("#co-imageUpload").on("change",(e)=>{													// ON IMAGE UPLOAD
+			let myReader=new FileReader();														// Alloc reader
+			myReader.onloadend=function(e) { 													// When loaded
+				app.ws.send("IMG|"+content.split(".com/")[1]+"|"+myReader.result);				// Send base64 to server
+				}						
+			myReader.readAsDataURL(e.target.files[0]);											// Load file		
+			});
+
+		function fillEvents(room) {																// FILL EVENTS SELECT
+			let str,o,s;
+			$("#co-Vevt").empty();																// Clear
+			$("#co-Vevt").append("<option>Choose</option>");									// Choose event
+			for (i=0;i<app.sced.schedule.length;++i) {											// For each event
+				o=app.sced.schedule[i];															// Point at event
+				if ((app.curFloor == o.floor) && (room == o.room)) {							// The right room 
+					s=o.start-new Date().getTimezoneOffset();									// Get local time
+					if (!isNaN(s)) s=(Math.floor(s/60) < 10 ? "0" : "")+Math.floor(s/60)+":"+s%60+(s%60 ? "" : 0);	// Readable time
+					str=`<option value="${o.id}">${s} &nbsp; ${o.desc ? o.desc.substr(0,16).replace(/\*/,"") : ""}</option>`;
+					$("#co-Vevt").append(str);													// Add option
+					}
+				}
+			}
 	}
 
 
