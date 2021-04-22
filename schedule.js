@@ -8,7 +8,6 @@ class Schedule  {
 		this.timeZone=Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g," ");		// Time zone													// Time zone
 		this.day=1;																				// Day in conference
 		this.mins=0;																			// Minutes in conference
-		this.offset=0;																			// Time offset from UTC
 	}
 
 	GetDate(time, format="Mon Day, Year")													// GET FORMATTED DATE
@@ -24,9 +23,9 @@ class Schedule  {
 		return str;																				// Return formatted date
 	}
 
-	GetTime(time)																			// GET FORMATTED TIME
+	GetTime(time)																			// GET FORMATTED LOCAL TIME
 	{
-		time-=this.offset;																		// To local time
+		time-=new Date().getTimezoneOffset();													// UTC to local time
 		let t=Math.floor((time/60))%12+":";														// Get hours
 		if (time%60 < 10)	t+="0";																// Add leading 0
 		t+=time%60;																				// Add minutes
