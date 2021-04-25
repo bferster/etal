@@ -21,7 +21,7 @@
 	let deep=(isAndroid || isSafari);
 	let domain='meet.jit.si';
 	if (window.location.search.substring(1) && window.location.search.substring(1).match(/\&jitsi/)) domain=v[3].substr(5);
-	domain='caboosehouse.com';
+//	domain='caboosehouse.com';
 	const options = {
 		roomName: v[0],
 		width: "100%",height:window.innerHeight,
@@ -33,7 +33,7 @@
 									"SHOW_CHROME_EXTENSION_BANNER": false,
 									"DISABLE_JOIN_LEAVE_NOTIFICATIONS": true,
 								},
-		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  disableDeepLinking:deep },
+		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  disableDeepLinking:true },
 		parentNode: document.querySelector('body'),
 		};
 

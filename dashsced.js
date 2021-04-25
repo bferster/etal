@@ -100,11 +100,6 @@ class Schedule  {
 			if (((app.schedule[i].day == this.curDay) || (app.schedule[i].day == "*")) &&	(app.schedule[i].floor == this.curFloor))	// Today or any day
 			this.DrawEvent(i);																				// Draw it
 			}
-	
-		$("[id^=co-ev-]").on("click",(e)=>{																	// ON EVENT CLICK
-			if ($("#editorDiv").css("display") == "none") this.ShowEventDetails(e.target.id.substr(6)); 	// Show details if editor is closed
-			else										  Sound("delete");									// Error	
-			});			
 	}
 
 	DrawEvent(num)
@@ -126,7 +121,13 @@ class Schedule  {
 		text-align:center;color:#fff;border:1px solid #999;background-color:#004eff;opacity:.33;padding:6px">
 		${o.desc ? o.desc : ""}</div>`;
 		$("#co-sgrid").append(str)
-	
+
+		$("#co-ev-"+num).on("dblclick",()=>{	$("#ev-EditH-"+num).trigger("click");	});					// ON DOUBLE-CLICK CONTENT
+		$("#co-ev-"+num).on("click",(e)=>{																	// ON EVENT CLICK
+			if ($("#editorDiv").css("display") == "none") this.ShowEventDetails(e.target.id.substr(6)); 	// Show details if editor is closed
+			else										  Sound("delete");									// Error	
+			});			
+
 		$("#co-ev-"+num).draggable({ containment:"body", grid:[154,12], distance:16, stop:(e,ui)=>{		// ON DRAG EVENT
 			if (o.start.charAt(0) == "!") return;															// Not for away events
 			this.Do();																						// Undo
