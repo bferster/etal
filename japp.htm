@@ -14,11 +14,6 @@
 
 	let v=window.location.search.substring(1).split("&");
 	let ua=window.navigator.userAgent;
-	let isIos=!!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
-	let isWebkit=!!ua.match(/WebKit/i);
-	let isSafari=isIos && isWebkit && !ua.match(/CriOS/i);
-	let isAndroid=ua.match(/android/i);
-	let deep=(isAndroid || isSafari);
 	let domain='meet.jit.si';
 	if (window.location.search.substring(1) && window.location.search.substring(1).match(/\&jitsi/)) domain=v[3].substr(5);
 //	domain='caboosehouse.com';
@@ -33,9 +28,13 @@
 									"SHOW_CHROME_EXTENSION_BANNER": false,
 									"DISABLE_JOIN_LEAVE_NOTIFICATIONS": true,
 								},
-		configOverwrite: { enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  disableDeepLinking:true },
+		configOverwrite: {  enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  
+							disableDeepLinking:true 
+							},
 		parentNode: document.querySelector('body'),
 		};
+
+/*, remoteVideoMenu:{ disableKick: false */
 
 	if (v[2] && v[2].match(/host|panel|admin/i)) {
 		options.interfaceConfigOverwrite["TOOLBAR_BUTTONS"].push("mute-everyone");
