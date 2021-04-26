@@ -21,19 +21,19 @@
 		width: "100%",height:window.innerHeight,
 		interfaceConfigOverwrite:{ "TOOLBAR_BUTTONS": [
         							'microphone', 'camera', 'desktop', 'fullscreen',
-        							'settings', 'raisehand',
+        							'settings', 'raisehand', 'select-background',
         							'videoquality', 'filmstrip', 'tileview' ],
 									"VIDEO_QUALITY_LABEL_DISABLED": true,
 									"SHOW_CHROME_EXTENSION_BANNER": false,
-									"DISABLE_JOIN_LEAVE_NOTIFICATIONS": true,
-								},
+									"DISABLE_JOIN_LEAVE_NOTIFICATIONS": true
+									},
 		configOverwrite: {  enableInsecureRoomNameWarning: false, prejoinPageEnabled: false,  
 							disableDeepLinking:true 
 							},
 		parentNode: document.querySelector('body'),
 		};
 
-/*, remoteVideoMenu:{ disableKick: false */
+/*, remoteVideoMenu:{ disableKick: false*/
 
 	if (v[2] && v[2].match(/host|panel|admin/i)) {
 		options.interfaceConfigOverwrite["TOOLBAR_BUTTONS"].push("mute-everyone");
