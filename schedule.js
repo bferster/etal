@@ -366,6 +366,7 @@ class Schedule  {
 			ss=ss.replace(/'/g,"&apos;");															// '
 			if (ss && ss.match(/^http(.*?)pdf/i)  && !s[i][1]) s[i][1]="img/pdf.png";				// PDF icon
 			else if (ss && ss.match(/^http(.*?)/i) && !s[i][1]) s[i][1]="img/link.png";				// Link icon
+			ss=ss.replace(/&quot;/g,"~Q~");															// '"Escape" &quot;
 			p=`\"${s[i][0]}\",\"${s[i][1]}\",\"${ss}\"`;											// Item content
 			str+=`<div id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][1]}" width="50%"
 			onclick='app.sced.ShowGalleryItem(${p})'><br>${s[i][0]}<br><br></div>`;					// Add it 
@@ -383,6 +384,7 @@ class Schedule  {
 			content=content.substr(1);																// Remove flag
 			h=app.by-$(app.vr).position().top;														// Full height to bottom
 			}
+		content=content.replace(/~Q~/g,"\"");														// "Unescape" &quot;
 		let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;overflow:auto;
 		width:${$(app.vr).width()-32}px;height:${h-34}px" data-content="${content}">
