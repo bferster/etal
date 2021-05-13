@@ -377,6 +377,9 @@ class Schedule  {
 
 	ShowGalleryItem(title, link, content)														// SHOW GALLERY ITEM DETAILS
 	{
+		trace(title,)
+		trace(link)
+		trace(content)
 		$("#co-gItemD").remove();																	// Kill existing
 		$(window).scrollTop(0);																		// Scroll to top	
 		let h=$(app.vr).height();																	// Cover div only
@@ -384,13 +387,13 @@ class Schedule  {
 			content=content.substr(1);																// Remove flag
 			h=app.by-$(app.vr).position().top;														// Full height to bottom
 			}
-		content=content.replace(/~Q~/g,"\"");														// "Unescape" &quot;
 		let str=`<div id="co-gItemD" class="co-card"' style="margin:0;padding:16px;box-shadow:none;background-color:#eee;
 		left:${$(app.vr).offset().left}px;top:${$(app.vr).offset().top}px;overflow:auto;
 		width:${$(app.vr).width()-32}px;height:${h-34}px" data-content="${content}">
 		<img id="co-igc" style="float:left;cursor:pointer" src="img/closedot.png">
 		<img id="co-pipBut" style="float:right;cursor:pointer;width:22px" src="img/zoomblue.png" title="Video chat">
 		<b>${title}</b><br><br>`;
+		content=content.replace(/~Q~/g,"\"");														// "Unescape" &quot;
 
 		if (content && content.match(/^#*http/i)) { 												// If  a link
 			content=ConvertFromGoogleDrive(content);												// Convert link
