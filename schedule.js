@@ -497,6 +497,10 @@ class Schedule  {
 			let rm=$("#co-Vrom").prop("selectedIndex");											// Choose event
 			let roomId=app.venue[app.curFloor][rm].id; 											// Get room id
 			app.ws.send(`AW|${roomId}|${id != "Choose" ? id : 0 }`);							// Update server
+			if (window.location.search.substring(1) == "preview") {								// Simulate update for preview
+				app.venue[app.curFloor][rm].away=id != "Choose" ? id : 0;						// Set away
+				app.DrawVenue();																// Redraw venue
+				}			
 			Sound("ding");																		// Ding
 			});
 
