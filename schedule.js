@@ -367,6 +367,8 @@ class Schedule  {
 			if (ss && ss.match(/^http(.*?)pdf/i)  && !s[i][1]) s[i][1]="img/pdf.png";				// PDF icon
 			else if (ss && ss.match(/^http(.*?)/i) && !s[i][1]) s[i][1]="img/link.png";				// Link icon
 			ss=ss.replace(/&quot;/g,"~Q~");															// '"Escape" &quot;
+			if (s[i][0]) s[i][0]=s[i][0].replace(/'/g,"&apos;");									// Escape title apos
+			if (s[i][0]) s[i][0]=s[i][0].replace(/"/g,"&quot;");									// Escape title quot
 			p=`\"${s[i][0]}\",\"${s[i][1]}\",\"${ss}\"`;											// Item content
 			str+=`<div id="co-gItem-${i}" class="co-galleryItem"><img src="${s[i][1]}" width="50%"
 			onclick='app.sced.ShowGalleryItem(${p})'><br>${s[i][0]}<br><br></div>`;					// Add it 
@@ -377,9 +379,6 @@ class Schedule  {
 
 	ShowGalleryItem(title, link, content)														// SHOW GALLERY ITEM DETAILS
 	{
-		trace(title,)
-		trace(link)
-		trace(content)
 		$("#co-gItemD").remove();																	// Kill existing
 		$(window).scrollTop(0);																		// Scroll to top	
 		let h=$(app.vr).height();																	// Cover div only
