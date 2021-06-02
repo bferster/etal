@@ -93,7 +93,7 @@ class Schedule  {
 		let i,j,s,sc;
 		let str=`<div id="co-sched" class="co-sched" style=";
 			left:${$(app.vr).offset().left}px;top:0;
-			width:${$(app.vr).width()-48}px; height:${$(app.vr).height()-48}px">
+			width:${$(app.vr).width()-48}px; height:calc(100vh - 48px)">
 			<span style="font-size:18px">EVENT SCHEDULE</span>
 			<img style="float:right;cursor:pointer" src="img/closedot.png" onclick="$('#co-sched').remove()"><br><br>
 			<div style="height:calc(100% - 48px);width:100%;overflow-y:auto;text-align:left">`;
