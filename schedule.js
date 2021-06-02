@@ -27,6 +27,7 @@ class Schedule  {
 	{
 		time-=new Date().getTimezoneOffset();													// UTC to local time
 		let t=Math.floor((time/60))%12+":";														// Get hours
+		if (t == "0:") t="12:"																	// Noon
 		if (time%60 < 10)	t+="0";																// Add leading 0
 		t+=time%60;																				// Add minutes
 		t+=(time/60 >= 12) ? " PM" : " AM";														// AM/PM
