@@ -31,9 +31,9 @@ class Schedule  {
 							<tr><td colspan="4"><b>Day</b>&nbsp;&nbsp;<select id="scDay" class="co-is" style="width:50px;font-size:13px"></select>
 							&nbsp;&nbsp;&nbsp;<b>Floor</b>&nbsp;&nbsp;<select id="scFloor" class="co-is" style="width:50px;font-size:13px"></select>
 							&nbsp;&nbsp;&nbsp;&nbsp;<div id="scAddEvent" class="co-bs">Add new event</div></td></tr>
-							<tr><td colspan="4"><hr></td></tr>
-							<tr><td colspan="4">My time zone: ${o.bar}</tr>
-							<tr><td>Start date&nbsp;</td><td colspan="4"><input type="text" id="scStart" class="co-is" style="width:85px" value="${o.start}">
+							<tr><td colspan="3"><hr></td></tr>
+							<tr><td colspan="3">My time zone: ${o.bar}</tr>
+							<tr><td>Start date&nbsp;</td><td><input type="text" id="scStart" class="co-is" style="width:85px" value="${o.start}">
 							&nbsp;&nbsp;&nbsp;End&nbsp;&nbsp;<input type="text" id="scEnd" class="co-is" style="width:85px" value="${o.end}"></td></tr>
 							<table>
 						<br>
@@ -73,7 +73,7 @@ class Schedule  {
 
 	DrawSchedule()																						// DRAW THE SCHEDULE GRID
 	{
-		let i,j,x,y,o,s;
+		let i,s;
 		$("#popupDiv").remove();																			// Kill popup
 		$("#scprop").html("");																				// Clear details
 		let rooms=app.venue[this.curFloor];																	// Point to rooms
