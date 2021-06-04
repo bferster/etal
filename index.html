@@ -91,6 +91,7 @@
 		<br><br>
 		<b>For the best experience</b><br>Please use the Chrome or FireFox browser
 		<br><br>Click <a href="https://www.youtube.com/embed/_sBqnfkBNVI?rel=0&autoplay=1" target="_blank">here</a> to view a 90-second intro video
+		<div id="splashExtra"></div></div>
 	</div>
 
 <script>
@@ -100,6 +101,7 @@
 	isSmall=false;																					// Mobile size flag
 	if ((location.protocol != 'https:') && (window.location.host != "localhost")) location.href = 'https:' + window.location.href.substring(window.location.protocol.length); // FORCE HTTPS!
 	$(window).on("resize orientationchange", ()=>{ if (app) app.Draw(); })                       	// ON WINDOW RESIZE/FLIP
+
 
 	window.addEventListener("unload",  ()=>{ 													// ON CLOSE
 		if (app.videoWin)	app.videoWin.close();													// Close video window if open
@@ -119,6 +121,7 @@
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url.split("&")[0] : "1";												// Set meeeting id
+		if (meetingId == "harp1") $("#splashExtra").html('<p style="font-size:20px">Click <a href="https://www.youtube.com/embed/6N0zgcWIHy0?rel=0&autoplay=1" target="_blank">here</a> to view a longer how-to video by Somerset</p>');
 		app=new App(meetingId);                                      								// Alloc app
 		$("#splashDiv").fadeIn();																	// Fade in splash
 	

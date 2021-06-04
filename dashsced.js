@@ -112,7 +112,7 @@ class Schedule  {
 			if (!isNaN(o.start.charAt(1))) s-=o.start.charAt(1)*2;											// Shift for multiples
 			}
 		let e=s+timeToMins(o.end)/15;																		// End
-		if (o.end == "*")	e=s+720/15;																		// All day
+		zif (o.end == "*")	e=s+720/15;																		// All day
 		if (o.start.charAt(0) == "!") e=s+2;																// If an away avent shorten
 
 		$("#co-ev-"+num).remove();
