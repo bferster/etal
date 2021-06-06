@@ -187,9 +187,9 @@ class App  {
 	GetFromServer(table)                                                                           	 	// LOAD FROM SERVER
     {
 		if (!app.ws) { PopUp("Disconnected!"); return; }													// Not connected	
-		if (table == "people") 		app.ws.send(`P|${this.meetingId}`);										// Request people data	
-		if (table == "schedule") 	app.ws.send(`S|${this.meetingId}`);										// Schedule
-		if (table == "venue") 		app.ws.send(`V|${this.meetingId}`);										// Venue
+		if (table == "people") 		app.ws.send(`P|${this.meetingId}|DB`);									// Request people data	
+		if (table == "schedule") 	app.ws.send(`S|${this.meetingId}"DB`);									// Schedule
+		if (table == "venue") 		app.ws.send(`V|${this.meetingId}|DB`);									// Venue
 	}
 
 	SetTableData(table, data)																			// SET TABLE DATA
