@@ -722,7 +722,8 @@ class App  {
 				<img src="img/bulletin.png" id="co-bbIcon" style="height:36px;margin-right:8px;cursor:pointer${p.menu&8 ? "" : ";display:none" }" title="Message board">
 				<img src="img/whiteboard.png" id="co-whiteIcon" style="height:36px;margin-right:8px;cursor:pointer${p.white ? "" : ";display:none" }" title="White board">
 				<img src="img/calendar.png" id="co-calIcon" style="height:36px;margin-right:8px;cursor:pointer${p.cal ? "" : ";display:none" }" title="Calendar">
-				<img src="img/info.png" id="co-infoDesk"  style="height:36px;cursor:pointer${p.menu&16 ? "" : ";display:none" }" title="Get help!">
+				<img src="img/info.png" id="co-infoDesk"  style="height:36px;margin-right:8px;cursor:pointer${p.menu&16 ? "" : ";display:none" }" title="Get help!">
+				<img src="img/quitbut.png" id="co-quitApp" style="height:36px;margin-right:8px;cursor:pointer${p.menu&64 ? "" : ";display:none" }" title="Quit èt • al">
 			</div></div>`;
 		let str=`<div id="co-grid" class="co-venue" style="`;
 		if (!isSmall) str+=`
@@ -797,6 +798,7 @@ class App  {
 		$("#co-calIcon").on("click", 			 (e)=>{ this.sced.ShowLink(p.cal) }); 					// ON CALENDAR BUT
 		$("#co-whiteIcon").on("click", 			 (e)=>{ this.sced.ShowLink(p.white) }); 				// ON WHITEBOARD BUT
 		$("#co-attendees").on("click", 			 (e)=>{ this.sced.ShowAttendees(this.infoDeskId,true); }); // ON PEOPLE BUT
+		$("#co-quitApp").on("click", 			 (e)=>{ window.location=p.quit;	 }); 					// ON QUIT
 		$("[id^=co-bull-]").scrollTop(10000);															// Scroll bulletin boardd to bottom
 		}
 

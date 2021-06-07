@@ -45,14 +45,15 @@ class Venue {
 				<tr><td>Number rows</td><td><input class='co-is' type='text' id='ev-rows' value='${(d.rows ? d.rows : 3)}'></td></tr>	
 				<tr><td>Grid gap</td><td><input class='co-is' type='text' id='ev-gap' value='${(d.gap ? d.gap : 0)}'></td></tr>	
 				<tr><td>Avatar size</td><td><input class='co-is' type='text' id='ev-avs' value='${(d.avSize ? d.avSize : 36)}'></td></tr>	
-				<tr><td>Calendar URL</td><td><input class='co-is' type='text' id='ev-cal' value='${(d.cal ? d.cal : "")}'></td></tr>	
+				<tr><td>Quit URL</td><td><input class='co-is' type='text' id='ev-quit' value='${(d.quit ? d.quit : "https://google.com")}'></td></tr>	
 				<tr><td>Video room</td><td><select id="evVideo" class="co-is" style="width:110px"></select></td></tr>
 				<tr><td colspan="3">Quiet&nbsp;<input type="checkbox" id="co-evb0" ${d.menu&1 ? " checked" : ""}>&nbsp;&nbsp;
 				Sched&nbsp;<input type="checkbox" id="co-evb1" ${d.menu&2 ? " checked" : ""}>&nbsp;&nbsp;
 				People&nbsp;<input type="checkbox" id="co-evb2" ${d.menu&4 ? " checked" : ""}></td></tr>
 				<tr><td colspan="3">Info&nbsp;&nbsp;&nbsp;<input type="checkbox" id="co-evb4" ${d.menu&16 ? " checked" : ""}>&nbsp;&nbsp;
 				Speed&nbsp;<input type="checkbox" id="co-evb5" ${d.menu&32 ? " checked" : ""}>&nbsp;&nbsp;
-				Messages&nbsp;<input type="checkbox" id="co-evb3" ${d.menu&8 ? " checked" : ""}></td></tr>
+				Quit&nbsp;<input type="checkbox" id="co-evb6" ${d.menu&64 ? " checked" : ""}></td></tr>
+				<tr><td>Messages&nbsp;<input type="checkbox" id="co-evb3" ${d.menu&8 ? " checked" : ""}></td></tr>
 				<tr><td>Templates</td><td><select id="evTemp" class="co-is" style="width:110px">
 				<option>Choose</option><option>Load public</option><option>Load local CSV</option><option>Save local CSV</option></select></td></tr>
 				<tr><td colspan='2'>&nbsp;</td></tr>	
@@ -77,7 +78,7 @@ class Venue {
 		d.cols=$("#ev-cols").val();																			// Get columns value
 		d.rows=$("#ev-rows").val();																			// Rows
 		d.gap=$("#ev-gap").val();																			// Gap
-		d.cal=$("#ev-cal").val();																			// Calendar
+		d.quit=$("#ev-quit").val();																			// Calendar
 		d.avSize=$("#ev-avs").val();																		// Avatar size 
 		r.portal=$("#ev-por").val();																		// Portal
 		r.rug=$("#ev-rug").val();																			// Room rug
@@ -156,7 +157,7 @@ class Venue {
 			})
 		$("#evVideo").on("change",()=>{	d.vRoom=$("#evVideo").prop("selectedIndex"); this.EditVenue(); })	// On room change
 		$("[id^=co-evb]").on("click",(e)=>{																	// ON BAR OPTIONS CLICK
-			for (d.menu=i=0;i<6;++i) if ($("#co-evb"+i).prop("checked")) d.menu|=1<<i;						// Remake bitmapped menu
+			for (d.menu=i=0;i<7;++i) if ($("#co-evb"+i).prop("checked")) d.menu|=1<<i;						// Remake bitmapped menu
 			});
 
 		$("[id^=ev-]").on("change",(e)=>{																	// On param change
@@ -166,7 +167,7 @@ class Venue {
 			d.rows=$("#ev-rows").val();																		// Rows
 			d.gap=$("#ev-gap").val();																		// Gap
 			d.avSize=$("#ev-avs").val();																	// Avatar size
-			d.cal=$("#ev-cal").val();																		// Calendar link
+			d.quit=$("#ev-quit").val();																		// Calendar link
 			r.portal=$("#ev-por").val();																	// Portal
 			r.rug=$("#ev-rug").val();																		// Room rug
 			r.room=$("#ev-room").val();																		// Room number

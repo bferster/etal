@@ -56,9 +56,9 @@ class App  {
  			else{
 				this.meetingId=v[1]; 																// Set id
 				$("#co-meetingName").text("MEETING ID: " +(this.meetingId=v[1]));					// Set title
-				app.ws.send(`P|${app.meetingId}`);													// Request people data	
-				app.ws.send(`V|${app.meetingId}`);													// Venue 
-				app.ws.send(`S|${app.meetingId}`);													// Schedule
+				app.ws.send(`P|${app.meetingId}|DB`);												// Request people data	
+				app.ws.send(`V|${app.meetingId}|DB`);												// Venue 
+				app.ws.send(`S|${app.meetingId}|DB`);												// Schedule
 				app.ws.send(`IMGL|${app.meetingId}`);												// S3 images
 				}
 			}						
@@ -178,7 +178,7 @@ class App  {
 
 	StartMeeting(day)																					// START MEETING
 	{
-		app.ws.send(`P|${this.meetingId}`);																	// Load people		
+		app.ws.send(`P|${this.meetingId}|DB`);																// Load people		
 		setTimeout(()=>{ 																					// Wait so load is probably finished
 			app.ws.send(`>|${this.meetingId}`);																// Send start
 			}, 20000);																						// 10 seconds
@@ -256,7 +256,12 @@ class App  {
 		<tr><td><b>Update</b></td><td><div class="co-bs" id="co-updpeople">People</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updvenue">Venue</div>&nbsp;&nbsp;&nbsp;
 		<div class="co-bs" id="co-updschedule">Schedule</div></td></tr>
-		<tr><td><b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
+		<tr><td><b>Add person</b></td><td>
+		First <input id="append-first" class="co-is" style="width:100px" type="text">&nbsp;&nbsp;
+		Last <input id="append-last" class="co-is" style="width:100px" type="text">&nbsp;&nbsp;
+		Email <input id="append-email" class="co-is" style="width:100px" type="text" placeholder="*required">&nbsp;&nbsp;
+		<div class="co-bs" style="margin-top:6px" id="co-addPerson">Add</div><tr><td>
+		<b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
 		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div>
 		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.GetS3Images()">Refresh</div></td></tr>
 		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
@@ -283,6 +288,21 @@ class App  {
 		$("#co-updschedule").on("click",()=>{ app.ws.send(`U|${app.meetingId}|schedule`); Sound("ding"); }); 	// SCHEDULE
 		$("#co-updvenue").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|venue`); Sound("ding"); });		// VENUE
 		$("#co-start").on("click",(e)=>{ 	  app.StartMeeting(); });											// ON START MEETING
+		$("#co-addPerson").on("click",()=>{   if (!$("#append-email").val()) {									// APPEND PERSON
+													Sound("delete");											// Error sound
+													return PopUp("Email is required!");							// Quit with error
+													}
+											  let o={ meeting:app.meetingId, f:0, stats:"Q"};
+											  o.email=$("#append-email").val();
+											  o.firstName=$("#append-first").val() ? $("#append-first").val() : "";
+											  o.lastName=$("#append-last").val() ? $("#append-last").val() : "";
+											  $("#append-first").val("");
+											  $("#append-last").val("");
+											  $("#append-email").val("");
+											  app.ws.send("MP|"+app.meetingId+"~-1|"+JSON.stringify(o));		// Update server record
+											  })				
+
+
 
 		$("#co-preview").on("click", ()=> {  															// ON PREVIEW 
 			let i,j,d=[];

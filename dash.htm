@@ -299,9 +299,9 @@
 		if (window.location.host == "localhost") callback=function() {									// Local callback
 			app.meetingId=window.location.search.substring(1); 											// Set id
 			$("#co-meetingName").text("MEETING ID: " +app.meetingId);									// Set title
-			app.ws.send(`P|${app.meetingId}`);															// Request people data	
-			app.ws.send(`V|${app.meetingId}`);															// Venue 
-			app.ws.send(`S|${app.meetingId}`);															// Schedule
+			app.ws.send(`P|${app.meetingId}|DB`);														// Request people data	
+			app.ws.send(`V|${app.meetingId}|DB`);														// Venue 
+			app.ws.send(`S|${app.meetingId}|DB`);														// Schedule
 			app.ws.send(`IMGL|${app.meetingId}`);														// S3 images
 			}
 		$("#gtBoxId").on("change", ()=>{																// ON ENTER ID
