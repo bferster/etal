@@ -288,22 +288,21 @@ class App  {
 		$("#co-updschedule").on("click",()=>{ app.ws.send(`U|${app.meetingId}|schedule`); Sound("ding"); }); 	// SCHEDULE
 		$("#co-updvenue").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|venue`); Sound("ding"); });		// VENUE
 		$("#co-start").on("click",(e)=>{ 	  app.StartMeeting(); });											// ON START MEETING
-		$("#co-addPerson").on("click",()=>{   if (!$("#append-email").val()) {									// APPEND PERSON
-													Sound("delete");											// Error sound
-													return PopUp("Email is required!");							// Quit with error
-													}
-											  let o={ meeting:app.meetingId, f:0, stats:"Q"};
-											  o.email=$("#append-email").val();
-											  o.firstName=$("#append-first").val() ? $("#append-first").val() : "";
-											  o.lastName=$("#append-last").val() ? $("#append-last").val() : "";
-											  $("#append-first").val("");
-											  $("#append-last").val("");
-											  $("#append-email").val("");
-											  app.ws.send("MP|"+app.meetingId+"~-1|"+JSON.stringify(o));		// Update server record
-											  })				
-
-
-
+		$("#co-addPerson").on("click",()=>{   																	// APPEND PERSON
+			if (!$("#append-email").val()) {									
+				Sound("delete");																		// Error sound
+				return PopUp("Email is required!");														// Quit with error
+				}
+			let o={ meeting:app.meetingId, f:0, stats:"Q"};												// Person shell
+			o.email=$("#append-email").val();															// Get email
+			o.firstName=$("#append-first").val() ? $("#append-first").val() : "";						// First name
+			o.lastName=$("#append-last").val() ? $("#append-last").val() : "";							// Last
+			$("#append-first").val("");																	// Clear
+			$("#append-last").val("");
+			$("#append-email").val("");
+			app.ws.send("MP|"+app.meetingId+"~-1|"+JSON.stringify(o)); 									// Update server record
+			Sound("ding");																				// Ding
+ 			})				
 		$("#co-preview").on("click", ()=> {  															// ON PREVIEW 
 			let i,j,d=[];
 			for (i=0;i<this.venue.length;++i)															// For each floor
