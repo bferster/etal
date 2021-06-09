@@ -11,7 +11,7 @@ class App  {
 		this.people=[];																				// Holds people
 		this.schedule=[];																			// Holds schedule
 		this.venue=[[]];																			// Holds venue/1st floor
-		this.S3Images=[];																			// Holds S3 images
+		this.SavedImages=[];																			// Holds client images
 		this.curTable="people";																		// Current db table
 		this.InitSpreadSheets();																	// Init jsGrid
 		this.ven=new Venue();																		// Init venue module
@@ -59,10 +59,10 @@ class App  {
 				app.ws.send(`P|${app.meetingId}|DB`);												// Request people data	
 				app.ws.send(`V|${app.meetingId}|DB`);												// Venue 
 				app.ws.send(`S|${app.meetingId}|DB`);												// Schedule
-				app.ws.send(`IMGL|${app.meetingId}`);												// S3 images
+				app.ws.send(`IMGL|${app.meetingId}`);												// Meeting images
 				}
 			}						
-		else if (v[0] == "IMGL") {		app.S3Images=(JSON.parse(v[1])); app.ShowS3Images(); }		// Get S3 images
+		else if (v[0] == "IMGL") {		app.SavedImages=(JSON.parse(v[1])); app.ShowSavedImages(); }		// Get images
 		else if (v[0] == "IMG") 		app.DrawLive();												// Refreh when new images loaded
 	}
 
@@ -263,7 +263,7 @@ class App  {
 		<div class="co-bs" style="margin-top:6px" id="co-addPerson">Add</div><tr><td>
 		<b>Images</b></td><td><div class="co-images" id="co-images"><br></div>
 		<div class="co-bs" style="float:right;margin-top:6px" id="co-addImage">Add new image</div>
-		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.GetS3Images()">Refresh</div></td></tr>
+		<div class="co-bs" style="float:right;margin:6px 16px 0 0" onclick="app.GetSavedImages()">Refresh</div></td></tr>
 		<tr><td><b>Preview</b></td><td><div class="co-bs" id="co-preview">Preview this meeting locally</div></td></tr></table>`
 		$("#liveEditor").html(str.replace(/\t|\n|\r/g,""));
 		
@@ -281,7 +281,7 @@ class App  {
 				}
 			});	
 
-		this.ShowS3Images();																			// Show images
+		this.ShowSavedImages();																			// Show images
 		
 		$("#co-addImage").on("click",()=>{ 	  $("#co-imageUpload").trigger("click") })							// ON ADD IMAGE	
 		$("#co-updpeople").on("click",()=>{	  app.ws.send(`U|${app.meetingId}|people`); Sound("ding"); });		// ON UDATE PEOPLE
@@ -318,25 +318,25 @@ class App  {
 			});
 	}
 
-	GetS3Images()																					// GET LIST OF S3 IMAGES
+	GetSavedImages()																					// GET LIST OF SAVED IMAGES
 	{
-		app.ws.send(`IMGL|${app.meetingId}`);															// Request S3 images
+		app.ws.send(`IMGL|${app.meetingId}`);															// Request images
 	}
 
-	ShowS3Images()
+	ShowSavedImages()
 	{
 		let i,str="";
-		for (i=0;i<app.S3Images.length;++i) {															// For each image
+		for (i=0;i<app.SavedImages.length;++i) {															// For each image
 			str+=`<div id="co-pic-${i}", class="co-pic">`;
-			if (app.S3Images[i].match(/gif|png|jpeg|jpg/i)) str+=`<img src="https://etalimages.s3.amazonaws.com/${app.S3Images[i]}" width="100%">`;
-			else											str+="<br>"+app.S3Images[i];
+			if (app.SavedImages[i].match(/gif|png|jpeg|jpg/i)) str+=`<img src="${app.SavedImages[i]}" width="100%">`;
+			else											str+="<br>"+app.SavedImages[i];
 			str+="</div>";
 			}
 		$("#co-images").html(str.replace(/\t|\n|\r/g,""));
 		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
 			let id=e.currentTarget.id.substr(7);														// Get id
-			PopUp(app.S3Images[id]+"<br>Copied to clipboard");											// Show it
-			$("#clipOutputDiv").val("https://etalimages.s3.amazonaws.com/"+app.S3Images[id]);			// Copy to shill
+			PopUp(app.SavedImages[id]+"<br>Copied to clipboard");											// Show it
+			$("#clipOutputDiv").val(app.SavedImages[id]);													// Copy to shill
 			$("#clipOutputDiv")[0].select();															// Select
 			try { if (document.execCommand('copy'))	Sound("ding");	} catch (e) {}						// Copy to clipboard
 			});
