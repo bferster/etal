@@ -199,7 +199,7 @@
 		let s=app.meetingId+"/"+e.target.files[0].name;												// Make up file name
 		myReader.onloadend=(e)=>{ 																	// When loaded
 			app.ws.send("IMG|"+s+"|"+myReader.result);												// Send base64 to server
-			app.S3Images.push(s);																	// Add to list	
+			app.SavesImages.push(s);																	// Add to list	
 			}						
 		myReader.readAsDataURL(e.target.files[0]);													// Load file		
 		});
@@ -302,7 +302,7 @@
 			app.ws.send(`P|${app.meetingId}|DB`);														// Request people data	
 			app.ws.send(`V|${app.meetingId}|DB`);														// Venue 
 			app.ws.send(`S|${app.meetingId}|DB`);														// Schedule
-			app.ws.send(`IMGL|${app.meetingId}`);														// S3 images
+			app.ws.send(`IMGL|${app.meetingId}`);														// Images
 			}
 		$("#gtBoxId").on("change", ()=>{																// ON ENTER ID
 			callback($("#username").val(),$("#password").val(),$("#gtBoxId").val());					// Send data back

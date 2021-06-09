@@ -103,6 +103,7 @@ class Register  {
 		if (!$("#co-regPic").val() && (regSnapimg.src.length > 100)) {								// Not directly spec'd and nothing loaded
 			let s=this.person.meeting+"/"+this.person.email+".png";									// Make up file name
 			app.ws.send("IMG|"+s+"|"+regSnapimg.src);												// Send base64 to server
+			this.person.pic="https://etal.live/go/pix/"+s;											// Get image url
 			this.person.pic="https://etalimages.s3.amazonaws.com/"+s;								// Get AWS S3 url
 			}
 		else this.person.pic=$("#co-regPic").val();													// Set pic
