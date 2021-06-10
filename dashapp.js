@@ -328,15 +328,15 @@ class App  {
 		let i,str="";
 		for (i=0;i<app.SavedImages.length;++i) {															// For each image
 			str+=`<div id="co-pic-${i}", class="co-pic">`;
-			if (app.SavedImages[i].match(/gif|png|jpeg|jpg/i)) str+=`<img src="https://etalimages.s3.amazonaws.com/${app.SavedImages[i]}" width="100%">`;
-			else											str+="<br>"+app.SavedImages[i];
+			if (app.SavedImages[i].match(/gif|png|jpeg|jpg/i)) 	str+=`<img src="${app.SavedImages[i]}" width="100%">`;
+			else												str+="<br>"+app.SavedImages[i];
 			str+="</div>";
 			}
 		$("#co-images").html(str.replace(/\t|\n|\r/g,""));
 		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
 			let id=e.currentTarget.id.substr(7);														// Get id
-			PopUp(app.SavedImages[id]+"<br>Copied to clipboard");											// Show it
-			$("#clipOutputDiv").val("https://etalimages.s3.amazonaws.com/"+app.SavedImages[id]);													// Copy to shill
+			PopUp(app.SavedImages[id]+"<br>Copied to clipboard");										// Show it
+			$("#clipOutputDiv").val(app.SavedImages[id]);												// Copy to shill
 			$("#clipOutputDiv")[0].select();															// Select
 			try { if (document.execCommand('copy'))	Sound("ding");	} catch (e) {}						// Copy to clipboard
 			});
