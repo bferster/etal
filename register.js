@@ -73,11 +73,37 @@ class Register  {
 
 	$("#co-regSend").on("click",()=>{ this.Send() });												// ON SEND
 	$("#co-regLoad").on("click",()=>{ $("#co-regUpload").trigger("click") })						// ON ADD IMAGE	
-	$("#co-regUpload").on("change",(e)=>{															// ON IMAGE UPLOAD
-		let myReader=new FileReader();																// Alloc reader
+	$("#co-regUpload").on("change",(ee)=>{															// ON IMAGE UPLOAD
 		$("#co-regPic").val("");																	// Clear typed entry
-		myReader.onloadend=(e)=>{ regSnapimg.src=myReader.result; }									// When loaded
-		myReader.readAsDataURL(e.target.files[0]);													// Load file		
+		let canvas=document.createElement("canvas");												// Make canvas			
+ 		let ctx=canvas.getContext("2d");															// Get context
+ 		let myReader=new FileReader();																// Alloc reader
+		let file=ee.target.files[0];																// Point at file
+		myReader.readAsDataURL(file);																// Load file		
+	
+		myReader.onloadend=(e)=>{ 																	// ON LOAD
+			let img=new Image();																	// Temp image		
+	    	img.src=e.target.result;																// Set data			
+			img.onload=()=>{																		// When loaded
+				ctx.drawImage(img,0,0);																// Draw it
+				let width=img.width, height=img.height;												// Orig size
+				if (width > height) {																// Landscape						
+					if (width > 320) {																// Too wide
+						height*=320/width;															// Scale hgt
+						width=320;																	// Set wid
+						}
+					} 
+				else{																				// Portrait
+					if (height > 320) {																// Too tall
+						width*=320/height;															// Scale width
+						height=320;																	// Set height
+						}
+					}
+				canvas.width=width;		canvas.height=height;										// Canvas size
+				ctx.drawImage(img,0,0,width,height);												// Draw/resize pic
+				regSnapimg.src=canvas.toDataURL(file.type);											// Set data
+				}
+			}											
 		});
 	}
 	
@@ -101,11 +127,11 @@ class Register  {
 		if (this.cameraStream)	this.StartStreaming();												// If streaming, capture image
 
 		if (!$("#co-regPic").val() && (regSnapimg.src.length > 100)) {								// Not directly spec'd and nothing loaded
-//			let s=this.person.meeting+"/av/"+this.person.email+".png";								// Make up file name
-			let s=this.person.meeting+"/"+this.person.email+".png";									// Make up file name
+			let s=this.person.meeting+"/av/"+this.person.email+".png";								// Make up file name
+//			let s=this.person.meeting+"/"+this.person.email+".png";									// Make up file name
 			app.ws.send("IMG|"+s+"|"+regSnapimg.src);												// Send base64 to server
-//			this.person.pic="https://etal.live/go/pix/"+this.person.meeting+"/"+s;					// Get image url
-			this.person.pic="https://etalimages.s3.amazonaws.com/"+s;								// Get AWS S3 url
+			this.person.pic="https://etal.live/go/pix/"+s;											// Get image url
+//			this.person.pic="https://etalimages.s3.amazonaws.com/"+s;								// Get AWS S3 url
 			}
 		else this.person.pic=$("#co-regPic").val();													// Set pic
 		app.ws.send("MP|"+this.person.id+"|"+JSON.stringify(this.person));							// Update server record

@@ -325,10 +325,13 @@ class App  {
 
 	ShowSavedImages()
 	{
+
+
+// REMOVE URL! //////////////////
 		let i,str="";
 		for (i=0;i<app.SavedImages.length;++i) {															// For each image
 			str+=`<div id="co-pic-${i}", class="co-pic">`;
-			if (app.SavedImages[i].match(/gif|png|jpeg|jpg/i)) 	str+=`<img src="${app.SavedImages[i]}" width="100%">`;
+			if (app.SavedImages[i].match(/gif|png|jpeg|jpg/i)) 	str+=`<img src="https://etalimages.s3.amazonaws.com/${app.SavedImages[i]}" width="100%">`;
 			else												str+="<br>"+app.SavedImages[i];
 			str+="</div>";
 			}
@@ -336,7 +339,7 @@ class App  {
 		$("[id^=co-pic-]").on("click", (e)=> {															// ON PIC CLICK
 			let id=e.currentTarget.id.substr(7);														// Get id
 			PopUp(app.SavedImages[id]+"<br>Copied to clipboard");										// Show it
-			$("#clipOutputDiv").val(app.SavedImages[id]);												// Copy to shill
+			$("#clipOutputDiv").val("https://etalimages.s3.amazonaws.com/"+app.SavedImages[id]);												// Copy to shill
 			$("#clipOutputDiv")[0].select();															// Select
 			try { if (document.execCommand('copy'))	Sound("ding");	} catch (e) {}						// Copy to clipboard
 			});
