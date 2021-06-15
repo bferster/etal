@@ -73,13 +73,12 @@ class Register  {
 
 	$("#co-regSend").on("click",()=>{ this.Send() });												// ON SEND
 	$("#co-regLoad").on("click",()=>{ $("#co-regUpload").trigger("click") })						// ON ADD IMAGE	
-	$("#co-regUpload").on("change",(ee)=>{															// ON IMAGE UPLOAD
+	$("#co-regUpload").on("change",(ev)=>{															// ON IMAGE UPLOAD
 		$("#co-regPic").val("");																	// Clear typed entry
 		let canvas=document.createElement("canvas");												// Make canvas			
  		let ctx=canvas.getContext("2d");															// Get context
  		let myReader=new FileReader();																// Alloc reader
-		let file=ee.target.files[0];																// Point at file
-		myReader.readAsDataURL(file);																// Load file		
+		myReader.readAsDataURL(ev.target.files[0]);													// Load file		
 	
 		myReader.onloadend=(e)=>{ 																	// ON LOAD
 			let img=new Image();																	// Temp image		
@@ -101,7 +100,7 @@ class Register  {
 					}
 				canvas.width=width;		canvas.height=height;										// Canvas size
 				ctx.drawImage(img,0,0,width,height);												// Draw/resize pic
-				regSnapimg.src=canvas.toDataURL(file.type);											// Set data
+				regSnapimg.src=canvas.toDataURL("image/png");										// Set data
 				}
 			}											
 		});
@@ -127,11 +126,11 @@ class Register  {
 		if (this.cameraStream)	this.StartStreaming();												// If streaming, capture image
 
 		if (!$("#co-regPic").val() && (regSnapimg.src.length > 100)) {								// Not directly spec'd and nothing loaded
-			let s=this.person.meeting+"/av/"+this.person.email+".png";								// Make up file name
-//			let s=this.person.meeting+"/"+this.person.email+".png";									// Make up file name
+//			let s=this.person.meeting+"/av/"+this.person.email+".png";								// Make up file name
+			let s=this.person.meeting+"/va/"+this.person.email+".png";								// Make up file name
 			app.ws.send("IMG|"+s+"|"+regSnapimg.src);												// Send base64 to server
-			this.person.pic="https://etal.live/go/pix/"+s;											// Get image url
-//			this.person.pic="https://etalimages.s3.amazonaws.com/"+s;								// Get AWS S3 url
+//			this.person.pic="https://etal.live/go/pix/"+s;											// Get image url
+			this.person.pic="https://etalimages.s3.amazonaws.com/"+s;								// Get AWS S3 url
 			}
 		else this.person.pic=$("#co-regPic").val();													// Set pic
 		app.ws.send("MP|"+this.person.id+"|"+JSON.stringify(this.person));							// Update server record
