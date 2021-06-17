@@ -121,7 +121,7 @@
 		isMobile=navigator.userAgent.match(/(ipad|iphone|ipod|android)/i) ? true : false;			// Set mobile flag
 		var url=window.location.search.substring(1);						   						// Get query string
 		let meetingId=url ? url.split("&")[0] : "1";												// Set meeeting id
-		if (meetingId == "harp1") $("#splashExtra").html('<p style="font-size:20px">Click <a href="https://www.youtube.com/embed/6N0zgcWIHy0?rel=0&autoplay=1" target="_blank">here</a> to view a longer how-to video by Somerset</p>');
+		if (meetingId == "somerset") $("#splashExtra").html('<p style="font-size:20px">Click <a href="https://www.youtube.com/embed/6N0zgcWIHy0?rel=0&autoplay=1" target="_blank">here</a> to view a longer how-to video by Somerset</p>');
 		app=new App(meetingId);                                      								// Alloc app
 		$("#splashDiv").fadeIn();																	// Fade in splash
 	
@@ -279,6 +279,8 @@ class App  {
 		id=this.pIndex[id];																			// Turn id into index		
 		this.myId=id;																				// My id
 		this.myEmail=this.people[id].email;															// Get my email
+		if (this.people[id].role && this.people[id].role.match(/F\d/)) 								// If a floor spec'd
+			this.curFloor=this.people[id].role.match(/F\d+/)[0].substr(1);							// Go there
 		this.DrawPeople();																			// Draw people avatars
 		this.Draw();																				// Draw screen
 		this.GoToCenter();																			// Go to center of room
@@ -406,6 +408,15 @@ class App  {
 					}
 				}
 			if (link && link.match(/floor-/i)) {													// If going to a new floor
+				let role=this.people[app.myId].role;												// Point at role
+				if (role && role.match(/>F/) && (link.substr(6)-0 < role.match(/F\d+/)[0].substr(1))) {	// If above allowed floor 
+					Popup("Sorry, but you can't get to this area");									// Message
+					return;																			// Quit
+					}
+				if (role && role.match(/<F/) && (link.substr(6)-0 > role.match(/F\d+/)[0].substr(1))) {	// If below allowed floor
+					Popup("Sorry, but you can't get to this area");									// Message
+					return;																			// Quit
+					}
 				this.CloseAll(3);																	// Close video windows
 				$(window).scrollTop(0);																// Scroll to top	
 				this.curFloor=link.substr(6)-0;														// Get floor index
