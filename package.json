@@ -22,15 +22,16 @@
   "dependencies": {
     "aws-sdk": "^2.747.0",
     "express": "^4.17.1",
-    "fs": "0.0.1-security",
+    "fs": "^0.0.1-security",
     "fs-extra": "^10.0.0",
     "http": "0.0.1-security",
     "https": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
+    "os": "^0.1.2",
     "request": "^2.88.2",
     "socket.io": "^2.4.1",
     "sqlite3": "^5.0.2",
-    "ws": "^7.4.6",
+    "ws": "^7.5.6",
     "wss": "^3.3.4"
   },
   "optionalDependencies": {
